@@ -62,7 +62,6 @@ export default function DashboardPage() {
                 : "text-gray-600 hover:text-gray-900"
             )}
           >
-            {t(`dashboard.${s === "all" ? "title" : s}`).replace(t("dashboard.title"), t("common.all"))}
             {s === "all" ? t("common.all") : t(`dashboard.${s}`)}
           </button>
         ))}
