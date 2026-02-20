@@ -1,8 +1,12 @@
 import axios from "axios";
 
 // Public API uses plain axios (no JWT interceptors needed)
+const PUBLIC_API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, "")}/api/public`
+  : "/api/public";
+
 const publicApi = axios.create({
-  baseURL: "/api/public",
+  baseURL: PUBLIC_API_BASE,
   withCredentials: false,
   headers: { "Content-Type": "application/json" },
 });
