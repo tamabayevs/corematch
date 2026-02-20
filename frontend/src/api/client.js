@@ -10,8 +10,18 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Lazy accessor to break circular dependency: client → authStore → auth → client
+// The import resolves after all modules are initialized.
+let _authStoreModule = null;
+function getAuthStore() {
+  if (!_authStoreModule) {
+    _authStoreModule = import("../store/authStore");
+  }
+  return _authStoreModule;
+}
+
 // Attach JWT access token to every request
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
   // Read XSRF-TOKEN cookie for CSRF protection
   const xsrfToken = document.cookie
     .split("; ")
@@ -21,8 +31,8 @@ api.interceptors.request.use((config) => {
     config.headers["X-XSRF-Token"] = decodeURIComponent(xsrfToken);
   }
 
-  // Attach access token from auth store (lazy import to avoid circular)
-  const { useAuthStore } = require("../store/authStore");
+  // Attach access token from auth store
+  const { useAuthStore } = await getAuthStore();
   const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -74,14 +84,14 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { useAuthStore } = require("../store/authStore");
+      const { useAuthStore } = await getAuthStore();
       const newToken = await useAuthStore.getState().refresh();
       processQueue(null, newToken);
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
-      const { useAuthStore } = require("../store/authStore");
+      const { useAuthStore } = await getAuthStore();
       useAuthStore.getState().logout();
       return Promise.reject(refreshError);
     } finally {
