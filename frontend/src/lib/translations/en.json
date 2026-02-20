@@ -58,6 +58,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "subtitle": "Your hiring overview at a glance",
     "newCampaign": "New Campaign",
     "noCampaigns": "No campaigns yet",
     "noCampaignsDesc": "Create your first video interview campaign to start screening candidates.",
@@ -65,7 +66,38 @@
     "closed": "Closed",
     "archived": "Archived",
     "candidates": "Candidates",
-    "submitted": "Submitted"
+    "submitted": "Submitted",
+    "activeCampaigns": "Active Campaigns",
+    "candidatesThisMonth": "Candidates This Month",
+    "completionRate": "Completion Rate",
+    "avgScore": "Avg. AI Score",
+    "avgScoreLabel": "Avg",
+    "yourCampaigns": "Your Campaigns",
+    "pipelineOverview": "Pipeline Overview",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No activity yet",
+    "pipeline": {
+      "invited": "Invited",
+      "started": "Started",
+      "awaitingReview": "Awaiting Review",
+      "reviewed": "Reviewed",
+      "shortlisted": "Shortlisted"
+    },
+    "action": {
+      "new_submissions": "submissions to review",
+      "overdue_decisions": "candidates awaiting decision >48h",
+      "not_started": "candidates haven't started",
+      "expiring_invites": "invites expiring soon"
+    },
+    "activity": {
+      "invited": "Invited candidate",
+      "shortlisted": "Shortlisted candidate",
+      "rejected": "Rejected candidate",
+      "hold": "Put candidate on hold",
+      "erased": "Erased candidate data",
+      "submitted": "Candidate submitted interview",
+      "campaignCreated": "Created campaign"
+    }
   },
   "campaign": {
     "create": "Create Campaign",

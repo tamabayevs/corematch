@@ -141,11 +141,13 @@ def create_app() -> Flask:
     from api.campaigns import campaigns_bp
     from api.candidates import candidates_bp
     from api.public import public_bp
+    from api.dashboard import dashboard_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(campaigns_bp, url_prefix="/api/campaigns")
     app.register_blueprint(candidates_bp, url_prefix="/api/candidates")
     app.register_blueprint(public_bp, url_prefix="/api/public")
+    app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
 
     # ──────────────────────────────────────────────────────────
     # Health Check
