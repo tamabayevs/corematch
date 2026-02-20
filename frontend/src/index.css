@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* RTL support: when dir="rtl", use Cairo font */
+[dir="rtl"] {
+  font-family: "Cairo", sans-serif;
+}
+
+[dir="ltr"] {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Ensure reference IDs and URLs stay LTR even in RTL layout */
+.force-ltr {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Smooth transitions for theme/direction changes */
+body {
+  transition: direction 0s;
+}
