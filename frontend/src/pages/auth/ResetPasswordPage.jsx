@@ -35,7 +35,6 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError("");
 
-    // Client-side validation matching backend
     if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
       setError(t("auth.passwordRequirements"));
       return;
@@ -63,35 +62,38 @@ export default function ResetPasswordPage() {
 
   if (tokenValid === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-navy-900">
         <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="absolute top-4 end-4">
-        <LanguageToggle />
+    <div className="min-h-screen flex items-center justify-center bg-navy-900 px-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-navy-900 via-navy-900 to-primary-950" />
+      <div className="absolute top-0 end-0 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl" />
+
+      <div className="absolute top-4 end-4 z-10">
+        <LanguageToggle dark />
       </div>
 
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative z-10 border-navy-200 shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-primary-600">{t("brand.name")}</h1>
-          <p className="text-sm text-gray-500 mt-1">{t("auth.resetPassword")}</p>
+          <p className="text-sm text-navy-400 mt-1">{t("auth.resetPassword")}</p>
         </div>
 
         {success ? (
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 mx-auto bg-primary-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-sm text-gray-600">{t("auth.resetSuccess")}</p>
+            <p className="text-sm text-navy-500">{t("auth.resetSuccess")}</p>
             <Link
               to="/login"
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              className="text-sm text-primary-600 hover:text-primary-700 font-semibold"
             >
               {t("auth.login")}
             </Link>
@@ -103,10 +105,10 @@ export default function ResetPasswordPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-600">{t("auth.resetTokenExpired")}</p>
+            <p className="text-sm text-navy-500">{t("auth.resetTokenExpired")}</p>
             <Link
               to="/forgot-password"
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              className="text-sm text-primary-600 hover:text-primary-700 font-semibold"
             >
               {t("auth.sendResetLink")}
             </Link>
@@ -128,7 +130,7 @@ export default function ResetPasswordPage() {
               required
               autoComplete="new-password"
             />
-            <p className="text-xs text-gray-500 -mt-2">
+            <p className="text-xs text-navy-400 -mt-2">
               {t("auth.passwordRequirements")}
             </p>
 

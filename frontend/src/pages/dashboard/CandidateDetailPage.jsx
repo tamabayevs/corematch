@@ -73,7 +73,7 @@ export default function CandidateDetailPage() {
       {/* Back button */}
       <button
         onClick={() => navigate(`/dashboard/campaigns/${candidate.campaign_id}`)}
-        className="text-sm text-gray-500 hover:text-gray-700 mb-4 flex items-center gap-1"
+        className="text-sm text-navy-500 hover:text-navy-700 mb-4 flex items-center gap-1"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -85,10 +85,10 @@ export default function CandidateDetailPage() {
       <Card className="mb-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{candidate.full_name}</h1>
-            <p className="text-gray-500">{candidate.email}</p>
+            <h1 className="text-2xl font-bold text-navy-900">{candidate.full_name}</h1>
+            <p className="text-navy-500">{candidate.email}</p>
             {candidate.reference_id && (
-              <p className="text-sm text-gray-400 force-ltr mt-1">
+              <p className="text-sm text-navy-400 force-ltr mt-1">
                 {t("candidate.referenceId")}: {candidate.reference_id}
               </p>
             )}
@@ -132,7 +132,7 @@ export default function CandidateDetailPage() {
         </div>
         <textarea
           rows={2}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="block w-full rounded-lg border border-navy-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder={t("candidate.decisionNote")}
           value={decisionNote}
           onChange={(e) => setDecisionNote(e.target.value)}
@@ -145,7 +145,7 @@ export default function CandidateDetailPage() {
           <h3 className="font-semibold mb-3">
             {t("candidate.videoAnswer", { index: answer.question_index + 1 })}
           </h3>
-          <p className="text-sm text-gray-600 mb-4">{answer.question_text}</p>
+          <p className="text-sm text-navy-500 mb-4">{answer.question_text}</p>
 
           {answer.signed_url && (
             <video
@@ -165,10 +165,10 @@ export default function CandidateDetailPage() {
 
               {answer.scores.strengths?.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">
+                  <p className="text-sm font-medium text-navy-700 mb-1">
                     {t("candidate.strengths")}
                   </p>
-                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-0.5">
+                  <ul className="list-disc list-inside text-sm text-navy-500 space-y-0.5">
                     {answer.scores.strengths.map((s, i) => (
                       <li key={i}>{s}</li>
                     ))}
@@ -178,10 +178,10 @@ export default function CandidateDetailPage() {
 
               {answer.scores.improvements?.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">
+                  <p className="text-sm font-medium text-navy-700 mb-1">
                     {t("candidate.improvements")}
                   </p>
-                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-0.5">
+                  <ul className="list-disc list-inside text-sm text-navy-500 space-y-0.5">
                     {answer.scores.improvements.map((s, i) => (
                       <li key={i}>{s}</li>
                     ))}
@@ -196,7 +196,7 @@ export default function CandidateDetailPage() {
               <summary className="cursor-pointer text-primary-600 hover:text-primary-700 font-medium">
                 {t("candidate.transcript")}
               </summary>
-              <p className="mt-2 text-gray-600 whitespace-pre-wrap bg-gray-50 p-3 rounded-lg">
+              <p className="mt-2 text-navy-500 whitespace-pre-wrap bg-navy-50 p-3 rounded-lg">
                 {answer.transcript}
               </p>
             </details>
@@ -211,7 +211,7 @@ export default function CandidateDetailPage() {
       {/* PDPL Erasure */}
       <Card className="border-red-200 mt-8">
         <h3 className="text-sm font-semibold text-red-700 mb-2">{t("candidate.eraseData")}</h3>
-        <p className="text-sm text-gray-500 mb-4">{t("candidate.eraseConfirm")}</p>
+        <p className="text-sm text-navy-500 mb-4">{t("candidate.eraseConfirm")}</p>
         <Button variant="danger" size="sm" onClick={() => setShowEraseModal(true)}>
           {t("candidate.eraseData")}
         </Button>
@@ -223,7 +223,7 @@ export default function CandidateDetailPage() {
         onClose={() => setShowEraseModal(false)}
         title={t("candidate.eraseData")}
       >
-        <p className="text-sm text-gray-600 mb-6">{t("candidate.eraseConfirm")}</p>
+        <p className="text-sm text-navy-500 mb-6">{t("candidate.eraseConfirm")}</p>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowEraseModal(false)}>
             {t("common.cancel")}
@@ -241,15 +241,15 @@ function ScoreBar({ label, score }) {
   if (score == null) return null;
   const rounded = Math.round(score);
   const color =
-    rounded >= 70 ? "bg-green-500" : rounded >= 50 ? "bg-amber-500" : "bg-red-500";
+    rounded >= 70 ? "bg-primary-500" : rounded >= 50 ? "bg-accent-500" : "bg-red-500";
 
   return (
     <div>
       <div className="flex justify-between text-sm mb-1">
-        <span className="text-gray-600">{label}</span>
+        <span className="text-navy-500">{label}</span>
         <span className="font-medium">{rounded}/100</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-navy-200 rounded-full h-2">
         <div
           className={clsx("h-2 rounded-full transition-all", color)}
           style={{ width: `${rounded}%` }}

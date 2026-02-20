@@ -35,11 +35,11 @@ export default function ConsentPage() {
 
   return (
     <Card>
-      <h1 className="text-xl font-bold text-gray-900 mb-4">
+      <h1 className="text-xl font-bold text-navy-900 mb-4">
         {t("interview.consent.title")}
       </h1>
 
-      <div className="bg-gray-50 rounded-lg p-4 mb-6 text-sm text-gray-700 leading-relaxed">
+      <div className="bg-navy-50 rounded-lg p-4 mb-6 text-sm text-navy-700 leading-relaxed">
         {t("interview.consent.text")}
       </div>
 
@@ -48,9 +48,9 @@ export default function ConsentPage() {
           type="checkbox"
           checked={agreed}
           onChange={(e) => setAgreed(e.target.checked)}
-          className="h-5 w-5 mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          className="h-5 w-5 mt-0.5 rounded border-navy-300 text-primary-600 focus:ring-primary-500"
         />
-        <span className="text-sm text-gray-700 font-medium">
+        <span className="text-sm text-navy-700 font-medium">
           {t("interview.consent.agree")}
         </span>
       </label>

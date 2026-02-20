@@ -20,15 +20,22 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-e border-gray-200 flex flex-col fixed inset-y-0 start-0 z-30">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-primary-600">CoreMatch</h1>
-          <p className="text-xs text-gray-500 mt-0.5">{t("brand.tagline")}</p>
+    <div className="min-h-screen bg-navy-50 flex">
+      {/* Dark Navy Sidebar */}
+      <aside className="w-64 bg-navy-900 flex flex-col fixed inset-y-0 start-0 z-30">
+        {/* Logo */}
+        <div className="p-6 pb-5">
+          <h1 className="text-xl font-bold text-primary-100 tracking-tight">CoreMatch</h1>
+          <p className="text-[11px] text-primary-400 font-medium tracking-wide mt-0.5">
+            {t("brand.tagline")}
+          </p>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        {/* Navigation */}
+        <nav className="flex-1 px-3 space-y-1 sidebar-scroll overflow-y-auto">
+          <p className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-navy-500">
+            {t("nav.overview") || "Overview"}
+          </p>
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -36,10 +43,10 @@ export default function DashboardLayout() {
               end={item.end}
               className={({ isActive }) =>
                 clsx(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                   isActive
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-gradient-to-r from-primary-600 to-primary-700 text-primary-50 shadow-md shadow-primary-900/20"
+                    : "text-navy-400 hover:bg-navy-800 hover:text-navy-200"
                 )
               }
             >
@@ -49,22 +56,25 @@ export default function DashboardLayout() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-200 space-y-3">
-          <LanguageToggle />
+        {/* Footer */}
+        <div className="p-4 border-t border-navy-800 space-y-3">
+          <LanguageToggle dark />
+
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-sm font-medium">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 text-navy-900 rounded-full flex items-center justify-center text-sm font-bold">
               {user?.full_name?.[0]?.toUpperCase() || "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-navy-200 truncate">
                 {user?.full_name}
               </p>
-              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+              <p className="text-xs text-navy-500 truncate">{user?.email}</p>
             </div>
           </div>
+
           <button
             onClick={handleLogout}
-            className="w-full text-start text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors"
+            className="w-full text-start text-sm text-navy-400 hover:text-navy-200 px-3 py-1.5 rounded-lg hover:bg-navy-800 transition-colors"
           >
             {t("auth.logout")}
           </button>
@@ -73,7 +83,7 @@ export default function DashboardLayout() {
 
       {/* Main content */}
       <main className="flex-1 ms-64">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-8 py-8">
           <Outlet />
         </div>
       </main>

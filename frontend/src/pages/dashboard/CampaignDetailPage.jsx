@@ -13,21 +13,21 @@ import ScoreBadge from "../../components/ui/ScoreBadge";
 import EmptyState from "../../components/ui/EmptyState";
 
 const TIER_VARIANTS = {
-  strong_proceed: "green",
-  consider: "yellow",
+  strong_proceed: "teal",
+  consider: "amber",
   likely_pass: "red",
 };
 
 const STATUS_VARIANTS = {
   invited: "gray",
   started: "blue",
-  submitted: "green",
+  submitted: "teal",
 };
 
 const DECISION_VARIANTS = {
-  shortlisted: "green",
+  shortlisted: "teal",
   rejected: "red",
-  hold: "yellow",
+  hold: "amber",
 };
 
 export default function CampaignDetailPage() {
@@ -105,15 +105,15 @@ export default function CampaignDetailPage() {
         <div>
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
+            className="text-sm text-navy-500 hover:text-navy-700 mb-2 flex items-center gap-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             {t("common.back")}
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">{campaign.name}</h1>
-          <p className="text-gray-500">{campaign.job_title}</p>
+          <h1 className="text-2xl font-bold text-navy-900">{campaign.name}</h1>
+          <p className="text-navy-500">{campaign.job_title}</p>
         </div>
         <Button onClick={() => setShowInviteModal(true)}>
           {t("campaign.inviteCandidate")}
@@ -123,23 +123,23 @@ export default function CampaignDetailPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <Card className="text-center !p-4">
-          <p className="text-2xl font-bold text-gray-900">{campaign.candidate_count || 0}</p>
-          <p className="text-sm text-gray-500">{t("dashboard.candidates")}</p>
+          <p className="text-2xl font-bold text-navy-900">{campaign.candidate_count || 0}</p>
+          <p className="text-sm text-navy-500">{t("dashboard.candidates")}</p>
         </Card>
         <Card className="text-center !p-4">
-          <p className="text-2xl font-bold text-gray-900">{campaign.submitted_count || 0}</p>
-          <p className="text-sm text-gray-500">{t("dashboard.submitted")}</p>
+          <p className="text-2xl font-bold text-navy-900">{campaign.submitted_count || 0}</p>
+          <p className="text-sm text-navy-500">{t("dashboard.submitted")}</p>
         </Card>
         <Card className="text-center !p-4">
-          <p className="text-2xl font-bold text-gray-900">{campaign.questions?.length || 0}</p>
-          <p className="text-sm text-gray-500">{t("campaign.questions")}</p>
+          <p className="text-2xl font-bold text-navy-900">{campaign.questions?.length || 0}</p>
+          <p className="text-sm text-navy-500">{t("campaign.questions")}</p>
         </Card>
       </div>
 
       {/* Filters */}
       <div className="flex gap-3 mb-4 flex-wrap">
         <select
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
         >
@@ -148,7 +148,7 @@ export default function CampaignDetailPage() {
           <option value="date">{t("common.sort")}</option>
         </select>
         <select
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm"
           value={tierFilter}
           onChange={(e) => setTierFilter(e.target.value)}
         >
@@ -158,7 +158,7 @@ export default function CampaignDetailPage() {
           <option value="likely_pass">{t("candidate.likelyPass")}</option>
         </select>
         <select
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -181,49 +181,49 @@ export default function CampaignDetailPage() {
         <Card className="!p-0 overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-start px-4 py-3 text-sm font-medium text-gray-500">
+              <tr className="border-b border-navy-200 bg-navy-50">
+                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
                   {t("auth.fullName")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-gray-500">
+                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
                   {t("candidate.score")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-gray-500">
+                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
                   {t("candidate.tier")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-gray-500">
+                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
                   {t("candidate.status")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-gray-500">
+                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
                   {t("candidate.decision")}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-navy-200">
               {candidates.map((c) => (
                 <tr
                   key={c.id}
-                  className="hover:bg-gray-50 cursor-pointer"
+                  className="hover:bg-navy-50 cursor-pointer"
                   onClick={() => navigate(`/dashboard/candidates/${c.id}`)}
                 >
                   <td className="px-4 py-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{c.full_name}</p>
-                      <p className="text-xs text-gray-500">{c.email}</p>
+                      <p className="text-sm font-medium text-navy-900">{c.full_name}</p>
+                      <p className="text-xs text-navy-500">{c.email}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     {c.overall_score != null ? (
                       <ScoreBadge score={c.overall_score} tier={c.tier} />
                     ) : (
-                      <span className="text-sm text-gray-400">-</span>
+                      <span className="text-sm text-navy-400">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     {c.tier ? (
                       <Badge variant={TIER_VARIANTS[c.tier]}>{t(`candidate.${c.tier === "strong_proceed" ? "strongProceed" : c.tier === "likely_pass" ? "likelyPass" : "consider"}`)}</Badge>
                     ) : (
-                      <span className="text-sm text-gray-400">-</span>
+                      <span className="text-sm text-navy-400">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -237,7 +237,7 @@ export default function CampaignDetailPage() {
                         {t(`candidate.${c.hr_decision}`)}
                       </Badge>
                     ) : (
-                      <span className="text-sm text-gray-400">{t("candidate.noDecision")}</span>
+                      <span className="text-sm text-navy-400">{t("candidate.noDecision")}</span>
                     )}
                   </td>
                 </tr>

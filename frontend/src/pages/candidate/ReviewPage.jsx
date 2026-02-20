@@ -46,10 +46,10 @@ export default function ReviewPage() {
 
   return (
     <Card>
-      <h1 className="text-xl font-bold text-gray-900 mb-2">
+      <h1 className="text-xl font-bold text-navy-900 mb-2">
         {t("interview.reviewPage.title")}
       </h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-navy-500 mb-6">
         {t("interview.reviewPage.description")}
       </p>
 
@@ -63,17 +63,17 @@ export default function ReviewPage() {
         {questions.map((q, i) => (
           <div
             key={i}
-            className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+            className="flex items-center justify-between p-4 border border-navy-200 rounded-lg"
           >
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-navy-900 truncate">
                 {t("candidate.videoAnswer", { index: i + 1 })}
               </p>
-              <p className="text-xs text-gray-500 truncate">{q.text}</p>
+              <p className="text-xs text-navy-500 truncate">{q.text}</p>
             </div>
             <div className="flex items-center gap-3 ms-4">
               {answers[i]?.uploaded ? (
-                <Badge variant="green">{t("interview.reviewPage.recorded")}</Badge>
+                <Badge variant="teal">{t("interview.reviewPage.recorded")}</Badge>
               ) : (
                 <Badge variant="gray">-</Badge>
               )}

@@ -2,17 +2,19 @@ import clsx from "clsx";
 
 const variants = {
   primary:
-    "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500",
+    "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm",
   secondary:
-    "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-primary-500",
+    "bg-white text-navy-700 border border-navy-200 hover:bg-navy-50 focus:ring-primary-500",
   danger:
     "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
   ghost:
-    "bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500",
+    "bg-transparent text-navy-500 hover:bg-navy-100 hover:text-navy-700 focus:ring-navy-500",
   success:
-    "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500",
+    "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500",
   warning:
-    "bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500",
+    "bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-500",
+  accent:
+    "bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-500 shadow-sm",
 };
 
 const sizes = {
@@ -35,7 +37,7 @@ export default function Button({
       className={clsx(
         "inline-flex items-center justify-center font-medium rounded-lg",
         "focus:outline-none focus:ring-2 focus:ring-offset-2",
-        "transition-colors duration-150",
+        "transition-all duration-150",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         variants[variant],
         sizes[size],

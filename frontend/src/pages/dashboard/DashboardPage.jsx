@@ -36,21 +36,21 @@ export default function DashboardPage() {
   };
 
   const statusBadge = (status) => {
-    const variants = { active: "green", closed: "red", archived: "gray" };
+    const variants = { active: "teal", closed: "red", archived: "gray" };
     return <Badge variant={variants[status] || "gray"}>{t(`dashboard.${status}`)}</Badge>;
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.title")}</h1>
+        <h1 className="text-2xl font-bold text-navy-900">{t("dashboard.title")}</h1>
         <Button onClick={() => navigate("/dashboard/campaigns/new")}>
           {t("dashboard.newCampaign")}
         </Button>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-navy-100 rounded-lg p-1 w-fit">
         {STATUS_FILTERS.map((s) => (
           <button
             key={s}
@@ -58,8 +58,8 @@ export default function DashboardPage() {
             className={clsx(
               "px-4 py-1.5 rounded-md text-sm font-medium transition-colors",
               filter === s
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-navy-900 shadow-sm"
+                : "text-navy-500 hover:text-navy-700"
             )}
           >
             {s === "all" ? t("common.all") : t(`dashboard.${s}`)}
@@ -88,20 +88,20 @@ export default function DashboardPage() {
           {campaigns.map((campaign) => (
             <Card
               key={campaign.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              className="cursor-pointer hover:border-primary-300 hover:shadow-md transition-all"
               onClick={() => navigate(`/dashboard/campaigns/${campaign.id}`)}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">
+                  <h3 className="font-semibold text-navy-900 truncate">
                     {campaign.name}
                   </h3>
-                  <p className="text-sm text-gray-500 truncate">{campaign.job_title}</p>
+                  <p className="text-sm text-navy-400 truncate">{campaign.job_title}</p>
                 </div>
                 {statusBadge(campaign.status)}
               </div>
 
-              <div className="flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-4 text-sm text-navy-500">
                 <span>
                   {t("dashboard.candidates")}: {campaign.candidate_count || 0}
                 </span>
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              <p className="text-xs text-gray-400 mt-3">
+              <p className="text-xs text-navy-400 mt-3">
                 {t("campaign.questionCount", { count: campaign.questions?.length || 0 })}
               </p>
             </Card>

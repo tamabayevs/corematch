@@ -51,6 +51,7 @@
     "backToLogin": "Back to Log In"
   },
   "nav": {
+    "overview": "Overview",
     "dashboard": "Dashboard",
     "campaigns": "Campaigns",
     "settings": "Settings"

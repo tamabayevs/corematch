@@ -80,7 +80,7 @@ export default function CampaignCreatePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-bold text-navy-900 mb-6">
         {t("campaign.create")}
       </h1>
 
@@ -91,12 +91,12 @@ export default function CampaignCreatePage() {
             key={s}
             className={clsx(
               "flex-1 h-2 rounded-full",
-              i <= step ? "bg-primary-600" : "bg-gray-200"
+              i <= step ? "bg-primary-600" : "bg-navy-200"
             )}
           />
         ))}
       </div>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-navy-500 mb-6">
         {t("campaign.step", { current: step + 1, total: STEPS.length })}
       </p>
 
@@ -126,24 +126,24 @@ export default function CampaignCreatePage() {
               required
             />
             <div>
-              <label htmlFor="job_description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="job_description" className="block text-sm font-medium text-navy-700 mb-1">
                 {t("campaign.jobDescription")}
               </label>
               <textarea
                 id="job_description"
                 rows={4}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="block w-full rounded-lg border border-navy-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 value={form.job_description}
                 onChange={updateField("job_description")}
               />
             </div>
             <div>
-              <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="language" className="block text-sm font-medium text-navy-700 mb-1">
                 {t("campaign.language")}
               </label>
               <select
                 id="language"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="block w-full rounded-lg border border-navy-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 value={form.language}
                 onChange={updateField("language")}
               >
@@ -159,14 +159,14 @@ export default function CampaignCreatePage() {
         {step === 1 && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">{t("campaign.questions")}</h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-navy-500">
               {t("campaign.questionCount", { count: form.questions.length })} (3-7)
             </p>
 
             {form.questions.map((q, i) => (
-              <div key={i} className="border border-gray-200 rounded-lg p-4 space-y-3">
+              <div key={i} className="border border-navy-200 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-navy-700">
                     {t("candidate.videoAnswer", { index: i + 1 })}
                   </span>
                   {form.questions.length > 3 && (
@@ -181,17 +181,17 @@ export default function CampaignCreatePage() {
                 </div>
                 <textarea
                   rows={2}
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="block w-full rounded-lg border border-navy-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder={t("campaign.questionPlaceholder")}
                   value={q.text}
                   onChange={(e) => updateQuestion(i, "text", e.target.value)}
                 />
                 <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-600">
+                  <label className="text-sm text-navy-500">
                     {t("campaign.thinkTime")}:
                   </label>
                   <select
-                    className="rounded border border-gray-300 px-2 py-1 text-sm"
+                    className="rounded border border-navy-300 px-2 py-1 text-sm"
                     value={q.think_time_seconds}
                     onChange={(e) =>
                       updateQuestion(i, "think_time_seconds", parseInt(e.target.value))
@@ -221,11 +221,11 @@ export default function CampaignCreatePage() {
             <h2 className="text-lg font-semibold">{t("campaign.settings")}</h2>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-navy-700 mb-1">
                 {t("campaign.inviteExpiry")}
               </label>
               <select
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-navy-300 px-3 py-2 text-sm"
                 value={form.invite_expiry_days}
                 onChange={(e) =>
                   setForm((prev) => ({
@@ -243,11 +243,11 @@ export default function CampaignCreatePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-navy-700 mb-1">
                 {t("campaign.maxRecording")}
               </label>
               <select
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-navy-300 px-3 py-2 text-sm"
                 value={form.max_recording_seconds}
                 onChange={(e) =>
                   setForm((prev) => ({
@@ -272,9 +272,9 @@ export default function CampaignCreatePage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, allow_retakes: e.target.checked }))
                 }
-                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                className="h-4 w-4 rounded border-navy-300 text-primary-600 focus:ring-primary-500"
               />
-              <label htmlFor="allow_retakes" className="text-sm text-gray-700">
+              <label htmlFor="allow_retakes" className="text-sm text-navy-700">
                 {t("campaign.allowRetakes")}
               </label>
             </div>
@@ -285,29 +285,29 @@ export default function CampaignCreatePage() {
         {step === 3 && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">{t("campaign.review")}</h2>
-            <dl className="divide-y divide-gray-200">
+            <dl className="divide-y divide-navy-200">
               <div className="py-3 flex justify-between">
-                <dt className="text-sm text-gray-500">{t("campaign.name")}</dt>
+                <dt className="text-sm text-navy-500">{t("campaign.name")}</dt>
                 <dd className="text-sm font-medium">{form.name}</dd>
               </div>
               <div className="py-3 flex justify-between">
-                <dt className="text-sm text-gray-500">{t("campaign.jobTitle")}</dt>
+                <dt className="text-sm text-navy-500">{t("campaign.jobTitle")}</dt>
                 <dd className="text-sm font-medium">{form.job_title}</dd>
               </div>
               <div className="py-3 flex justify-between">
-                <dt className="text-sm text-gray-500">{t("campaign.language")}</dt>
+                <dt className="text-sm text-navy-500">{t("campaign.language")}</dt>
                 <dd className="text-sm font-medium">{form.language.toUpperCase()}</dd>
               </div>
               <div className="py-3 flex justify-between">
-                <dt className="text-sm text-gray-500">{t("campaign.questions")}</dt>
+                <dt className="text-sm text-navy-500">{t("campaign.questions")}</dt>
                 <dd className="text-sm font-medium">{form.questions.length}</dd>
               </div>
               <div className="py-3 flex justify-between">
-                <dt className="text-sm text-gray-500">{t("campaign.maxRecording")}</dt>
+                <dt className="text-sm text-navy-500">{t("campaign.maxRecording")}</dt>
                 <dd className="text-sm font-medium">{form.max_recording_seconds}s</dd>
               </div>
               <div className="py-3 flex justify-between">
-                <dt className="text-sm text-gray-500">{t("campaign.allowRetakes")}</dt>
+                <dt className="text-sm text-navy-500">{t("campaign.allowRetakes")}</dt>
                 <dd className="text-sm font-medium">
                   {form.allow_retakes ? t("common.yes") : t("common.no")}
                 </dd>

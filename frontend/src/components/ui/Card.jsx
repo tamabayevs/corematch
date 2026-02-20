@@ -4,7 +4,7 @@ export default function Card({ children, className, ...props }) {
   return (
     <div
       className={clsx(
-        "bg-white rounded-xl shadow-sm border border-gray-200 p-6",
+        "bg-white rounded-xl border border-navy-200 p-6",
         className
       )}
       {...props}

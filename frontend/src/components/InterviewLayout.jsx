@@ -48,15 +48,15 @@ export default function InterviewLayout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-navy-50">
         <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-navy-50">
+      <header className="bg-white border-b border-navy-200 px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-bold text-primary-600">CoreMatch</h1>
         <LanguageToggle />
       </header>

@@ -19,22 +19,22 @@ export default function WelcomePage() {
   return (
     <Card className="text-center">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-navy-900 mb-2">
           {t("interview.welcome.title")}
         </h1>
-        <p className="text-lg text-gray-700">
+        <p className="text-lg text-navy-700">
           {t("interview.welcome.greeting", { name: candidate?.full_name })}
         </p>
       </div>
 
-      <p className="text-gray-600 mb-6">
+      <p className="text-navy-500 mb-6">
         {t("interview.welcome.description", {
           jobTitle: campaign.job_title,
           company: campaign.company_name,
         })}
       </p>
 
-      <div className="flex justify-center gap-6 mb-8 text-sm text-gray-500">
+      <div className="flex justify-center gap-6 mb-8 text-sm text-navy-500">
         <span>{t("interview.welcome.questionCount", { count: questions.length })}</span>
         <span>
           {t("interview.welcome.estimatedTime", { minutes: estimatedMinutes })}
@@ -49,11 +49,11 @@ export default function WelcomePage() {
         {t("interview.welcome.begin")}
       </Button>
 
-      <div className="bg-blue-50 rounded-lg p-4 text-start">
-        <h3 className="text-sm font-semibold text-blue-900 mb-2">
+      <div className="bg-primary-50 rounded-lg p-4 text-start">
+        <h3 className="text-sm font-semibold text-primary-900 mb-2">
           {t("interview.welcome.tips")}
         </h3>
-        <ul className="text-sm text-blue-800 space-y-1.5">
+        <ul className="text-sm text-primary-800 space-y-1.5">
           <li>1. {t("interview.welcome.tip1")}</li>
           <li>2. {t("interview.welcome.tip2")}</li>
           <li>3. {t("interview.welcome.tip3")}</li>

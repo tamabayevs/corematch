@@ -51,6 +51,7 @@
     "backToLogin": "العودة لتسجيل الدخول"
   },
   "nav": {
+    "overview": "نظرة عامة",
     "dashboard": "لوحة التحكم",
     "campaigns": "الحملات",
     "settings": "الإعدادات"

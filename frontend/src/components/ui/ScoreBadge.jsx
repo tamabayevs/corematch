@@ -3,10 +3,10 @@ import { useI18n } from "../../lib/i18n";
 
 function getTierInfo(score, tier) {
   if (tier === "strong_proceed" || score >= 70) {
-    return { color: "text-green-600", bg: "bg-green-50 border-green-200", label: "candidate.strongProceed" };
+    return { color: "text-primary-700", bg: "bg-primary-50 border-primary-200", label: "candidate.strongProceed" };
   }
   if (tier === "consider" || score >= 50) {
-    return { color: "text-amber-600", bg: "bg-amber-50 border-amber-200", label: "candidate.consider" };
+    return { color: "text-accent-600", bg: "bg-accent-50 border-accent-200", label: "candidate.consider" };
   }
   return { color: "text-red-600", bg: "bg-red-50 border-red-200", label: "candidate.likelyPass" };
 }

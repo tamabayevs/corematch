@@ -63,11 +63,11 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("settings.title")}</h1>
+      <h1 className="text-2xl font-bold text-navy-900 mb-6">{t("settings.title")}</h1>
 
       <form onSubmit={handleSave} className="space-y-6">
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-primary-50 border border-primary-200 text-primary-700 px-4 py-3 rounded-lg text-sm">
             {t("settings.saved")}
           </div>
         )}
@@ -101,7 +101,7 @@ export default function SettingsPage() {
         <Card>
           <h2 className="text-lg font-semibold mb-4">{t("settings.languagePref")}</h2>
           <select
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-navy-300 px-3 py-2 text-sm"
             value={form.language}
             onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
           >
@@ -121,9 +121,9 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, notify_on_complete: e.target.checked }))
                 }
-                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                className="h-4 w-4 rounded border-navy-300 text-primary-600 focus:ring-primary-500"
               />
-              <span className="text-sm text-gray-700">{t("settings.notifyOnComplete")}</span>
+              <span className="text-sm text-navy-700">{t("settings.notifyOnComplete")}</span>
             </label>
             <label className="flex items-center gap-3">
               <input
@@ -132,9 +132,9 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, notify_weekly: e.target.checked }))
                 }
-                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                className="h-4 w-4 rounded border-navy-300 text-primary-600 focus:ring-primary-500"
               />
-              <span className="text-sm text-gray-700">{t("settings.notifyWeekly")}</span>
+              <span className="text-sm text-navy-700">{t("settings.notifyWeekly")}</span>
             </label>
           </div>
         </Card>

@@ -195,21 +195,21 @@ export default function RecordingPage() {
         )}
       </div>
 
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">{question.text}</h2>
+      <h2 className="text-lg font-semibold text-navy-900 mb-4">{question.text}</h2>
 
       {/* PREP phase */}
       {phase === STATES.PREP && (
         <div className="text-center py-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <h3 className="text-xl font-bold text-navy-900 mb-2">
             {t("interview.recording.prepTitle")}
           </h3>
-          <p className="text-gray-500 mb-6">
+          <p className="text-navy-500 mb-6">
             {t("interview.recording.prepDescription")}
           </p>
           <div className="text-5xl font-bold text-primary-600 mb-4">
             {prepCountdown}
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-navy-500">
             {t("interview.recording.startIn", { seconds: prepCountdown })}
           </p>
           {/* Camera preview during prep */}
@@ -237,16 +237,16 @@ export default function RecordingPage() {
           />
 
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-navy-500">
               {formatTime(elapsed)}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-navy-500">
               {t("interview.recording.timeRemaining", { seconds: remaining })}
             </span>
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+          <div className="w-full bg-navy-200 rounded-full h-2 mb-4">
             <div
               className="bg-red-500 h-2 rounded-full transition-all"
               style={{ width: `${(elapsed / maxDuration) * 100}%` }}
@@ -297,25 +297,25 @@ export default function RecordingPage() {
       {phase === STATES.UPLOADING && (
         <div className="text-center py-8">
           <p className="text-lg font-medium mb-4">{t("interview.recording.uploading")}</p>
-          <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+          <div className="w-full bg-navy-200 rounded-full h-3 mb-2">
             <div
               className="bg-primary-600 h-3 rounded-full transition-all"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
-          <p className="text-sm text-gray-500">{uploadProgress}%</p>
+          <p className="text-sm text-navy-500">{uploadProgress}%</p>
         </div>
       )}
 
       {/* COMPLETE phase */}
       {phase === STATES.COMPLETE && (
         <div className="text-center py-8">
-          <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 mx-auto bg-primary-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-lg font-medium text-green-700">
+          <p className="text-lg font-medium text-primary-700">
             {t("interview.recording.uploadComplete")}
           </p>
         </div>

@@ -76,10 +76,10 @@ export default function CameraTestPage() {
 
   return (
     <Card>
-      <h1 className="text-xl font-bold text-gray-900 mb-2">
+      <h1 className="text-xl font-bold text-navy-900 mb-2">
         {t("interview.camera.title")}
       </h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-navy-500 mb-6">
         {t("interview.camera.description")}
       </p>
 
@@ -90,10 +90,10 @@ export default function CameraTestPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 className="font-semibold text-gray-900 mb-2">
+          <h3 className="font-semibold text-navy-900 mb-2">
             {t("interview.camera.noCamera")}
           </h3>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-navy-500 mb-4">
             {t("interview.camera.noCameraDesc")}
           </p>
           <Button onClick={handleRetry}>{t("interview.camera.tryAgain")}</Button>
@@ -113,10 +113,10 @@ export default function CameraTestPage() {
 
           {/* Audio level meter */}
           <div className="mb-6">
-            <p className="text-sm text-gray-500 mb-1">Audio Level</p>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <p className="text-sm text-navy-500 mb-1">Audio Level</p>
+            <div className="w-full bg-navy-200 rounded-full h-2">
               <div
-                className="bg-green-500 h-2 rounded-full transition-all duration-100"
+                className="bg-primary-500 h-2 rounded-full transition-all duration-100"
                 style={{ width: `${audioLevel}%` }}
               />
             </div>

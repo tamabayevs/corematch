@@ -31,15 +31,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="absolute top-4 end-4">
-        <LanguageToggle />
+    <div className="min-h-screen flex items-center justify-center bg-navy-900 px-4 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-navy-900 via-navy-900 to-primary-950" />
+      <div className="absolute top-0 end-0 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 start-0 w-64 h-64 bg-accent-500/5 rounded-full blur-3xl" />
+
+      <div className="absolute top-4 end-4 z-10">
+        <LanguageToggle dark />
       </div>
 
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative z-10 border-navy-200 shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-primary-600">{t("brand.name")}</h1>
-          <p className="text-sm text-gray-500 mt-1">{t("brand.tagline")}</p>
+          <p className="text-sm text-navy-400 mt-1">{t("brand.tagline")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,7 +77,7 @@ export default function LoginPage() {
           <div className="flex justify-end">
             <Link
               to="/forgot-password"
-              className="text-sm text-primary-600 hover:text-primary-700"
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
             >
               {t("auth.forgotPassword")}
             </Link>
@@ -83,9 +88,9 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-navy-400 mt-6">
           {t("auth.noAccount")}{" "}
-          <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-medium">
+          <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-semibold">
             {t("auth.signup")}
           </Link>
         </p>
