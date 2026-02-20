@@ -52,6 +52,11 @@ def create_app() -> Flask:
         "https://corematch.vercel.app",
         "https://app.corematch.ai",
     ]
+    # Also allow the configured FRONTEND_URL (e.g., Vercel preview/production URL)
+    frontend_url = os.environ.get("FRONTEND_URL")
+    if frontend_url:
+        allowed_origins.append(frontend_url.rstrip("/"))
+
     if app.config["ENV"] == "development":
         allowed_origins.extend([
             "http://localhost:5173",
