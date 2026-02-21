@@ -394,6 +394,38 @@ MIGRATIONS = [
     ALTER TABLE data_subject_requests ADD CONSTRAINT data_subject_requests_request_type_check
         CHECK (request_type IN ('access', 'erasure', 'rectification', 'portability', 'objection'));
     """,
+    # ── Fixup: Create company_branding table ──
+    """
+    CREATE TABLE IF NOT EXISTS company_branding (
+        id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id                 UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        company_name            VARCHAR(300),
+        logo_url                VARCHAR(500),
+        primary_color           VARCHAR(7) DEFAULT '#2563EB',
+        secondary_color         VARCHAR(7) DEFAULT '#1E40AF',
+        company_website         VARCHAR(500),
+        custom_welcome_message  TEXT,
+        created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_company_branding_user ON company_branding(user_id);
+
+    DROP TRIGGER IF EXISTS trg_update_company_branding_updated_at ON company_branding;
+    CREATE TRIGGER trg_update_company_branding_updated_at
+    BEFORE UPDATE ON company_branding
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    """,
+    # ── Fixup: Add missing columns to review_assignments ──
+    """
+    ALTER TABLE review_assignments ADD COLUMN IF NOT EXISTS assigned_at TIMESTAMPTZ DEFAULT NOW();
+    ALTER TABLE review_assignments ADD COLUMN IF NOT EXISTS notes TEXT;
+    """,
+    # ── Fixup: Relax review_assignments unique constraint to include campaign_id ──
+    """
+    DROP INDEX IF EXISTS idx_review_assignments_unique;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_review_assignments_unique
+        ON review_assignments(campaign_id, reviewer_id, candidate_id);
+    """,
 ]
 
 

@@ -4,6 +4,7 @@ HR endpoints for viewing and managing candidates.
 All endpoints require JWT auth + campaign ownership verification.
 """
 import json
+import uuid
 import logging
 from flask import Blueprint, request, jsonify, g
 from database.connection import get_db
@@ -132,6 +133,11 @@ def get_candidate(candidate_id):
     Only accessible if the candidate's campaign belongs to the current user.
     """
     try:
+        uuid.UUID(candidate_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid candidate ID format"}), 400
+
+    try:
         with get_db() as conn:
             with conn.cursor() as cur:
                 # Main candidate record + campaign ownership check
@@ -255,6 +261,11 @@ def update_decision(candidate_id):
     Set HR decision on a candidate: shortlisted, rejected, hold, or null (clear).
     Records to audit_log for PDPL compliance.
     """
+    try:
+        uuid.UUID(candidate_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid candidate ID format"}), 400
+
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Request body must be JSON"}), 400
@@ -344,6 +355,11 @@ def erase_candidate(candidate_id):
     - Marks status as 'erased'
     - Records in audit_log
     """
+    try:
+        uuid.UUID(candidate_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid candidate ID format"}), 400
+
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
@@ -437,6 +453,11 @@ def erase_candidate(candidate_id):
 @require_auth
 def mark_reviewed(candidate_id):
     """Mark a candidate as reviewed by the current user."""
+    try:
+        uuid.UUID(candidate_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid candidate ID format"}), 400
+
     import datetime
 
     try:

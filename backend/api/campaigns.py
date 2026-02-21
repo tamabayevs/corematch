@@ -209,6 +209,12 @@ def create_campaign():
 @require_auth
 def get_campaign(campaign_id):
     """Get a single campaign. Only accessible by the campaign owner."""
+    # Validate UUID format to prevent DB errors
+    try:
+        uuid.UUID(campaign_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
@@ -249,6 +255,11 @@ def update_campaign(campaign_id):
     NOTE: Question changes only affect NEW invitations.
     Existing invitations keep their questions_snapshot.
     """
+    try:
+        uuid.UUID(campaign_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Request body must be JSON"}), 400
@@ -387,6 +398,11 @@ def invite_candidate(campaign_id):
     Creates a candidate record with a unique invite_token.
     Sends invitation email (and SMS if phone provided).
     """
+    try:
+        uuid.UUID(campaign_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Request body must be JSON"}), 400
@@ -571,6 +587,11 @@ def bulk_invite(campaign_id):
     Accepts array of {full_name, email, phone?}. Max 500 per request.
     Validates all, skips duplicates, sends emails asynchronously.
     """
+    try:
+        uuid.UUID(campaign_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
     import json
     import datetime
     import secrets
@@ -752,6 +773,11 @@ def send_reminders(campaign_id):
     Send reminder emails to candidates with status='invited' who
     haven't been reminded in the last 48 hours.
     """
+    try:
+        uuid.UUID(campaign_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
     import json
     import datetime
     import os
@@ -874,6 +900,11 @@ def duplicate_campaign(campaign_id):
     name 'Copy of [original name]' and copies all configuration
     fields. Candidates are NOT copied.
     """
+    try:
+        uuid.UUID(campaign_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
     import json
 
     # Verify campaign ownership
@@ -944,6 +975,11 @@ def export_campaign(campaign_id):
     Export all non-erased candidates for a campaign as a CSV file.
     Includes AI scores per question (content, communication, behavioral).
     """
+    try:
+        uuid.UUID(campaign_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
     import csv
     import io
     import json
