@@ -54,8 +54,11 @@
     "overview": "Overview",
     "dashboard": "Dashboard",
     "campaigns": "Campaigns",
+    "review": "Review",
     "insights": "Insights",
-    "settings": "Settings"
+    "manage": "Manage",
+    "settings": "Settings",
+    "compliance": "PDPL Compliance"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -191,7 +194,9 @@
     "questionCount": "{{count}} questions",
     "minQuestions": "Minimum 3 questions required",
     "maxQuestions": "Maximum 7 questions allowed",
-    "editWarning": "Question changes only apply to future invitations."
+    "editWarning": "Question changes only apply to future invitations.",
+    "exportCSV": "Export CSV",
+    "exportSuccess": "Export complete"
   },
   "candidate": {
     "score": "Score",
@@ -255,6 +260,35 @@
     "allCampaigns": "All Campaigns",
     "noData": "No data available for the selected filters",
     "conversionRate": "Percentages show step-to-step conversion"
+  },
+  "compliance": {
+    "title": "PDPL Compliance",
+    "subtitle": "Data protection, audit trail, and retention management",
+    "totalCandidates": "Total Candidates",
+    "erased": "Erased",
+    "consentRate": "Consent Rate",
+    "pendingErasure": "Pending Erasure",
+    "retentionPolicy": "Data Retention Policy",
+    "retentionDescription": "Set how long candidate data is retained before it must be erased under Saudi PDPL regulations. Candidates whose data exceeds the retention period will appear in the expiry report.",
+    "retentionMonths": "months",
+    "retentionTimeline": "Data Retention Timeline",
+    "noExpiringData": "No candidate data approaching expiry within 30 days.",
+    "auditLog": "Audit Log",
+    "exportCSV": "Export CSV",
+    "action": "Action",
+    "entityType": "Entity Type",
+    "ipAddress": "IP Address",
+    "noEntries": "No audit log entries found.",
+    "date": "Date",
+    "user": "User",
+    "name": "Name",
+    "campaignName": "Campaign",
+    "createdAt": "Created",
+    "daysUntilExpiry": "Days Until Expiry",
+    "expired": "Expired",
+    "clearFilters": "Clear filters",
+    "showing": "Showing",
+    "of": "of"
   },
   "interview": {
     "welcome": {

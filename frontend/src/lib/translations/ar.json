@@ -54,8 +54,11 @@
     "overview": "نظرة عامة",
     "dashboard": "لوحة التحكم",
     "campaigns": "الحملات",
+    "review": "المراجعة",
     "insights": "التحليلات",
-    "settings": "الإعدادات"
+    "manage": "الإدارة",
+    "settings": "الإعدادات",
+    "compliance": "الامتثال PDPL"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -191,7 +194,9 @@
     "questionCount": "{{count}} أسئلة",
     "minQuestions": "مطلوب ٣ أسئلة كحد أدنى",
     "maxQuestions": "٧ أسئلة كحد أقصى",
-    "editWarning": "تغييرات الأسئلة تنطبق فقط على الدعوات المستقبلية."
+    "editWarning": "تغييرات الأسئلة تنطبق فقط على الدعوات المستقبلية.",
+    "exportCSV": "تصدير CSV",
+    "exportSuccess": "تم التصدير"
   },
   "candidate": {
     "score": "الدرجة",
@@ -255,6 +260,35 @@
     "allCampaigns": "جميع الحملات",
     "noData": "لا توجد بيانات للفلاتر المحددة",
     "conversionRate": "النسب تُظهر التحويل بين كل مرحلة"
+  },
+  "compliance": {
+    "title": "الامتثال لنظام حماية البيانات",
+    "subtitle": "حماية البيانات، سجل المراجعة، وإدارة الاحتفاظ",
+    "totalCandidates": "إجمالي المرشحين",
+    "erased": "تم المسح",
+    "consentRate": "معدل الموافقة",
+    "pendingErasure": "بانتظار المسح",
+    "retentionPolicy": "سياسة الاحتفاظ بالبيانات",
+    "retentionDescription": "حدد مدة الاحتفاظ ببيانات المرشحين قبل أن يتوجب مسحها بموجب نظام حماية البيانات الشخصية السعودي. المرشحون الذين تتجاوز بياناتهم فترة الاحتفاظ سيظهرون في تقرير انتهاء الصلاحية.",
+    "retentionMonths": "أشهر",
+    "retentionTimeline": "جدول الاحتفاظ بالبيانات",
+    "noExpiringData": "لا توجد بيانات مرشحين تقترب من انتهاء الصلاحية خلال 30 يوماً.",
+    "auditLog": "سجل المراجعة",
+    "exportCSV": "تصدير CSV",
+    "action": "الإجراء",
+    "entityType": "نوع الكيان",
+    "ipAddress": "عنوان IP",
+    "noEntries": "لا توجد إدخالات في سجل المراجعة.",
+    "date": "التاريخ",
+    "user": "المستخدم",
+    "name": "الاسم",
+    "campaignName": "الحملة",
+    "createdAt": "تاريخ الإنشاء",
+    "daysUntilExpiry": "أيام حتى انتهاء الصلاحية",
+    "expired": "منتهي الصلاحية",
+    "clearFilters": "مسح الفلاتر",
+    "showing": "عرض",
+    "of": "من"
   },
   "interview": {
     "welcome": {

@@ -145,6 +145,7 @@ def create_app() -> Flask:
     from api.reviews import reviews_bp
     from api.templates import templates_bp
     from api.insights import insights_bp
+    from api.compliance import compliance_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(campaigns_bp, url_prefix="/api/campaigns")
@@ -154,6 +155,7 @@ def create_app() -> Flask:
     app.register_blueprint(reviews_bp, url_prefix="/api/reviews")
     app.register_blueprint(templates_bp, url_prefix="/api")
     app.register_blueprint(insights_bp, url_prefix="/api/insights")
+    app.register_blueprint(compliance_bp, url_prefix="/api/compliance")
 
     # ──────────────────────────────────────────────────────────
     # Health Check

@@ -70,6 +70,10 @@ MIGRATIONS = [
            'en', TRUE
     WHERE NOT EXISTS (SELECT 1 FROM campaign_templates WHERE is_system = TRUE AND name = 'Customer Service');
     """,
+    # ── Phase 1, Feature 7: PDPL Compliance Dashboard ──
+    """
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS retention_months INTEGER DEFAULT 12;
+    """,
 ]
 
 

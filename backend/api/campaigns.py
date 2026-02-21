@@ -920,3 +920,171 @@ def duplicate_campaign(campaign_id):
         "message": "Campaign duplicated successfully",
         "campaign": _format_campaign(row),
     }), 201
+
+
+# ──────────────────────────────────────────────────────────────
+# GET /api/campaigns/:id/export
+# Export campaign candidates as CSV
+# ──────────────────────────────────────────────────────────────
+
+@campaigns_bp.route("/<campaign_id>/export", methods=["GET"])
+@require_auth
+def export_campaign(campaign_id):
+    """
+    Export all non-erased candidates for a campaign as a CSV file.
+    Includes AI scores per question (content, communication, behavioral).
+    """
+    import csv
+    import io
+    import json
+    from flask import Response
+
+    # Verify campaign ownership
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name, questions
+                    FROM campaigns
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (campaign_id, g.current_user["id"]),
+                )
+                campaign = cur.fetchone()
+    except Exception as e:
+        logger.error("Export campaign lookup error: %s", str(e))
+        return jsonify({"error": "Failed to verify campaign"}), 500
+
+    if not campaign:
+        return jsonify({"error": "Campaign not found"}), 404
+
+    campaign_name = campaign[1]
+    questions = campaign[2]
+    if isinstance(questions, str):
+        questions = json.loads(questions)
+    num_questions = len(questions)
+
+    # Query all non-erased candidates with per-question AI scores
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT
+                        c.full_name,
+                        c.email,
+                        c.phone,
+                        c.status,
+                        c.overall_score,
+                        c.tier,
+                        c.hr_decision,
+                        c.hr_decision_note,
+                        c.reference_id,
+                        c.created_at,
+                        va.question_index,
+                        ais.content_score,
+                        ais.communication_score,
+                        ais.behavioral_score
+                    FROM candidates c
+                    LEFT JOIN video_answers va ON va.candidate_id = c.id
+                    LEFT JOIN ai_scores ais ON ais.video_answer_id = va.id
+                    WHERE c.campaign_id = %s AND c.status != 'erased'
+                    ORDER BY c.created_at, c.id, va.question_index
+                    """,
+                    (campaign_id,),
+                )
+                rows = cur.fetchall()
+    except Exception as e:
+        logger.error("Export campaign query error: %s", str(e))
+        return jsonify({"error": "Failed to export candidates"}), 500
+
+    # Group rows by candidate (each candidate may have multiple question rows)
+    candidates_map = {}
+    for row in rows:
+        full_name = row[0]
+        email = row[1]
+        phone = row[2]
+        status = row[3]
+        overall_score = row[4]
+        tier = row[5]
+        hr_decision = row[6]
+        hr_decision_note = row[7]
+        reference_id = row[8]
+        submitted_at = row[9]
+        question_index = row[10]
+        content_score = row[11]
+        communication_score = row[12]
+        behavioral_score = row[13]
+
+        key = (reference_id or email)
+        if key not in candidates_map:
+            candidates_map[key] = {
+                "full_name": full_name,
+                "email": email,
+                "phone": phone or "",
+                "status": status,
+                "overall_score": str(overall_score) if overall_score is not None else "",
+                "tier": tier or "",
+                "hr_decision": hr_decision or "",
+                "hr_decision_note": hr_decision_note or "",
+                "reference_id": reference_id or "",
+                "submitted_at": submitted_at.isoformat() if submitted_at else "",
+                "question_scores": {},
+            }
+
+        if question_index is not None:
+            candidates_map[key]["question_scores"][question_index] = {
+                "content": str(content_score) if content_score is not None else "",
+                "communication": str(communication_score) if communication_score is not None else "",
+                "behavioral": str(behavioral_score) if behavioral_score is not None else "",
+            }
+
+    # Build CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header row
+    header = [
+        "Full Name", "Email", "Phone", "Status", "Overall Score",
+        "Tier", "HR Decision", "Decision Note", "Reference ID", "Submitted At",
+    ]
+    for i in range(num_questions):
+        header.extend([
+            f"Q{i+1} Content", f"Q{i+1} Communication", f"Q{i+1} Behavioral",
+        ])
+    writer.writerow(header)
+
+    # Data rows
+    for cand in candidates_map.values():
+        row = [
+            cand["full_name"],
+            cand["email"],
+            cand["phone"],
+            cand["status"],
+            cand["overall_score"],
+            cand["tier"],
+            cand["hr_decision"],
+            cand["hr_decision_note"],
+            cand["reference_id"],
+            cand["submitted_at"],
+        ]
+        for i in range(num_questions):
+            q_scores = cand["question_scores"].get(i, {})
+            row.extend([
+                q_scores.get("content", ""),
+                q_scores.get("communication", ""),
+                q_scores.get("behavioral", ""),
+            ])
+        writer.writerow(row)
+
+    csv_content = output.getvalue()
+    output.close()
+
+    return Response(
+        csv_content,
+        mimetype="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="{campaign_name}-candidates.csv"',
+        },
+    )
