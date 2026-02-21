@@ -144,6 +144,26 @@ def create_comment(candidate_id):
         logger.error("Create comment error: %s", str(e))
         return jsonify({"error": "Failed to create comment"}), 500
 
+    # In-app notification to campaign owner (if comment by team member)
+    from services.notification_service import notify_campaign_owner
+    notify_campaign_owner(
+        candidate_id=candidate_id,
+        notification_type="comment",
+        title="New comment",
+        message=f'{g.current_user["full_name"]} commented on a candidate.',
+        exclude_user_id=g.current_user["id"],
+        metadata={"comment_id": comment_id},
+    )
+
+    # Process @mentions and notify mentioned users
+    from services.mention_service import process_mentions
+    process_mentions(
+        content=content,
+        candidate_id=candidate_id,
+        author_id=g.current_user["id"],
+        author_name=g.current_user["full_name"],
+    )
+
     return jsonify({
         "message": "Comment created",
         "comment": {

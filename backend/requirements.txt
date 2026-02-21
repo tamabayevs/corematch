@@ -53,5 +53,8 @@ httpx==0.27.0
 # Security - Input validation
 email-validator==2.2.0
 
+# PDF Generation
+fpdf2>=2.7.0
+
 # WSGI server for production
 gunicorn==22.0.0

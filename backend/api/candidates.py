@@ -333,6 +333,18 @@ def update_decision(candidate_id):
         logger.error("Update decision DB error: %s", str(e))
         return jsonify({"error": "Failed to update decision"}), 500
 
+    # In-app notification to campaign owner (if decision made by a team member)
+    from services.notification_service import notify_campaign_owner
+    decision_label = decision or "cleared"
+    notify_campaign_owner(
+        candidate_id=candidate_id,
+        notification_type="decision",
+        title=f"Candidate {decision_label}",
+        message=f"A candidate has been {decision_label}.",
+        exclude_user_id=g.current_user["id"],
+        metadata={"decision": decision},
+    )
+
     return jsonify({
         "message": "Decision updated",
         "decision": decision,

@@ -198,6 +198,32 @@ def create_assignments(campaign_id):
         logger.error("Create assignments error: %s", str(e))
         return jsonify({"error": "Failed to create assignments"}), 500
 
+    # In-app notifications to assigned reviewers
+    if created_count > 0:
+        from services.notification_service import notify_user
+        if mode == "round_robin":
+            # Notify each reviewer
+            for rid in data.get("reviewer_ids", []):
+                notify_user(
+                    user_id=rid,
+                    notification_type="assignment",
+                    title="New review assignment",
+                    message="You have been assigned candidates to review.",
+                    entity_type="campaign",
+                    entity_id=campaign_id,
+                )
+        else:
+            reviewer_id = data.get("reviewer_id")
+            if reviewer_id:
+                notify_user(
+                    user_id=reviewer_id,
+                    notification_type="assignment",
+                    title="New review assignment",
+                    message=f"You have been assigned {created_count} candidate(s) to review.",
+                    entity_type="campaign",
+                    entity_id=campaign_id,
+                )
+
     return jsonify({
         "message": f"Created {created_count} assignment(s)",
         "created": created_count,

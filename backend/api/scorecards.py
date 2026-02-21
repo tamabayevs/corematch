@@ -241,6 +241,17 @@ def submit_evaluation(candidate_id):
         logger.error("Submit evaluation error: %s", str(e))
         return jsonify({"error": "Failed to submit evaluation"}), 500
 
+    # In-app notification to campaign owner
+    from services.notification_service import notify_campaign_owner
+    notify_campaign_owner(
+        candidate_id=candidate_id,
+        notification_type="evaluation",
+        title="New scorecard evaluation",
+        message=f'{g.current_user["full_name"]} submitted an evaluation.',
+        exclude_user_id=g.current_user["id"],
+        metadata={"evaluation_id": eval_id, "overall_rating": overall_rating},
+    )
+
     return jsonify({"message": "Evaluation submitted", "evaluation_id": eval_id}), 201
 
 

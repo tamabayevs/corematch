@@ -324,6 +324,16 @@ def process_candidate(candidate_id: str) -> dict:
     except Exception as e:
         logger.error("Failed to write audit log: %s", str(e))
 
+    # ── Step 7: In-app notification to campaign owner ──
+    from services.notification_service import notify_campaign_owner
+    notify_campaign_owner(
+        candidate_id=candidate_id,
+        notification_type="scoring",
+        title="AI scoring complete",
+        message=f"AI scoring complete for {candidate_name}. Score: {overall_score}, Tier: {tier}.",
+        metadata={"overall_score": overall_score, "tier": tier},
+    )
+
     summary = {
         "candidate_id": candidate_id,
         "processed": processed_count,

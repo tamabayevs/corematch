@@ -426,6 +426,11 @@ MIGRATIONS = [
     CREATE UNIQUE INDEX IF NOT EXISTS idx_review_assignments_unique
         ON review_assignments(campaign_id, reviewer_id, candidate_id);
     """,
+    # ── v1.1: Full-text search index on video_answers transcript ──
+    """
+    CREATE INDEX IF NOT EXISTS idx_video_answers_transcript_fts
+        ON video_answers USING GIN (to_tsvector('english', COALESCE(transcript, '')));
+    """,
 ]
 
 

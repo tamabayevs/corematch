@@ -82,9 +82,16 @@ def search_candidates():
         conditions.append("c.hr_decision IS NULL")
 
     if search:
-        conditions.append("(c.full_name ILIKE %s OR c.email ILIKE %s)")
+        conditions.append("""
+            (c.full_name ILIKE %s OR c.email ILIKE %s
+             OR c.id IN (
+                SELECT DISTINCT va.candidate_id FROM video_answers va
+                WHERE to_tsvector('english', COALESCE(va.transcript, ''))
+                      @@ plainto_tsquery('english', %s)
+             ))
+        """)
         like_pattern = f"%{search}%"
-        params.extend([like_pattern, like_pattern])
+        params.extend([like_pattern, like_pattern, search])
 
     if date_from:
         conditions.append("c.created_at >= %s")

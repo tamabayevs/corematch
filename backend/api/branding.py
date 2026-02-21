@@ -150,6 +150,128 @@ def update_branding():
 # GET /api/public/branding/:campaign_id — public endpoint (no auth)
 # ──────────────────────────────────────────────────────────────
 
+# ──────────────────────────────────────────────────────────────
+# POST /api/branding/logo — upload company logo
+# ──────────────────────────────────────────────────────────────
+
+@branding_bp.route("/logo", methods=["POST"])
+@require_auth
+def upload_logo():
+    """
+    Upload a company logo image file.
+    Accepts PNG, JPEG, SVG. Max 2MB.
+    Stores via storage service and updates company_branding.logo_url.
+    """
+    import uuid as uuid_mod
+
+    if "logo" not in request.files:
+        return jsonify({"error": "Logo file is required"}), 400
+
+    file = request.files["logo"]
+    content_type = file.content_type or ""
+
+    allowed_types = {
+        "image/png": "png",
+        "image/jpeg": "jpg",
+        "image/jpg": "jpg",
+        "image/svg+xml": "svg",
+    }
+    if content_type not in allowed_types:
+        return jsonify({"error": "Invalid file type. Only PNG, JPEG, and SVG are accepted"}), 400
+
+    file_data = file.read()
+    max_size = 2 * 1024 * 1024  # 2MB
+    if len(file_data) > max_size:
+        return jsonify({"error": "File too large. Maximum size is 2MB"}), 413
+    if len(file_data) == 0:
+        return jsonify({"error": "File is empty"}), 400
+
+    ext = allowed_types[content_type]
+    storage_key = f"logos/{g.current_user['id']}/{uuid_mod.uuid4()}.{ext}"
+
+    try:
+        import io
+        from services.storage_service import get_storage_service
+        storage = get_storage_service()
+        file_obj = io.BytesIO(file_data)
+        logo_url = storage.upload_file(file_obj, storage_key, content_type=content_type)
+    except Exception as e:
+        logger.error("Logo upload storage error: %s", str(e))
+        return jsonify({"error": "Failed to store logo"}), 500
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO company_branding (user_id, logo_url)
+                    VALUES (%s, %s)
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET logo_url = EXCLUDED.logo_url, updated_at = NOW()
+                    """,
+                    (g.current_user["id"], logo_url),
+                )
+
+                # Audit log
+                cur.execute(
+                    """
+                    INSERT INTO audit_log (user_id, action, entity_type, entity_id, metadata, ip_address)
+                    VALUES (%s, %s, %s, %s, %s::jsonb, %s)
+                    """,
+                    (
+                        g.current_user["id"], "branding.logo_uploaded", "company_branding",
+                        None, json.dumps({"storage_key": storage_key}),
+                        request.remote_addr,
+                    ),
+                )
+    except Exception as e:
+        logger.error("Logo upload DB error: %s", str(e))
+        return jsonify({"error": "Failed to save logo URL"}), 500
+
+    return jsonify({"message": "Logo uploaded", "logo_url": logo_url}), 201
+
+
+# ──────────────────────────────────────────────────────────────
+# DELETE /api/branding/logo — remove company logo
+# ──────────────────────────────────────────────────────────────
+
+@branding_bp.route("/logo", methods=["DELETE"])
+@require_auth
+def delete_logo():
+    """Remove the company logo."""
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE company_branding SET logo_url = NULL, updated_at = NOW() WHERE user_id = %s",
+                    (g.current_user["id"],),
+                )
+                if cur.rowcount == 0:
+                    return jsonify({"error": "No branding found"}), 404
+
+                # Audit log
+                cur.execute(
+                    """
+                    INSERT INTO audit_log (user_id, action, entity_type, entity_id, metadata, ip_address)
+                    VALUES (%s, %s, %s, %s, %s::jsonb, %s)
+                    """,
+                    (
+                        g.current_user["id"], "branding.logo_removed", "company_branding",
+                        None, json.dumps({}),
+                        request.remote_addr,
+                    ),
+                )
+    except Exception as e:
+        logger.error("Delete logo error: %s", str(e))
+        return jsonify({"error": "Failed to remove logo"}), 500
+
+    return jsonify({"message": "Logo removed"})
+
+
+# ──────────────────────────────────────────────────────────────
+# GET /api/public/branding/:campaign_id — public endpoint (no auth)
+# ──────────────────────────────────────────────────────────────
+
 @branding_bp.route("/public/<campaign_id>", methods=["GET"])
 def get_public_branding(campaign_id):
     """

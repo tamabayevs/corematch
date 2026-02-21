@@ -343,6 +343,15 @@ def _submit_for_processing(candidate_id: str) -> None:
     )
     logger.info("Enqueued AI processing job %s for candidate %s", job.id, candidate_id)
 
+    # In-app notification to campaign owner
+    from services.notification_service import notify_campaign_owner
+    notify_campaign_owner(
+        candidate_id=candidate_id,
+        notification_type="submission",
+        title="New interview submission",
+        message="A candidate has submitted their video interview.",
+    )
+
 
 # ──────────────────────────────────────────────────────────────
 # GET /api/public/status/:token

@@ -1,10 +1,10 @@
-# CoreMatch — Project Guide (v1.0)
+# CoreMatch — Project Guide (v1.1)
 
 ## What is this?
 AI-powered video interview platform for MENA HR teams. Candidates record async video answers; AI scores them; HR reviews and decides.
 
-**Version:** 1.0 (tagged 2026-02-21)
-**Status:** All 26 features built, tested, hardened, and deployed. 105 backend tests passing. 85/85 network stress tests passing.
+**Version:** 1.1 (2026-02-21)
+**Status:** All 26 features fully wired end-to-end. v1.1 fixes 6 gaps found in v1.0 audit: notification service, logo upload, full-text transcript search, @mentions, PDF export. 105 backend tests passing. 85/85 network stress tests passing.
 
 ## Tech Stack
 - **Backend:** Flask 3.0 + PostgreSQL 15 + Redis/RQ + Groq API (Python 3.9)
@@ -22,7 +22,8 @@ backend/
   database/      # schema.py (raw SQL), connection.py (pool), migrations.py (incremental)
   ai/            # scorer.py (Groq Whisper + LLM scoring)
   workers/       # video_processor.py (RQ background jobs)
-  services/      # email (SES), sms (Twilio), storage (R2/local), scheduling (MENA weekend)
+  services/      # email (SES), sms (Twilio), storage (R2/local), scheduling (MENA weekend),
+                 # notification_service (in-app notifications), mention_service (@mentions)
   tests/         # pytest suite — 105 tests across 6 test files
 
 frontend/
@@ -146,9 +147,17 @@ SETTINGS
 - ✅ UUID validation on all campaign/candidate route handlers
 - ✅ 85/85 network stress tests passing (including concurrent + sequential burst)
 
-## Stress Test Summary (v1.0)
+### v1.1 Gap Fixes ✅
+- ✅ Notification service (`services/notification_service.py`) — wired into 7 event points (submission, AI scoring, decision, comment, assignment, DSR, evaluation)
+- ✅ Logo upload (`POST /api/branding/logo`) — file upload via storage service, PNG/JPEG/SVG, 2MB max
+- ✅ Full-text transcript search — GIN index on `video_answers.transcript`, wired into talent pool search
+- ✅ @mentions in comments (`services/mention_service.py`) — parses @patterns, resolves team members, creates notifications
+- ✅ PDF export (`GET /api/reports/export/pdf`) — executive report with KPIs, tier distribution, top campaigns via fpdf2
+- ✅ Migration 14: FTS index on video_answers transcript
+
+## Stress Test Summary (v1.1)
 - **85/85 tests passing** — auth, dashboard, campaigns, candidates, reviews, assignments, insights, reports, templates, scorecards, compliance, DSR, branding, team, integrations, talent pool, saudization, public endpoints, error handling, concurrent stress, sequential burst
 - **Avg response time:** ~350ms
 - **Concurrent (10x):** 100% success rate across 8 endpoints
-- **Sequential burst (50x):** 50/50 OK, avg 391ms
+- **Sequential burst (50x):** 50/50 OK, avg 420ms
 - **Zero 500 errors**, zero timeouts, zero slow responses

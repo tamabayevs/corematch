@@ -192,6 +192,18 @@ def create_request():
         logger.error("Create DSR error: %s", str(e))
         return jsonify({"error": "Failed to create data subject request"}), 500
 
+    # In-app notification to the user who created the DSR (confirmation)
+    from services.notification_service import notify_user
+    notify_user(
+        user_id=g.current_user["id"],
+        notification_type="dsr",
+        title="Data subject request created",
+        message=f"New {request_type} request from {requester_name}. Due in 30 days.",
+        entity_type="data_subject_request",
+        entity_id=dsr_id,
+        metadata={"request_type": request_type, "requester_email": requester_email},
+    )
+
     return jsonify({
         "message": "Data subject request created",
         "request": {
