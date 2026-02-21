@@ -155,6 +155,12 @@ def create_app() -> Flask:
     from api.branding import branding_bp
     from api.dsr import dsr_bp
     from api.candidate_portal import candidate_portal_bp
+    # Phase 3 blueprints
+    from api.calibration import calibration_bp
+    from api.notification_templates import notification_templates_bp
+    from api.integrations import integrations_bp
+    from api.reports import reports_bp
+    from api.saudization import saudization_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(campaigns_bp, url_prefix="/api/campaigns")
@@ -174,6 +180,12 @@ def create_app() -> Flask:
     app.register_blueprint(branding_bp, url_prefix="/api/branding")
     app.register_blueprint(dsr_bp, url_prefix="/api/dsr")
     app.register_blueprint(candidate_portal_bp, url_prefix="/api/public")
+    # Phase 3 blueprints
+    app.register_blueprint(calibration_bp, url_prefix="/api/calibration")
+    app.register_blueprint(notification_templates_bp, url_prefix="/api/notification-templates")
+    app.register_blueprint(integrations_bp, url_prefix="/api/integrations")
+    app.register_blueprint(reports_bp, url_prefix="/api/reports")
+    app.register_blueprint(saudization_bp, url_prefix="/api/saudization")
 
     # ──────────────────────────────────────────────────────────
     # Health Check

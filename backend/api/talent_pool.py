@@ -299,3 +299,52 @@ def delete_saved_search(search_id):
         return jsonify({"error": "Failed to delete saved search"}), 500
 
     return jsonify({"message": "Saved search deleted"})
+
+
+# ──────────────────────────────────────────────────────────────
+# PUT /api/talent-pool/saved-searches/:id/auto-notify — toggle auto-notify
+# ──────────────────────────────────────────────────────────────
+
+@talent_pool_bp.route("/saved-searches/<search_id>/auto-notify", methods=["PUT"])
+@require_auth
+def toggle_auto_notify(search_id):
+    """Enable or disable auto-notification for a saved search."""
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Request body must be JSON"}), 400
+
+    auto_notify = bool(data.get("auto_notify", False))
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE saved_searches SET auto_notify = %s
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (auto_notify, search_id, g.current_user["id"]),
+                )
+                if cur.rowcount == 0:
+                    return jsonify({"error": "Saved search not found"}), 404
+
+                # Audit log
+                cur.execute(
+                    """
+                    INSERT INTO audit_log (user_id, action, entity_type, entity_id, metadata, ip_address)
+                    VALUES (%s, %s, %s, %s, %s::jsonb, %s)
+                    """,
+                    (
+                        g.current_user["id"], "talent_pool.auto_notify_toggled", "saved_search",
+                        search_id, json.dumps({"auto_notify": auto_notify}),
+                        request.remote_addr,
+                    ),
+                )
+    except Exception as e:
+        logger.error("Toggle auto-notify error: %s", str(e))
+        return jsonify({"error": "Failed to update auto-notify"}), 500
+
+    return jsonify({
+        "message": "Auto-notify " + ("enabled" if auto_notify else "disabled"),
+        "auto_notify": auto_notify,
+    })

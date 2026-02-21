@@ -273,6 +273,112 @@ MIGRATIONS = [
     ALTER TABLE users ADD COLUMN IF NOT EXISTS calendar_preference VARCHAR(10) DEFAULT 'gregorian';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
     """,
+    # ── Phase 3: Fix notifications table + new tables ──
+    """
+    -- Fix notifications table: add read_at and metadata columns
+    ALTER TABLE notifications ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+    ALTER TABLE notifications ADD COLUMN IF NOT EXISTS metadata JSONB;
+
+    -- Notification templates (customizable email/WhatsApp templates)
+    CREATE TABLE IF NOT EXISTS notification_templates (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
+        name            VARCHAR(300) NOT NULL,
+        type            VARCHAR(20) NOT NULL CHECK (type IN ('email', 'whatsapp', 'both')),
+        subject         VARCHAR(500),
+        body            TEXT NOT NULL,
+        variables       JSONB DEFAULT '[]'::jsonb,
+        is_system       BOOLEAN DEFAULT FALSE,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_notification_templates_user ON notification_templates(user_id);
+
+    DROP TRIGGER IF EXISTS trg_update_notification_templates_updated_at ON notification_templates;
+    CREATE TRIGGER trg_update_notification_templates_updated_at
+    BEFORE UPDATE ON notification_templates
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Seed system notification templates
+    INSERT INTO notification_templates (name, type, subject, body, variables, is_system)
+    SELECT 'Interview Invitation', 'email',
+           'You are invited to a video interview for {{job_title}}',
+           'Hello {{candidate_name}},\n\nYou have been invited to complete a video interview for the position of {{job_title}} at {{company_name}}.\n\nPlease click the link below to begin:\n{{interview_link}}\n\nThis link will expire on {{expiry_date}}.\n\nBest regards,\n{{sender_name}}',
+           '["candidate_name","job_title","company_name","interview_link","expiry_date","sender_name"]'::jsonb,
+           TRUE
+    WHERE NOT EXISTS (SELECT 1 FROM notification_templates WHERE is_system = TRUE AND name = 'Interview Invitation');
+
+    INSERT INTO notification_templates (name, type, subject, body, variables, is_system)
+    SELECT 'Interview Reminder', 'email',
+           'Reminder: Complete your video interview for {{job_title}}',
+           'Hello {{candidate_name}},\n\nThis is a friendly reminder to complete your video interview for {{job_title}} at {{company_name}}.\n\nYour interview link: {{interview_link}}\nDeadline: {{expiry_date}}\n\nBest regards,\n{{sender_name}}',
+           '["candidate_name","job_title","company_name","interview_link","expiry_date","sender_name"]'::jsonb,
+           TRUE
+    WHERE NOT EXISTS (SELECT 1 FROM notification_templates WHERE is_system = TRUE AND name = 'Interview Reminder');
+
+    INSERT INTO notification_templates (name, type, subject, body, variables, is_system)
+    SELECT 'WhatsApp Invitation', 'whatsapp',
+           NULL,
+           'Hello {{candidate_name}}! You have been invited to a video interview for {{job_title}} at {{company_name}}. Click here to begin: {{interview_link}} (expires {{expiry_date}})',
+           '["candidate_name","job_title","company_name","interview_link","expiry_date"]'::jsonb,
+           TRUE
+    WHERE NOT EXISTS (SELECT 1 FROM notification_templates WHERE is_system = TRUE AND name = 'WhatsApp Invitation');
+
+    -- ATS integrations config
+    CREATE TABLE IF NOT EXISTS ats_integrations (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        provider        VARCHAR(50) NOT NULL CHECK (provider IN ('greenhouse', 'lever', 'other')),
+        api_key_encrypted VARCHAR(500),
+        webhook_url     VARCHAR(500),
+        is_active       BOOLEAN DEFAULT FALSE,
+        sync_direction  VARCHAR(20) DEFAULT 'export' CHECK (sync_direction IN ('import', 'export', 'bidirectional')),
+        last_synced_at  TIMESTAMPTZ,
+        settings        JSONB DEFAULT '{}'::jsonb,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_ats_integrations_user ON ats_integrations(user_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_ats_integrations_unique ON ats_integrations(user_id, provider);
+
+    DROP TRIGGER IF EXISTS trg_update_ats_integrations_updated_at ON ats_integrations;
+    CREATE TRIGGER trg_update_ats_integrations_updated_at
+    BEFORE UPDATE ON ats_integrations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    """,
+    # ── Phase 3: Saudization, practice questions, auto-notify ──
+    """
+    -- Saudization/Nitaqat tracking
+    CREATE TABLE IF NOT EXISTS saudization_quotas (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        category        VARCHAR(100) NOT NULL,
+        target_percentage NUMERIC(5,2) NOT NULL DEFAULT 0,
+        notes           TEXT,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_saudization_quotas_user ON saudization_quotas(user_id);
+
+    DROP TRIGGER IF EXISTS trg_update_saudization_quotas_updated_at ON saudization_quotas;
+    CREATE TRIGGER trg_update_saudization_quotas_updated_at
+    BEFORE UPDATE ON saudization_quotas
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Add nationality tracking to candidates
+    ALTER TABLE candidates ADD COLUMN IF NOT EXISTS nationality VARCHAR(100);
+
+    -- Add practice question support to campaigns
+    ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS practice_question_text TEXT;
+    ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS practice_question_enabled BOOLEAN DEFAULT FALSE;
+
+    -- Add auto-notify to saved searches
+    ALTER TABLE saved_searches ADD COLUMN IF NOT EXISTS auto_notify BOOLEAN DEFAULT FALSE;
+    ALTER TABLE saved_searches ADD COLUMN IF NOT EXISTS last_notified_at TIMESTAMPTZ;
+
+    -- Add updated_at to saved_searches for consistency
+    ALTER TABLE saved_searches ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+    """,
 ]
 
 

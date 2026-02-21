@@ -30,6 +30,13 @@ import DSRPage from "./pages/dashboard/DSRPage";
 import BrandingPage from "./pages/dashboard/BrandingPage";
 import DropoffPage from "./pages/dashboard/DropoffPage";
 
+// Phase 3 dashboard pages
+import CalibrationPage from "./pages/dashboard/CalibrationPage";
+import NotificationTemplatesPage from "./pages/dashboard/NotificationTemplatesPage";
+import IntegrationsPage from "./pages/dashboard/IntegrationsPage";
+import ReportsPage from "./pages/dashboard/ReportsPage";
+import SaudizationPage from "./pages/dashboard/SaudizationPage";
+
 // Candidate interview pages
 import WelcomePage from "./pages/candidate/WelcomePage";
 import ConsentPage from "./pages/candidate/ConsentPage";
@@ -77,6 +84,12 @@ export default function App() {
         <Route path="assignments" element={<AssignmentsPage />} />
         <Route path="dsr" element={<DSRPage />} />
         <Route path="branding" element={<BrandingPage />} />
+        {/* Phase 3 routes */}
+        <Route path="calibration" element={<CalibrationPage />} />
+        <Route path="notification-templates" element={<NotificationTemplatesPage />} />
+        <Route path="integrations" element={<IntegrationsPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="saudization" element={<SaudizationPage />} />
       </Route>
 
       {/* Candidate interview routes */}

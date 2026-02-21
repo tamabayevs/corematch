@@ -5,7 +5,7 @@ import LanguageToggle from "../ui/LanguageToggle";
 import clsx from "clsx";
 
 /*
- * Sidebar structure (Phase 2 complete):
+ * Sidebar structure (Phase 3 complete):
  *
  * OVERVIEW
  *   Dashboard
@@ -13,18 +13,23 @@ import clsx from "clsx";
  * REVIEW
  *   Video Reviews    (with badge count)
  *   Assignments
+ *   Calibration
  *   Insights
+ *   Reports
  *   Drop-off Analysis
  *
  * MANAGE
  *   Templates
+ *   Notification Templates
  *   Scorecards
  *   Talent Pool
  *   Team
+ *   Saudization
  *
  * SETTINGS
  *   Settings
  *   Branding
+ *   Integrations
  *   PDPL Compliance
  *   Data Requests
  */
@@ -41,7 +46,9 @@ const navSections = [
     items: [
       { path: "/dashboard/reviews", label: "review.queue", icon: ReviewsIcon },
       { path: "/dashboard/assignments", label: "nav.assignments", icon: AssignmentsIcon },
+      { path: "/dashboard/calibration", label: "nav.calibration", icon: CalibrationIcon },
       { path: "/dashboard/insights", label: "nav.insights", icon: InsightsIcon },
+      { path: "/dashboard/reports", label: "nav.reports", icon: ReportsIcon },
       { path: "/dashboard/dropoff", label: "nav.dropoff", icon: DropoffIcon },
     ],
   },
@@ -49,9 +56,11 @@ const navSections = [
     label: "nav.manage",
     items: [
       { path: "/dashboard/templates", label: "template.library", icon: TemplatesIcon },
+      { path: "/dashboard/notification-templates", label: "nav.notifTemplates", icon: NotifTemplatesIcon },
       { path: "/dashboard/scorecards", label: "nav.scorecards", icon: ScorecardsIcon },
       { path: "/dashboard/talent-pool", label: "nav.talentPool", icon: TalentPoolIcon },
       { path: "/dashboard/team", label: "nav.team", icon: TeamIcon },
+      { path: "/dashboard/saudization", label: "nav.saudization", icon: SaudizationIcon },
     ],
   },
   {
@@ -59,6 +68,7 @@ const navSections = [
     items: [
       { path: "/dashboard/settings", label: "nav.settings", icon: SettingsIcon },
       { path: "/dashboard/branding", label: "nav.branding", icon: BrandingIcon },
+      { path: "/dashboard/integrations", label: "nav.integrations", icon: IntegrationsIcon },
       { path: "/dashboard/compliance", label: "nav.compliance", icon: ComplianceIcon },
       { path: "/dashboard/dsr", label: "nav.dsr", icon: DSRIcon },
     ],
@@ -254,6 +264,48 @@ function DSRIcon({ className }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
+// ── Phase 3 Icons ─────────────────────────────────────────────
+
+function CalibrationIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+    </svg>
+  );
+}
+
+function ReportsIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
+function NotifTemplatesIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+function IntegrationsIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+    </svg>
+  );
+}
+
+function SaudizationIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
     </svg>
   );
 }
