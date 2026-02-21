@@ -426,3 +426,44 @@ def erase_candidate(candidate_id):
         return jsonify({"error": "Failed to erase candidate"}), 500
 
     return jsonify({"message": "Candidate data erased successfully"})
+
+
+# ──────────────────────────────────────────────────────────────
+# PUT /api/candidates/:id/reviewed
+# Mark a candidate as reviewed
+# ──────────────────────────────────────────────────────────────
+
+@candidates_bp.route("/<candidate_id>/reviewed", methods=["PUT"])
+@require_auth
+def mark_reviewed(candidate_id):
+    """Mark a candidate as reviewed by the current user."""
+    import datetime
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Verify ownership
+                cur.execute(
+                    """
+                    SELECT c.id FROM candidates c
+                    JOIN campaigns camp ON c.campaign_id = camp.id
+                    WHERE c.id = %s AND camp.user_id = %s
+                    """,
+                    (candidate_id, g.current_user["id"]),
+                )
+                if not cur.fetchone():
+                    return jsonify({"error": "Candidate not found"}), 404
+
+                cur.execute(
+                    """
+                    UPDATE candidates
+                    SET reviewed_at = %s, reviewed_by = %s
+                    WHERE id = %s
+                    """,
+                    (datetime.datetime.utcnow(), g.current_user["id"], candidate_id),
+                )
+    except Exception as e:
+        logger.error("Mark reviewed DB error: %s", str(e))
+        return jsonify({"error": "Failed to mark as reviewed"}), 500
+
+    return jsonify({"message": "Candidate marked as reviewed"})

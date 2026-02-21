@@ -99,6 +99,33 @@
       "campaignCreated": "تم إنشاء حملة"
     }
   },
+  "review": {
+    "queue": "مراجعة الفيديو",
+    "toReview": "بانتظار المراجعة",
+    "reviewed": "تمت المراجعة",
+    "unreviewed": "لم تتم المراجعة",
+    "startSession": "بدء جلسة المراجعة",
+    "noSubmissions": "لا توجد طلبات بعد",
+    "noSubmissionsDesc": "سيظهر المرشحون هنا بعد إرسال مقابلاتهم بالفيديو.",
+    "submittedAt": "تاريخ الإرسال",
+    "allCampaigns": "جميع الحملات",
+    "reviewingOf": "مراجعة {{current}} من {{total}}",
+    "aiSummary": "ملخص الذكاء الاصطناعي",
+    "playbackSpeed": "السرعة",
+    "shortcuts": "اختصارات لوحة المفاتيح",
+    "shortcutPlay": "تشغيل / إيقاف",
+    "shortcutSeek": "تقديم / ترجيع ١٠ ثوانٍ",
+    "shortcutSpeed": "تعيين سرعة التشغيل",
+    "shortcutShortlist": "قائمة قصيرة",
+    "shortcutHold": "قيد الانتظار",
+    "shortcutReject": "رفض",
+    "shortcutNext": "المرشح التالي",
+    "nextCandidate": "المرشح التالي",
+    "saveDecision": "حفظ القرار",
+    "decisionSaved": "تم حفظ القرار",
+    "markReviewed": "تعيين كمُراجَع",
+    "totalSubmissions": "إجمالي الطلبات"
+  },
   "bulkInvite": {
     "title": "دعوة جماعية",
     "description": "قم برفع ملف CSV أو لصق بيانات المرشحين لدعوة عدة مرشحين دفعة واحدة.",

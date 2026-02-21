@@ -99,6 +99,33 @@
       "campaignCreated": "Created campaign"
     }
   },
+  "review": {
+    "queue": "Video Reviews",
+    "toReview": "to review",
+    "reviewed": "Reviewed",
+    "unreviewed": "Unreviewed",
+    "startSession": "Start Review Session",
+    "noSubmissions": "No submissions yet",
+    "noSubmissionsDesc": "Candidates will appear here once they submit their video interviews.",
+    "submittedAt": "Submitted",
+    "allCampaigns": "All Campaigns",
+    "reviewingOf": "Reviewing {{current}} of {{total}}",
+    "aiSummary": "AI Summary",
+    "playbackSpeed": "Speed",
+    "shortcuts": "Keyboard Shortcuts",
+    "shortcutPlay": "Play / Pause",
+    "shortcutSeek": "Seek ±10s",
+    "shortcutSpeed": "Set playback speed",
+    "shortcutShortlist": "Shortlist",
+    "shortcutHold": "Hold",
+    "shortcutReject": "Reject",
+    "shortcutNext": "Next candidate",
+    "nextCandidate": "Next Candidate",
+    "saveDecision": "Save Decision",
+    "decisionSaved": "Decision saved",
+    "markReviewed": "Mark as Reviewed",
+    "totalSubmissions": "Total Submissions"
+  },
   "bulkInvite": {
     "title": "Bulk Invite",
     "description": "Upload a CSV file or paste candidate data to invite multiple candidates at once.",
