@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { formatDate } from "../../lib/formatDate";
 
 const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, "")}/api`
@@ -100,7 +101,7 @@ export default function StatusPage() {
 
               {status.submitted_at && (
                 <p className="text-xs text-navy-400 text-center mt-4">
-                  Submitted: {new Date(status.submitted_at).toLocaleDateString()}
+                  Submitted: {formatDate(status.submitted_at)}
                 </p>
               )}
             </div>

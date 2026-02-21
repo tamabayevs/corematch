@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
+import { formatRelativeTime as sharedFormatRelativeTime } from "../../lib/formatDate";
 import { dashboardApi } from "../../api/dashboard";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
@@ -12,7 +13,7 @@ import clsx from "clsx";
 const STATUS_FILTERS = ["all", "active", "closed", "archived"];
 
 export default function DashboardPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [activities, setActivities] = useState([]);
@@ -317,7 +318,7 @@ function ActivityFeed({ activities, t }) {
               )}
             </p>
             <p className="text-xs text-navy-400">
-              {formatRelativeTime(activity.created_at)}
+              {sharedFormatRelativeTime(activity.created_at, locale)}
             </p>
           </div>
         </div>
@@ -379,18 +380,4 @@ function CampaignCard({ campaign, statusBadge, navigate, t }) {
 
 // ─── Helpers ───────────────────────────────────────────────────
 
-function formatRelativeTime(isoString) {
-  if (!isoString) return "";
-  const date = new Date(isoString);
-  const now = new Date();
-  const diffMs = now - date;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
-}
+// formatRelativeTime is now imported from lib/formatDate (locale-aware, Hijri support)

@@ -28,13 +28,15 @@ def test_app():
 
     from api.app import create_app
     from database.schema import create_tables
+    from database.migrations import run_migrations
 
     app = create_app()
     app.config["TESTING"] = True
 
-    # Create schema
+    # Create base schema + apply all migrations (Phase 2-3 tables)
     with app.app_context():
         create_tables()
+        run_migrations()
 
     yield app
 
@@ -56,11 +58,28 @@ def clean_db(test_app):
     with test_app.app_context():
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute("""
-                    TRUNCATE TABLE audit_log, ai_scores, video_answers,
-                    candidates, campaigns, password_reset_tokens, users
-                    CASCADE
-                """)
+                # Truncate all tables (Phase 1 + Phase 2 + Phase 3)
+                # Only include tables that exist in migrations
+                try:
+                    cur.execute("""
+                        TRUNCATE TABLE
+                            audit_log, ai_scores, video_answers,
+                            candidates, campaigns, password_reset_tokens, users,
+                            scorecard_templates, candidate_evaluations, team_members,
+                            candidate_comments, notifications, review_assignments,
+                            saved_searches, data_subject_requests, campaign_templates,
+                            notification_templates, ats_integrations, saudization_quotas,
+                            company_settings
+                        CASCADE
+                    """)
+                except Exception:
+                    # Fall back to Phase 1 tables if Phase 2-3 tables don't exist
+                    conn.rollback()
+                    cur.execute("""
+                        TRUNCATE TABLE audit_log, ai_scores, video_answers,
+                        candidates, campaigns, password_reset_tokens, users
+                        CASCADE
+                    """)
     yield
 
 
@@ -129,6 +148,9 @@ def email_capture():
 
         def send_password_reset(self, **kwargs):
             self.sent.append({"type": "password_reset", **kwargs})
+
+        def send_team_invitation(self, **kwargs):
+            self.sent.append({"type": "team_invitation", **kwargs})
 
     capture = CapturingEmailService()
 

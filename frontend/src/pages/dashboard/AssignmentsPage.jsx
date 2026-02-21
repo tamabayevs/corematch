@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useI18n } from "../../lib/i18n";
+import { formatDate } from "../../lib/formatDate";
 import { useNavigate } from "react-router-dom";
 import { assignmentsApi } from "../../api/assignments";
 import { campaignsApi } from "../../api/campaigns";
@@ -7,7 +8,7 @@ import { campaignsApi } from "../../api/campaigns";
 const STATUS_FILTERS = ["all", "pending", "completed"];
 
 export default function AssignmentsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const navigate = useNavigate();
 
   const [myAssignments, setMyAssignments] = useState([]);
@@ -136,7 +137,7 @@ export default function AssignmentsPage() {
                   </div>
                   <p className="text-xs text-navy-500 mt-0.5">{a.campaign_name}</p>
                   {a.assigned_at && (
-                    <p className="text-xs text-navy-400 mt-0.5">{t("assignments.assignedOn")} {new Date(a.assigned_at).toLocaleDateString()}</p>
+                    <p className="text-xs text-navy-400 mt-0.5">{t("assignments.assignedOn")} {formatDate(a.assigned_at, locale)}</p>
                   )}
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -240,7 +241,7 @@ export default function AssignmentsPage() {
                             </span>
                           </td>
                           <td className="px-4 py-2.5 text-xs text-navy-400">
-                            {a.assigned_at ? new Date(a.assigned_at).toLocaleDateString() : "\u2014"}
+                            {a.assigned_at ? formatDate(a.assigned_at, locale) : "\u2014"}
                           </td>
                         </tr>
                       ))}

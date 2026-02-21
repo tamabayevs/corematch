@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useI18n } from "../../lib/i18n";
+import { formatDate } from "../../lib/formatDate";
 import reportsAPI from "../../api/reports";
 
 export default function ReportsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [summary, setSummary] = useState(null);
   const [tiers, setTiers] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -102,7 +103,7 @@ export default function ReportsPage() {
                         <div className="w-full max-w-[40px] bg-primary-500 rounded-t -mt-0.5" style={{ height: `${(m.invited / maxVal) * 100}%`, minHeight: m.invited ? "4px" : 0, opacity: 0.3 }} />
                       </div>
                       <span className="text-[10px] text-navy-400">
-                        {m.month ? new Date(m.month).toLocaleDateString("en", { month: "short" }) : ""}
+                        {m.month ? formatDate(m.month, locale, { style: "monthOnly" }) : ""}
                       </span>
                     </div>
                   );

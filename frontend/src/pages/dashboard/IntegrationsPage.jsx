@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useI18n } from "../../lib/i18n";
+import { formatDate } from "../../lib/formatDate";
 import integrationsAPI from "../../api/integrations";
 
 export default function IntegrationsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [integrations, setIntegrations] = useState([]);
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -96,7 +97,7 @@ export default function IntegrationsPage() {
                           <span className="text-xs text-navy-400">· {intg.sync_direction}</span>
                           {intg.last_synced_at && (
                             <span className="text-xs text-navy-400">
-                              · {t("integrations.lastSync")}: {new Date(intg.last_synced_at).toLocaleDateString()}
+                              · {t("integrations.lastSync")}: {formatDate(intg.last_synced_at, locale)}
                             </span>
                           )}
                         </div>

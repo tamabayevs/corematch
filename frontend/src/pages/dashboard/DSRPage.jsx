@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useI18n } from "../../lib/i18n";
+import { formatDate } from "../../lib/formatDate";
 import { dsrApi } from "../../api/dsr";
 
 const STATUS_FILTERS = ["all", "pending", "in_progress", "overdue", "completed"];
@@ -7,7 +8,7 @@ const REQUEST_TYPES = ["all", "access", "rectification", "erasure", "portability
 const DSR_STATUSES = ["pending", "in_progress", "completed", "rejected"];
 
 export default function DSRPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [stats, setStats] = useState({ pending: 0, in_progress: 0, overdue: 0, completed: 0 });
   const [requests, setRequests] = useState([]);
@@ -212,12 +213,12 @@ export default function DSRPage() {
                     <td className="px-4 py-3 text-xs text-navy-500">
                       {req.deadline ? (
                         <span className={isOverdue ? "text-red-600 font-medium" : ""}>
-                          {new Date(req.deadline).toLocaleDateString()}
+                          {formatDate(req.deadline, locale)}
                         </span>
                       ) : "\u2014"}
                     </td>
                     <td className="px-4 py-3 text-xs text-navy-400">
-                      {req.created_at ? new Date(req.created_at).toLocaleDateString() : "\u2014"}
+                      {req.created_at ? formatDate(req.created_at, locale) : "\u2014"}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">

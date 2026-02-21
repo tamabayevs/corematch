@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "../../lib/i18n";
+import { formatDate, formatDateTime } from "../../lib/formatDate";
 import api from "../../api/client";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
@@ -24,7 +25,7 @@ const ENTITY_TYPE_OPTIONS = ["", "candidate", "campaign", "user"];
 const RETENTION_OPTIONS = [6, 12, 24];
 
 export default function CompliancePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   // Overview state
   const [overview, setOverview] = useState(null);
@@ -276,7 +277,7 @@ export default function CompliancePage() {
                     <td className="py-2.5 px-3 text-navy-500">{cand.email}</td>
                     <td className="py-2.5 px-3 text-navy-500">{cand.campaign_name}</td>
                     <td className="py-2.5 px-3 text-navy-500">
-                      {cand.created_at ? new Date(cand.created_at).toLocaleDateString() : ""}
+                      {cand.created_at ? formatDate(cand.created_at, locale) : ""}
                     </td>
                     <td className="py-2.5 px-3">
                       <span className={clsx("px-2 py-0.5 rounded-md text-xs font-semibold", expiryClass(cand.days_until_expiry))}>
@@ -385,7 +386,7 @@ export default function CompliancePage() {
                     <tr key={entry.id} className="border-b border-navy-50 hover:bg-navy-50/50">
                       <td className="py-2.5 px-3 text-navy-500 whitespace-nowrap">
                         {entry.created_at
-                          ? new Date(entry.created_at).toLocaleString()
+                          ? formatDateTime(entry.created_at, locale)
                           : ""}
                       </td>
                       <td className="py-2.5 px-3 text-navy-700">

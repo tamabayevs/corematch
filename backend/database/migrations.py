@@ -240,15 +240,15 @@ MIGRATIONS = [
         user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         candidate_id    UUID REFERENCES candidates(id) ON DELETE SET NULL,
         request_type    VARCHAR(20) NOT NULL
-                        CHECK (request_type IN ('access', 'erasure', 'rectification')),
+                        CHECK (request_type IN ('access', 'erasure', 'rectification', 'portability', 'objection')),
         requester_name  VARCHAR(300) NOT NULL,
         requester_email VARCHAR(320) NOT NULL,
         description     TEXT,
         status          VARCHAR(20) DEFAULT 'pending'
                         CHECK (status IN ('pending', 'in_progress', 'completed', 'rejected')),
-        deadline_at     TIMESTAMPTZ NOT NULL,
+        due_date        TIMESTAMPTZ NOT NULL,
         completed_at    TIMESTAMPTZ,
-        notes           TEXT,
+        response_notes  TEXT,
         created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
@@ -379,20 +379,35 @@ MIGRATIONS = [
     -- Add updated_at to saved_searches for consistency
     ALTER TABLE saved_searches ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
     """,
+    # ── Fixup: Rename DSR columns for existing DBs (deadline_at → due_date, notes → response_notes) ──
+    """
+    -- Rename deadline_at → due_date if old column exists
+    ALTER TABLE data_subject_requests RENAME COLUMN deadline_at TO due_date;
+    """,
+    """
+    -- Rename notes → response_notes if old column exists
+    ALTER TABLE data_subject_requests RENAME COLUMN notes TO response_notes;
+    """,
+    # ── Fixup: Add missing request_type values to DSR CHECK constraint ──
+    """
+    ALTER TABLE data_subject_requests DROP CONSTRAINT IF EXISTS data_subject_requests_request_type_check;
+    ALTER TABLE data_subject_requests ADD CONSTRAINT data_subject_requests_request_type_check
+        CHECK (request_type IN ('access', 'erasure', 'rectification', 'portability', 'objection'));
+    """,
 ]
 
 
 def run_migrations() -> None:
-    """Apply all migrations. Safe to run multiple times."""
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            for i, sql in enumerate(MIGRATIONS):
-                try:
+    """Apply all migrations. Safe to run multiple times.
+    Each migration runs in its own transaction to avoid rollback cascading."""
+    for i, sql in enumerate(MIGRATIONS):
+        try:
+            with get_db() as conn:
+                with conn.cursor() as cur:
                     cur.execute(sql)
-                    logger.info("Migration %d applied successfully", i + 1)
-                except Exception as e:
-                    logger.warning("Migration %d skipped or failed: %s", i + 1, str(e))
-                    conn.rollback()
+            logger.info("Migration %d applied successfully", i + 1)
+        except Exception as e:
+            logger.warning("Migration %d skipped or failed: %s", i + 1, str(e))
     logger.info("All migrations complete")
 
 

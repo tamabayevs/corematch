@@ -7,6 +7,7 @@ import logging
 from flask import Blueprint, request, jsonify, g
 from database.connection import get_db
 from api.middleware import require_auth
+from services.scheduling import is_mena_weekend, get_weekend_warning
 
 logger = logging.getLogger(__name__)
 campaigns_bp = Blueprint("campaigns", __name__)
@@ -541,7 +542,7 @@ def invite_candidate(campaign_id):
         except Exception as e:
             logger.error("Failed to send invitation SMS: %s", str(e))
 
-    return jsonify({
+    response = {
         "message": "Invitation sent successfully",
         "candidate": {
             "id": str(candidate[0]),
@@ -551,7 +552,10 @@ def invite_candidate(campaign_id):
             "status": candidate[4],
             "reference_id": candidate[5],
         },
-    }), 201
+    }
+    if is_mena_weekend():
+        response["weekend_warning"] = get_weekend_warning()
+    return jsonify(response), 201
 
 
 # ──────────────────────────────────────────────────────────────
@@ -725,12 +729,15 @@ def bulk_invite(campaign_id):
         logger.error("Bulk invite DB error: %s", str(e))
         return jsonify({"error": "Failed to create invitations"}), 500
 
-    return jsonify({
+    response = {
         "message": f"Successfully invited {invited_count} candidates",
         "invited": invited_count,
         "skipped": len(invalid),
         "details": invalid if invalid else None,
-    }), 201
+    }
+    if is_mena_weekend():
+        response["weekend_warning"] = get_weekend_warning()
+    return jsonify(response), 201
 
 
 # ──────────────────────────────────────────────────────────────
@@ -845,10 +852,13 @@ def send_reminders(campaign_id):
         logger.error("Remind DB error: %s", str(e))
         return jsonify({"error": "Failed to send reminders"}), 500
 
-    return jsonify({
+    response = {
         "message": f"Sent {reminded_count} reminder(s)",
         "reminded": reminded_count,
-    })
+    }
+    if is_mena_weekend():
+        response["weekend_warning"] = get_weekend_warning()
+    return jsonify(response)
 
 
 # ──────────────────────────────────────────────────────────────

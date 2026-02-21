@@ -228,3 +228,119 @@ class FlowHelpers:
                 )
                 row = cur.fetchone()
                 return str(row[0]) if row else None
+
+    # ── Phase 2: Scorecards ──
+
+    def create_scorecard_template(self, name="Test Scorecard", competencies=None):
+        if competencies is None:
+            competencies = [
+                {"name": "Communication", "weight": 50},
+                {"name": "Technical Skills", "weight": 50},
+            ]
+        return self.client.post(
+            "/api/scorecards/templates",
+            json={"name": name, "competencies": competencies},
+            headers=self._auth_headers(),
+        )
+
+    def list_scorecard_templates(self):
+        return self.client.get("/api/scorecards/templates", headers=self._auth_headers())
+
+    def submit_evaluation(self, candidate_id, ratings=None, overall_rating=4):
+        if ratings is None:
+            ratings = [{"competency": "Communication", "score": 4}]
+        return self.client.post(
+            f"/api/scorecards/evaluate/{candidate_id}",
+            json={"ratings": ratings, "overall_rating": overall_rating},
+            headers=self._auth_headers(),
+        )
+
+    def get_evaluations(self, candidate_id):
+        return self.client.get(
+            f"/api/scorecards/evaluate/{candidate_id}",
+            headers=self._auth_headers(),
+        )
+
+    # ── Phase 2: Comments ──
+
+    def create_comment(self, candidate_id, content="Test comment", parent_id=None):
+        payload = {"content": content}
+        if parent_id:
+            payload["parent_id"] = parent_id
+        return self.client.post(
+            f"/api/comments/{candidate_id}",
+            json=payload,
+            headers=self._auth_headers(),
+        )
+
+    def get_comments(self, candidate_id):
+        return self.client.get(
+            f"/api/comments/{candidate_id}",
+            headers=self._auth_headers(),
+        )
+
+    # ── Phase 2: DSR ──
+
+    def create_dsr(self, requester_name="John Doe", requester_email="john@gmail.com",
+                   request_type="access", description=""):
+        return self.client.post(
+            "/api/dsr",
+            json={
+                "requester_name": requester_name,
+                "requester_email": requester_email,
+                "request_type": request_type,
+                "description": description,
+            },
+            headers=self._auth_headers(),
+        )
+
+    def list_dsr(self, **params):
+        return self.client.get("/api/dsr", query_string=params, headers=self._auth_headers())
+
+    def get_dsr_stats(self):
+        return self.client.get("/api/dsr/stats", headers=self._auth_headers())
+
+    # ── Phase 2: Notifications ──
+
+    def list_notifications(self):
+        return self.client.get("/api/notifications", headers=self._auth_headers())
+
+    def get_unread_count(self):
+        return self.client.get("/api/notifications/unread-count", headers=self._auth_headers())
+
+    # ── Phase 3: Notification Templates ──
+
+    def create_notif_template(self, name="Test Template", template_type="email",
+                               subject="Test Subject", body="Hello {{candidate_name}}"):
+        return self.client.post(
+            "/api/notification-templates",
+            json={"name": name, "type": template_type, "subject": subject, "body": body},
+            headers=self._auth_headers(),
+        )
+
+    def list_notif_templates(self):
+        return self.client.get("/api/notification-templates", headers=self._auth_headers())
+
+    # ── Phase 3: Reports ──
+
+    def get_executive_summary(self, **params):
+        return self.client.get("/api/reports/executive-summary", query_string=params,
+                               headers=self._auth_headers())
+
+    def get_tier_distribution(self, **params):
+        return self.client.get("/api/reports/tier-distribution", query_string=params,
+                               headers=self._auth_headers())
+
+    # ── Phase 3: Saudization ──
+
+    def get_saudization_dashboard(self, **params):
+        return self.client.get("/api/saudization/dashboard", query_string=params,
+                               headers=self._auth_headers())
+
+    def create_saudization_quota(self, category="General", target_percentage=30, notes=""):
+        return self.client.post(
+            "/api/saudization/quotas",
+            json={"category": category, "target_percentage": target_percentage,
+                  "notes": notes},
+            headers=self._auth_headers(),
+        )

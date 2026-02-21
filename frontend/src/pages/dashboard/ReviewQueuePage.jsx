@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
+import { formatDate } from "../../lib/formatDate";
 import api from "../../api/client";
 import { campaignsApi } from "../../api/campaigns";
 import Card from "../../components/ui/Card";
@@ -26,7 +27,7 @@ const DECISION_VARIANTS = {
 };
 
 export default function ReviewQueuePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const navigate = useNavigate();
 
   const [queue, setQueue] = useState([]);
@@ -98,15 +99,7 @@ export default function ReviewQueuePage() {
     }
   };
 
-  const formatDate = (isoString) => {
-    if (!isoString) return "";
-    const date = new Date(isoString);
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  // formatDate is now imported from lib/formatDate (locale-aware, Hijri support)
 
   const tierLabel = (tier) => {
     if (!tier) return null;
@@ -361,7 +354,7 @@ export default function ReviewQueuePage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-sm text-navy-500">
-                        {formatDate(candidate.submitted_at)}
+                        {formatDate(candidate.submitted_at, locale)}
                       </span>
                     </td>
                   </tr>
