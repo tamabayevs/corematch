@@ -54,6 +54,7 @@
     "overview": "Overview",
     "dashboard": "Dashboard",
     "campaigns": "Campaigns",
+    "insights": "Insights",
     "settings": "Settings"
   },
   "dashboard": {
@@ -236,6 +237,24 @@
     "notifyOnComplete": "Notify when candidate completes interview",
     "notifyWeekly": "Weekly summary email",
     "saved": "Settings saved"
+  },
+  "insights": {
+    "title": "Insights",
+    "subtitle": "Analytics and performance metrics across your campaigns",
+    "timeToSubmit": "Time to Submit",
+    "hours": "hrs",
+    "completionRate": "Completion Rate",
+    "passRate": "Pass Rate",
+    "avgScore": "Avg AI Score",
+    "funnel": "Pipeline Funnel",
+    "scoreDistribution": "Score Distribution",
+    "byCampaign": "By Campaign",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "campaign": "Campaign",
+    "allCampaigns": "All Campaigns",
+    "noData": "No data available for the selected filters",
+    "conversionRate": "Percentages show step-to-step conversion"
   },
   "interview": {
     "welcome": {

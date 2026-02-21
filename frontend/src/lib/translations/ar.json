@@ -54,6 +54,7 @@
     "overview": "نظرة عامة",
     "dashboard": "لوحة التحكم",
     "campaigns": "الحملات",
+    "insights": "التحليلات",
     "settings": "الإعدادات"
   },
   "dashboard": {
@@ -236,6 +237,24 @@
     "notifyOnComplete": "إشعار عند إكمال المرشح للمقابلة",
     "notifyWeekly": "ملخص أسبوعي بالبريد الإلكتروني",
     "saved": "تم حفظ الإعدادات"
+  },
+  "insights": {
+    "title": "التحليلات",
+    "subtitle": "مقاييس الأداء والتحليلات عبر حملاتك",
+    "timeToSubmit": "وقت الإرسال",
+    "hours": "ساعة",
+    "completionRate": "معدل الإكمال",
+    "passRate": "معدل القبول",
+    "avgScore": "متوسط درجة الذكاء الاصطناعي",
+    "funnel": "مسار التوظيف",
+    "scoreDistribution": "توزيع الدرجات",
+    "byCampaign": "حسب الحملة",
+    "dateFrom": "من",
+    "dateTo": "إلى",
+    "campaign": "الحملة",
+    "allCampaigns": "جميع الحملات",
+    "noData": "لا توجد بيانات للفلاتر المحددة",
+    "conversionRate": "النسب تُظهر التحويل بين كل مرحلة"
   },
   "interview": {
     "welcome": {
