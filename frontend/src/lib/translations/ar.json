@@ -56,9 +56,16 @@
     "campaigns": "الحملات",
     "review": "المراجعة",
     "insights": "التحليلات",
+    "dropoff": "تحليل الانسحاب",
     "manage": "الإدارة",
     "settings": "الإعدادات",
-    "compliance": "الامتثال PDPL"
+    "compliance": "الامتثال PDPL",
+    "scorecards": "بطاقات التقييم",
+    "talentPool": "مجمع المواهب",
+    "team": "الفريق",
+    "assignments": "المهام",
+    "branding": "العلامة التجارية",
+    "dsr": "طلبات البيانات"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -360,6 +367,150 @@
       "description": "لقد أكملت هذه المقابلة بالفعل.",
       "referenceId": "الرقم المرجعي: {{id}}",
       "noResubmit": "لا يمكنك إعادة إرسال المقابلة."
+    }
+  },
+  "scorecard": {
+    "title": "قوالب بطاقات التقييم",
+    "subtitle": "إنشاء معايير تقييم منظمة لتقييم متسق للمرشحين",
+    "create": "إنشاء بطاقة تقييم",
+    "edit": "تعديل بطاقة التقييم",
+    "name": "اسم القالب",
+    "description": "الوصف",
+    "competencies": "الكفاءات",
+    "competencyName": "اسم الكفاءة",
+    "competencyDesc": "وصف مختصر",
+    "addCompetency": "إضافة كفاءة",
+    "deleteConfirm": "هل أنت متأكد من حذف قالب بطاقة التقييم هذا؟",
+    "noTemplates": "لا توجد قوالب بطاقات تقييم بعد",
+    "evaluate": "تقييم",
+    "evaluation": "التقييم البشري",
+    "ratings": "التقييمات",
+    "overallRating": "التقييم العام",
+    "notes": "ملاحظات المراجع",
+    "submitEvaluation": "إرسال التقييم",
+    "evaluationSubmitted": "تم إرسال التقييم",
+    "noEvaluations": "لا توجد تقييمات بعد",
+    "aiVsHuman": "نتيجة الذكاء الاصطناعي مقابل التقييم البشري"
+  },
+  "team": {
+    "title": "فريقك",
+    "subtitle": "إدارة أعضاء الفريق وأدوار الوصول",
+    "invite": "دعوة عضو",
+    "inviteMember": "دعوة عضو فريق",
+    "sendInvite": "إرسال الدعوة",
+    "inviteSent": "تم إرسال الدعوة بنجاح",
+    "name": "الاسم",
+    "role": "الدور",
+    "removeConfirm": "هل أنت متأكد من إزالة عضو الفريق هذا؟",
+    "noMembers": "لا يوجد أعضاء في الفريق بعد",
+    "noMembersDesc": "قم بدعوة زملائك للتعاون في الحملات والمراجعات.",
+    "roles": {
+      "admin": "مدير",
+      "recruiter": "مسؤول توظيف",
+      "reviewer": "مراجع",
+      "viewer": "مشاهد"
+    }
+  },
+  "talentPool": {
+    "title": "مجمع المواهب",
+    "subtitle": "البحث عبر جميع الحملات للعثور على أفضل المرشحين",
+    "search": "البحث عن مرشحين...",
+    "scoreRange": "نطاق الدرجة",
+    "savedSearches": "عمليات البحث المحفوظة",
+    "saveSearch": "حفظ البحث",
+    "searchName": "اسم البحث",
+    "noResults": "لا يوجد مرشحون يطابقون معايير البحث",
+    "noSavedSearches": "لا توجد عمليات بحث محفوظة بعد",
+    "viewCandidate": "عرض"
+  },
+  "assignments": {
+    "title": "مهام المراجعة",
+    "subtitle": "تعيين المرشحين للمراجعين وتتبع التقدم",
+    "myAssignments": "مهامي",
+    "campaignAssignments": "مهام الحملة",
+    "assignReviewers": "تعيين المراجعين",
+    "roundRobin": "توزيع دوري",
+    "manual": "يدوي",
+    "reviewer": "المراجع",
+    "pending": "معلق",
+    "completed": "مكتمل",
+    "markComplete": "وضع علامة مكتمل",
+    "noAssignments": "لا توجد مهام بعد",
+    "assignSuccess": "تم تعيين المراجعين بنجاح"
+  },
+  "comments": {
+    "title": "النقاش",
+    "addComment": "أضف تعليقاً...",
+    "reply": "رد",
+    "edit": "تعديل",
+    "noComments": "لا توجد تعليقات بعد. ابدأ النقاش."
+  },
+  "branding": {
+    "title": "العلامة التجارية",
+    "subtitle": "تخصيص مظهر صفحات المرشحين",
+    "settings": "إعدادات العلامة التجارية",
+    "primaryColor": "اللون الأساسي",
+    "secondaryColor": "اللون الثانوي",
+    "website": "موقع الشركة",
+    "preview": "معاينة",
+    "previewWelcome": "مرحباً بك في مقابلة الفيديو",
+    "saved": "تم حفظ إعدادات العلامة التجارية"
+  },
+  "dsr": {
+    "title": "طلبات أصحاب البيانات",
+    "subtitle": "تتبع وتنفيذ طلبات الوصول والمسح وفقاً لنظام PDPL",
+    "newRequest": "طلب جديد",
+    "createRequest": "إنشاء طلب بيانات",
+    "requestType": "نوع الطلب",
+    "subjectName": "اسم صاحب البيانات",
+    "subjectEmail": "البريد الإلكتروني",
+    "deadline": "الموعد النهائي",
+    "description": "الوصف",
+    "status": "الحالة",
+    "pending": "معلق",
+    "inProgress": "قيد التنفيذ",
+    "completedStatus": "مكتمل",
+    "rejected": "مرفوض",
+    "overdue": "متأخر",
+    "types": {
+      "access": "وصول",
+      "erasure": "مسح",
+      "rectification": "تصحيح"
+    },
+    "stats": {
+      "pending": "معلق",
+      "inProgress": "قيد التنفيذ",
+      "overdue": "متأخر",
+      "completed": "مكتمل"
+    },
+    "noRequests": "لا توجد طلبات بيانات بعد",
+    "created": "تم إنشاء الطلب بنجاح"
+  },
+  "dropoff": {
+    "title": "تحليل الانسحاب",
+    "subtitle": "فهم أين ولماذا ينسحب المرشحون من مقابلاتهم",
+    "questionPerformance": "أداء كل سؤال",
+    "abandonment": "الانسحاب حسب المرحلة",
+    "campaignCompletion": "مقارنة إكمال الحملات",
+    "avgScore": "متوسط الدرجة",
+    "variance": "التباين",
+    "answers": "الإجابات",
+    "question": "السؤال",
+    "noData": "لا توجد بيانات متاحة",
+    "invited": "مدعو",
+    "started": "بدأ",
+    "submitted": "أرسل",
+    "completionRate": "معدل الإكمال",
+    "dropoffRate": "معدل الانسحاب"
+  },
+  "status": {
+    "title": "تحقق من حالة المقابلة",
+    "enterRef": "أدخل الرقم المرجعي",
+    "check": "تحقق",
+    "steps": {
+      "submitted": "تم إرسال المقابلة",
+      "underReview": "قيد المراجعة",
+      "decisionMade": "تم اتخاذ القرار"
     }
   }
 }

@@ -146,6 +146,15 @@ def create_app() -> Flask:
     from api.templates import templates_bp
     from api.insights import insights_bp
     from api.compliance import compliance_bp
+    from api.scorecards import scorecards_bp
+    from api.team import team_bp
+    from api.talent_pool import talent_pool_bp
+    from api.comments import comments_bp
+    from api.assignments import assignments_bp
+    from api.notifications import notifications_bp
+    from api.branding import branding_bp
+    from api.dsr import dsr_bp
+    from api.candidate_portal import candidate_portal_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(campaigns_bp, url_prefix="/api/campaigns")
@@ -156,6 +165,15 @@ def create_app() -> Flask:
     app.register_blueprint(templates_bp, url_prefix="/api")
     app.register_blueprint(insights_bp, url_prefix="/api/insights")
     app.register_blueprint(compliance_bp, url_prefix="/api/compliance")
+    app.register_blueprint(scorecards_bp, url_prefix="/api/scorecards")
+    app.register_blueprint(team_bp, url_prefix="/api/team")
+    app.register_blueprint(talent_pool_bp, url_prefix="/api/talent-pool")
+    app.register_blueprint(comments_bp, url_prefix="/api/comments")
+    app.register_blueprint(assignments_bp, url_prefix="/api/assignments")
+    app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+    app.register_blueprint(branding_bp, url_prefix="/api/branding")
+    app.register_blueprint(dsr_bp, url_prefix="/api/dsr")
+    app.register_blueprint(candidate_portal_bp, url_prefix="/api/public")
 
     # ──────────────────────────────────────────────────────────
     # Health Check

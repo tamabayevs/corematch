@@ -21,6 +21,15 @@ import TemplatesPage from "./pages/dashboard/TemplatesPage";
 import InsightsPage from "./pages/dashboard/InsightsPage";
 import CompliancePage from "./pages/dashboard/CompliancePage";
 
+// Phase 2 dashboard pages
+import ScorecardsPage from "./pages/dashboard/ScorecardsPage";
+import TeamPage from "./pages/dashboard/TeamPage";
+import TalentPoolPage from "./pages/dashboard/TalentPoolPage";
+import AssignmentsPage from "./pages/dashboard/AssignmentsPage";
+import DSRPage from "./pages/dashboard/DSRPage";
+import BrandingPage from "./pages/dashboard/BrandingPage";
+import DropoffPage from "./pages/dashboard/DropoffPage";
+
 // Candidate interview pages
 import WelcomePage from "./pages/candidate/WelcomePage";
 import ConsentPage from "./pages/candidate/ConsentPage";
@@ -30,6 +39,7 @@ import ReviewPage from "./pages/candidate/ReviewPage";
 import ConfirmationPage from "./pages/candidate/ConfirmationPage";
 import ExpiredPage from "./pages/candidate/ExpiredPage";
 import AlreadySubmittedPage from "./pages/candidate/AlreadySubmittedPage";
+import StatusPage from "./pages/candidate/StatusPage";
 
 export default function App() {
   return (
@@ -57,8 +67,16 @@ export default function App() {
         <Route path="reviews/:candidateId" element={<ReviewSessionPage />} />
         <Route path="templates" element={<TemplatesPage />} />
         <Route path="insights" element={<InsightsPage />} />
+        <Route path="dropoff" element={<DropoffPage />} />
         <Route path="compliance" element={<CompliancePage />} />
         <Route path="settings" element={<SettingsPage />} />
+        {/* Phase 2 routes */}
+        <Route path="scorecards" element={<ScorecardsPage />} />
+        <Route path="team" element={<TeamPage />} />
+        <Route path="talent-pool" element={<TalentPoolPage />} />
+        <Route path="assignments" element={<AssignmentsPage />} />
+        <Route path="dsr" element={<DSRPage />} />
+        <Route path="branding" element={<BrandingPage />} />
       </Route>
 
       {/* Candidate interview routes */}
@@ -72,6 +90,10 @@ export default function App() {
         <Route path="expired" element={<ExpiredPage />} />
         <Route path="submitted" element={<AlreadySubmittedPage />} />
       </Route>
+
+      {/* Public candidate status portal */}
+      <Route path="/status" element={<StatusPage />} />
+      <Route path="/status/:referenceId" element={<StatusPage />} />
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

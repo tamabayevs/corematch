@@ -299,3 +299,120 @@ def insights_by_campaign():
         })
 
     return jsonify({"campaigns": campaigns})
+
+
+# ──────────────────────────────────────────────────────────────
+# GET /api/insights/dropoff
+# Per-question abandonment analysis
+# ──────────────────────────────────────────────────────────────
+
+@insights_bp.route("/dropoff", methods=["GET"])
+@require_auth
+def insights_dropoff():
+    """
+    Drop-off analysis: per-question score variance, abandonment by question number,
+    and per-campaign completion comparison.
+    """
+    user_id = g.current_user["id"]
+    date_from, date_to, campaign_id = _parse_filters()
+    where, params = _build_where(user_id, date_from, date_to, campaign_id)
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Per-question stats: avg score, score variance, number of answers
+                cur.execute(
+                    f"""
+                    SELECT
+                        va.question_index,
+                        COUNT(va.id) AS answer_count,
+                        ROUND(AVG(ais.overall_score)::numeric, 1) AS avg_score,
+                        ROUND(STDDEV(ais.overall_score)::numeric, 1) AS score_stddev
+                    FROM video_answers va
+                    JOIN candidates cand ON va.candidate_id = cand.id
+                    JOIN campaigns c ON cand.campaign_id = c.id
+                    LEFT JOIN ai_scores ais ON ais.video_answer_id = va.id
+                    {where}
+                    GROUP BY va.question_index
+                    ORDER BY va.question_index
+                    """,
+                    params,
+                )
+                question_rows = cur.fetchall()
+
+                # Abandonment: candidates who started but didn't submit, by last answered question
+                cur.execute(
+                    f"""
+                    SELECT
+                        COALESCE(max_q.last_question, -1) AS last_question_answered,
+                        COUNT(*) AS abandoned_count
+                    FROM candidates cand
+                    JOIN campaigns c ON cand.campaign_id = c.id
+                    LEFT JOIN (
+                        SELECT candidate_id, MAX(question_index) AS last_question
+                        FROM video_answers
+                        WHERE storage_key IS NOT NULL
+                        GROUP BY candidate_id
+                    ) max_q ON max_q.candidate_id = cand.id
+                    {where}
+                      AND cand.status IN ('invited', 'started')
+                      AND cand.consent_given = TRUE
+                    GROUP BY max_q.last_question
+                    ORDER BY max_q.last_question
+                    """,
+                    params,
+                )
+                abandonment_rows = cur.fetchall()
+
+                # Completion comparison by campaign
+                cur.execute(
+                    f"""
+                    SELECT
+                        c.id, c.name,
+                        COUNT(cand.id) AS total,
+                        COUNT(cand.id) FILTER (WHERE cand.status = 'submitted') AS submitted,
+                        COUNT(cand.id) FILTER (WHERE cand.status IN ('invited', 'started') AND cand.consent_given = TRUE) AS abandoned
+                    FROM campaigns c
+                    LEFT JOIN candidates cand ON cand.campaign_id = c.id AND cand.status != 'erased'
+                    WHERE c.user_id = %s
+                    GROUP BY c.id, c.name
+                    HAVING COUNT(cand.id) > 0
+                    ORDER BY c.created_at DESC
+                    """,
+                    (user_id,),
+                )
+                comparison_rows = cur.fetchall()
+
+    except Exception as e:
+        logger.error("Insights dropoff error: %s", str(e))
+        return jsonify({"error": "Failed to fetch drop-off analysis"}), 500
+
+    return jsonify({
+        "per_question": [
+            {
+                "question_index": r[0],
+                "answer_count": r[1],
+                "avg_score": float(r[2]) if r[2] else None,
+                "score_variance": float(r[3]) if r[3] else None,
+            }
+            for r in question_rows
+        ],
+        "abandonment": [
+            {
+                "last_question_answered": r[0],
+                "count": r[1],
+            }
+            for r in abandonment_rows
+        ],
+        "campaign_completion": [
+            {
+                "campaign_id": str(r[0]),
+                "name": r[1],
+                "total": r[2],
+                "submitted": r[3],
+                "abandoned": r[4],
+                "completion_rate": round(r[3] / r[2] * 100, 1) if r[2] > 0 else 0,
+            }
+            for r in comparison_rows
+        ],
+    })

@@ -74,6 +74,205 @@ MIGRATIONS = [
     """
     ALTER TABLE users ADD COLUMN IF NOT EXISTS retention_months INTEGER DEFAULT 12;
     """,
+    # ── Phase 2: Scorecards, Team Members, Company Settings ──
+    """
+    -- Scorecard templates for structured human evaluation
+    CREATE TABLE IF NOT EXISTS scorecard_templates (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
+        name            VARCHAR(300) NOT NULL,
+        description     TEXT,
+        competencies    JSONB NOT NULL DEFAULT '[]'::jsonb,
+        is_system       BOOLEAN DEFAULT FALSE,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_scorecard_templates_user ON scorecard_templates(user_id);
+
+    DROP TRIGGER IF EXISTS trg_update_scorecard_templates_updated_at ON scorecard_templates;
+    CREATE TRIGGER trg_update_scorecard_templates_updated_at
+    BEFORE UPDATE ON scorecard_templates
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Candidate evaluations (human scorecard submissions)
+    CREATE TABLE IF NOT EXISTS candidate_evaluations (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        candidate_id    UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+        reviewer_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        scorecard_template_id UUID REFERENCES scorecard_templates(id) ON DELETE SET NULL,
+        ratings         JSONB NOT NULL DEFAULT '[]'::jsonb,
+        overall_rating  INTEGER CHECK (overall_rating BETWEEN 1 AND 5),
+        notes           TEXT,
+        submitted_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_candidate_evaluations_candidate ON candidate_evaluations(candidate_id);
+    CREATE INDEX IF NOT EXISTS idx_candidate_evaluations_reviewer ON candidate_evaluations(reviewer_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_candidate_evaluations_unique ON candidate_evaluations(candidate_id, reviewer_id);
+
+    -- Team members table
+    CREATE TABLE IF NOT EXISTS team_members (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        owner_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        role            VARCHAR(20) NOT NULL DEFAULT 'reviewer'
+                        CHECK (role IN ('admin', 'recruiter', 'reviewer', 'viewer')),
+        invited_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        accepted_at     TIMESTAMPTZ,
+        status          VARCHAR(20) DEFAULT 'pending'
+                        CHECK (status IN ('pending', 'active', 'deactivated')),
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_team_members_owner ON team_members(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_team_members_unique ON team_members(owner_id, user_id);
+
+    -- Company settings (branding and defaults)
+    CREATE TABLE IF NOT EXISTS company_settings (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        logo_url        VARCHAR(500),
+        primary_color   VARCHAR(7) DEFAULT '#0D9488',
+        secondary_color VARCHAR(7) DEFAULT '#F59E0B',
+        company_website VARCHAR(500),
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    DROP TRIGGER IF EXISTS trg_update_company_settings_updated_at ON company_settings;
+    CREATE TRIGGER trg_update_company_settings_updated_at
+    BEFORE UPDATE ON company_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Add scorecard_template_id to campaigns
+    ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS scorecard_template_id UUID REFERENCES scorecard_templates(id) ON DELETE SET NULL;
+
+    -- Seed system scorecard templates
+    INSERT INTO scorecard_templates (name, description, competencies, is_system)
+    SELECT 'General Interview', 'Standard behavioral interview evaluation',
+           '[{"name":"Communication","description":"Clarity, articulation, and structure of responses","weight":25},{"name":"Problem Solving","description":"Analytical thinking and approach to challenges","weight":25},{"name":"Culture Fit","description":"Alignment with company values and team dynamics","weight":25},{"name":"Motivation","description":"Enthusiasm, drive, and career alignment","weight":25}]'::jsonb,
+           TRUE
+    WHERE NOT EXISTS (SELECT 1 FROM scorecard_templates WHERE is_system = TRUE AND name = 'General Interview');
+
+    INSERT INTO scorecard_templates (name, description, competencies, is_system)
+    SELECT 'Technical Role', 'Technical skills and problem-solving evaluation',
+           '[{"name":"Technical Knowledge","description":"Depth and breadth of technical expertise","weight":30},{"name":"Problem Solving","description":"Approach to solving complex technical problems","weight":30},{"name":"Communication","description":"Ability to explain technical concepts clearly","weight":20},{"name":"Learning Agility","description":"Adaptability and willingness to learn new technologies","weight":20}]'::jsonb,
+           TRUE
+    WHERE NOT EXISTS (SELECT 1 FROM scorecard_templates WHERE is_system = TRUE AND name = 'Technical Role');
+
+    INSERT INTO scorecard_templates (name, description, competencies, is_system)
+    SELECT 'Customer-Facing', 'Customer service and relationship evaluation',
+           '[{"name":"Customer Focus","description":"Empathy and dedication to customer satisfaction","weight":30},{"name":"Communication","description":"Professional and clear communication style","weight":25},{"name":"Problem Resolution","description":"Ability to resolve issues effectively","weight":25},{"name":"Composure","description":"Grace under pressure and difficult situations","weight":20}]'::jsonb,
+           TRUE
+    WHERE NOT EXISTS (SELECT 1 FROM scorecard_templates WHERE is_system = TRUE AND name = 'Customer-Facing');
+
+    INSERT INTO scorecard_templates (name, description, competencies, is_system)
+    SELECT 'Leadership', 'Leadership and management competency evaluation',
+           '[{"name":"Strategic Thinking","description":"Vision and long-term planning ability","weight":25},{"name":"Team Leadership","description":"Ability to inspire, motivate, and develop teams","weight":25},{"name":"Decision Making","description":"Sound judgment and decisive action","weight":25},{"name":"Communication","description":"Effective stakeholder communication","weight":25}]'::jsonb,
+           TRUE
+    WHERE NOT EXISTS (SELECT 1 FROM scorecard_templates WHERE is_system = TRUE AND name = 'Leadership');
+    """,
+    # ── Phase 2: Comments, Notifications, Review Assignments ──
+    """
+    -- Candidate comments (threaded discussions)
+    CREATE TABLE IF NOT EXISTS candidate_comments (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        candidate_id    UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        parent_id       UUID REFERENCES candidate_comments(id) ON DELETE CASCADE,
+        content         TEXT NOT NULL,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_candidate_comments_candidate ON candidate_comments(candidate_id);
+    CREATE INDEX IF NOT EXISTS idx_candidate_comments_user ON candidate_comments(user_id);
+
+    DROP TRIGGER IF EXISTS trg_update_candidate_comments_updated_at ON candidate_comments;
+    CREATE TRIGGER trg_update_candidate_comments_updated_at
+    BEFORE UPDATE ON candidate_comments
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Notifications
+    CREATE TABLE IF NOT EXISTS notifications (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type            VARCHAR(50) NOT NULL,
+        title           VARCHAR(300) NOT NULL,
+        message         TEXT,
+        entity_type     VARCHAR(50),
+        entity_id       UUID,
+        is_read         BOOLEAN DEFAULT FALSE,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
+
+    -- Review assignments
+    CREATE TABLE IF NOT EXISTS review_assignments (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        campaign_id     UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+        candidate_id    UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+        reviewer_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        assigned_by     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        status          VARCHAR(20) DEFAULT 'pending'
+                        CHECK (status IN ('pending', 'completed')),
+        completed_at    TIMESTAMPTZ,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_review_assignments_campaign ON review_assignments(campaign_id);
+    CREATE INDEX IF NOT EXISTS idx_review_assignments_reviewer ON review_assignments(reviewer_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_review_assignments_unique ON review_assignments(candidate_id, reviewer_id);
+    """,
+    # ── Phase 2: Saved Searches, Data Subject Requests ──
+    """
+    -- Saved searches for talent pool
+    CREATE TABLE IF NOT EXISTS saved_searches (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name            VARCHAR(300) NOT NULL,
+        filters         JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_saved_searches_user ON saved_searches(user_id);
+
+    -- Data subject requests (PDPL compliance)
+    CREATE TABLE IF NOT EXISTS data_subject_requests (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        candidate_id    UUID REFERENCES candidates(id) ON DELETE SET NULL,
+        request_type    VARCHAR(20) NOT NULL
+                        CHECK (request_type IN ('access', 'erasure', 'rectification')),
+        requester_name  VARCHAR(300) NOT NULL,
+        requester_email VARCHAR(320) NOT NULL,
+        description     TEXT,
+        status          VARCHAR(20) DEFAULT 'pending'
+                        CHECK (status IN ('pending', 'in_progress', 'completed', 'rejected')),
+        deadline_at     TIMESTAMPTZ NOT NULL,
+        completed_at    TIMESTAMPTZ,
+        notes           TEXT,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_dsr_user ON data_subject_requests(user_id);
+    CREATE INDEX IF NOT EXISTS idx_dsr_status ON data_subject_requests(status);
+
+    DROP TRIGGER IF EXISTS trg_update_dsr_updated_at ON data_subject_requests;
+    CREATE TRIGGER trg_update_dsr_updated_at
+    BEFORE UPDATE ON data_subject_requests
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    """,
+    # ── Phase 2: Column Additions to Existing Tables ──
+    """
+    -- Add WhatsApp toggle to campaigns
+    ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS whatsapp_enabled BOOLEAN DEFAULT FALSE;
+
+    -- Add source tracking to candidates (for talent pool re-engage)
+    ALTER TABLE candidates ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'direct';
+
+    -- Add calendar preference to users
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone VARCHAR(50) DEFAULT 'Asia/Riyadh';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS calendar_preference VARCHAR(10) DEFAULT 'gregorian';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+    """,
 ]
 
 

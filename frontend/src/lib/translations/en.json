@@ -56,9 +56,16 @@
     "campaigns": "Campaigns",
     "review": "Review",
     "insights": "Insights",
+    "dropoff": "Drop-off Analysis",
     "manage": "Manage",
     "settings": "Settings",
-    "compliance": "PDPL Compliance"
+    "compliance": "PDPL Compliance",
+    "scorecards": "Scorecards",
+    "talentPool": "Talent Pool",
+    "team": "Team",
+    "assignments": "Assignments",
+    "branding": "Branding",
+    "dsr": "Data Requests"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -360,6 +367,150 @@
       "description": "You have already completed this interview.",
       "referenceId": "Reference ID: {{id}}",
       "noResubmit": "You cannot re-submit your interview."
+    }
+  },
+  "scorecard": {
+    "title": "Scorecard Templates",
+    "subtitle": "Create structured evaluation criteria for consistent candidate assessment",
+    "create": "Create Scorecard",
+    "edit": "Edit Scorecard",
+    "name": "Template Name",
+    "description": "Description",
+    "competencies": "competencies",
+    "competencyName": "Competency name",
+    "competencyDesc": "Brief description",
+    "addCompetency": "Add Competency",
+    "deleteConfirm": "Are you sure you want to delete this scorecard template?",
+    "noTemplates": "No scorecard templates yet",
+    "evaluate": "Evaluate",
+    "evaluation": "Human Evaluation",
+    "ratings": "Ratings",
+    "overallRating": "Overall Rating",
+    "notes": "Reviewer Notes",
+    "submitEvaluation": "Submit Evaluation",
+    "evaluationSubmitted": "Evaluation submitted",
+    "noEvaluations": "No evaluations yet",
+    "aiVsHuman": "AI Score vs Human Score"
+  },
+  "team": {
+    "title": "Your Team",
+    "subtitle": "Manage team members and their access roles",
+    "invite": "Invite Member",
+    "inviteMember": "Invite Team Member",
+    "sendInvite": "Send Invitation",
+    "inviteSent": "Invitation sent successfully",
+    "name": "Name",
+    "role": "Role",
+    "removeConfirm": "Are you sure you want to remove this team member?",
+    "noMembers": "No team members yet",
+    "noMembersDesc": "Invite colleagues to collaborate on campaigns and reviews.",
+    "roles": {
+      "admin": "Admin",
+      "recruiter": "Recruiter",
+      "reviewer": "Reviewer",
+      "viewer": "Viewer"
+    }
+  },
+  "talentPool": {
+    "title": "Talent Pool",
+    "subtitle": "Search across all campaigns to find the best candidates",
+    "search": "Search candidates...",
+    "scoreRange": "Score Range",
+    "savedSearches": "Saved Searches",
+    "saveSearch": "Save Search",
+    "searchName": "Search Name",
+    "noResults": "No candidates match your search criteria",
+    "noSavedSearches": "No saved searches yet",
+    "viewCandidate": "View"
+  },
+  "assignments": {
+    "title": "Review Assignments",
+    "subtitle": "Assign candidates to reviewers and track progress",
+    "myAssignments": "My Assignments",
+    "campaignAssignments": "Campaign Assignments",
+    "assignReviewers": "Assign Reviewers",
+    "roundRobin": "Round Robin",
+    "manual": "Manual",
+    "reviewer": "Reviewer",
+    "pending": "Pending",
+    "completed": "Completed",
+    "markComplete": "Mark Complete",
+    "noAssignments": "No assignments yet",
+    "assignSuccess": "Reviewers assigned successfully"
+  },
+  "comments": {
+    "title": "Discussion",
+    "addComment": "Add a comment...",
+    "reply": "Reply",
+    "edit": "Edit",
+    "noComments": "No comments yet. Start the discussion."
+  },
+  "branding": {
+    "title": "Company Branding",
+    "subtitle": "Customize the look and feel of candidate-facing pages",
+    "settings": "Brand Settings",
+    "primaryColor": "Primary Color",
+    "secondaryColor": "Secondary Color",
+    "website": "Company Website",
+    "preview": "Preview",
+    "previewWelcome": "Welcome to your video interview",
+    "saved": "Branding settings saved"
+  },
+  "dsr": {
+    "title": "Data Subject Requests",
+    "subtitle": "Track and fulfill PDPL data access and erasure requests",
+    "newRequest": "New Request",
+    "createRequest": "Create Data Subject Request",
+    "requestType": "Request Type",
+    "subjectName": "Subject Name",
+    "subjectEmail": "Subject Email",
+    "deadline": "Deadline",
+    "description": "Description",
+    "status": "Status",
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "completedStatus": "Completed",
+    "rejected": "Rejected",
+    "overdue": "Overdue",
+    "types": {
+      "access": "Access",
+      "erasure": "Erasure",
+      "rectification": "Rectification"
+    },
+    "stats": {
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "overdue": "Overdue",
+      "completed": "Completed"
+    },
+    "noRequests": "No data subject requests yet",
+    "created": "Request created successfully"
+  },
+  "dropoff": {
+    "title": "Drop-off Analysis",
+    "subtitle": "Understand where and why candidates abandon their interviews",
+    "questionPerformance": "Per-Question Performance",
+    "abandonment": "Abandonment by Stage",
+    "campaignCompletion": "Campaign Completion Comparison",
+    "avgScore": "Avg Score",
+    "variance": "Variance",
+    "answers": "Answers",
+    "question": "Question",
+    "noData": "No data available",
+    "invited": "Invited",
+    "started": "Started",
+    "submitted": "Submitted",
+    "completionRate": "Completion Rate",
+    "dropoffRate": "Drop-off Rate"
+  },
+  "status": {
+    "title": "Check Interview Status",
+    "enterRef": "Enter your reference ID",
+    "check": "Check Status",
+    "steps": {
+      "submitted": "Interview Submitted",
+      "underReview": "Under Review",
+      "decisionMade": "Decision Made"
     }
   }
 }
