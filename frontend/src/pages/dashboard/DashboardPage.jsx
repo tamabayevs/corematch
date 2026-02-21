@@ -120,7 +120,7 @@ export default function DashboardPage() {
           {/* Activity Feed */}
           <Card>
             <h3 className="font-semibold text-navy-900 mb-4">{t("dashboard.recentActivity")}</h3>
-            <ActivityFeed activities={activities} t={t} />
+            <ActivityFeed activities={activities} t={t} locale={locale} />
           </Card>
         </div>
       )}
@@ -277,7 +277,7 @@ function PipelineFunnel({ pipeline, t }) {
   );
 }
 
-function ActivityFeed({ activities, t }) {
+function ActivityFeed({ activities, t, locale }) {
   if (!activities.length) {
     return <p className="text-sm text-navy-400">{t("dashboard.noActivity")}</p>;
   }
