@@ -99,6 +99,23 @@
       "campaignCreated": "Created campaign"
     }
   },
+  "bulkInvite": {
+    "title": "Bulk Invite",
+    "description": "Upload a CSV file or paste candidate data to invite multiple candidates at once.",
+    "uploadCSV": "Upload CSV File",
+    "pasteData": "Or paste data below",
+    "placeholder": "Full Name, email@example.com, +966501234567\nAhmed Ali, ahmed@company.com\nSara Noor, sara@company.com",
+    "format": "Format: Name, Email, Phone (optional)",
+    "preview": "Preview & Validate",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "noData": "Please upload a file or paste data",
+    "send": "Send {{count}} Invitations",
+    "success": "Successfully invited {{count}} candidates!",
+    "skipped": "{{count}} skipped (duplicates or errors)",
+    "remind": "Send Reminders",
+    "reminderSent": "Sent {{count}} reminder(s)"
+  },
   "campaign": {
     "create": "Create Campaign",
     "edit": "Edit Campaign",

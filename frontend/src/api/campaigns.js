@@ -21,4 +21,12 @@ export const campaignsApi = {
   inviteCandidate(campaignId, data) {
     return api.post(`/campaigns/${campaignId}/invite`, data);
   },
+
+  bulkInvite(campaignId, candidates) {
+    return api.post(`/campaigns/${campaignId}/bulk-invite`, { candidates });
+  },
+
+  sendReminders(campaignId) {
+    return api.post(`/campaigns/${campaignId}/remind`);
+  },
 };

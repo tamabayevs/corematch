@@ -552,3 +552,300 @@ def invite_candidate(campaign_id):
             "reference_id": candidate[5],
         },
     }), 201
+
+
+# ──────────────────────────────────────────────────────────────
+# POST /api/campaigns/:id/bulk-invite
+# Invite up to 500 candidates at once
+# ──────────────────────────────────────────────────────────────
+
+@campaigns_bp.route("/<campaign_id>/bulk-invite", methods=["POST"])
+@require_auth
+def bulk_invite(campaign_id):
+    """
+    Bulk invite candidates to a campaign.
+    Accepts array of {full_name, email, phone?}. Max 500 per request.
+    Validates all, skips duplicates, sends emails asynchronously.
+    """
+    import json
+    import datetime
+    import secrets
+    import os
+    from email_validator import validate_email, EmailNotValidError
+
+    data = request.get_json(silent=True)
+    if not data or not isinstance(data.get("candidates"), list):
+        return jsonify({"error": "candidates array is required"}), 400
+
+    candidates_raw = data["candidates"]
+    if len(candidates_raw) > 500:
+        return jsonify({"error": "Maximum 500 candidates per batch"}), 400
+    if len(candidates_raw) == 0:
+        return jsonify({"error": "At least one candidate is required"}), 400
+
+    # Verify campaign ownership and status
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name, job_title, job_description, questions,
+                           invite_expiry_days, language, max_recording_seconds, allow_retakes,
+                           status
+                    FROM campaigns
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (campaign_id, g.current_user["id"]),
+                )
+                campaign = cur.fetchone()
+    except Exception as e:
+        logger.error("Bulk invite — campaign lookup error: %s", str(e))
+        return jsonify({"error": "Failed to verify campaign"}), 500
+
+    if not campaign:
+        return jsonify({"error": "Campaign not found"}), 404
+    if campaign[9] != "active":
+        return jsonify({"error": "Cannot invite to a closed or archived campaign"}), 400
+
+    # Phase 1: Validate all candidates
+    valid = []
+    invalid = []
+    seen_emails = set()
+
+    for i, c in enumerate(candidates_raw):
+        full_name = (c.get("full_name") or "").strip()
+        email_raw = (c.get("email") or "").strip().lower()
+        phone = (c.get("phone") or "").strip() or None
+
+        if not full_name or not email_raw:
+            invalid.append({"index": i, "reason": "name and email are required"})
+            continue
+
+        try:
+            result = validate_email(email_raw)
+            email = result.normalized
+        except EmailNotValidError:
+            invalid.append({"index": i, "reason": "invalid email"})
+            continue
+
+        if email in seen_emails:
+            invalid.append({"index": i, "reason": "duplicate in batch"})
+            continue
+
+        seen_emails.add(email)
+        valid.append({"full_name": full_name, "email": email, "phone": phone})
+
+    if not valid:
+        return jsonify({
+            "error": "No valid candidates",
+            "invited": 0,
+            "skipped": len(invalid),
+            "details": invalid,
+        }), 400
+
+    # Phase 2: Check existing candidates in DB and create records
+    questions_snapshot = campaign[4]
+    if isinstance(questions_snapshot, str):
+        questions_snapshot = json.loads(questions_snapshot)
+
+    invited_count = 0
+    skipped_db = 0
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Get existing emails in one query
+                cur.execute(
+                    "SELECT email FROM candidates WHERE campaign_id = %s AND status IN ('invited', 'started', 'submitted')",
+                    (campaign_id,),
+                )
+                existing_emails = {row[0] for row in cur.fetchall()}
+
+                for c in valid:
+                    if c["email"] in existing_emails:
+                        skipped_db += 1
+                        invalid.append({"index": -1, "email": c["email"], "reason": "already invited"})
+                        continue
+
+                    invite_token = str(uuid.uuid4())
+                    invite_expires_at = datetime.datetime.utcnow() + datetime.timedelta(days=campaign[5])
+                    year = datetime.datetime.utcnow().year
+                    suffix = secrets.randbelow(900000) + 100000
+                    reference_id = f"CM-{year}-{suffix}"
+
+                    cur.execute(
+                        """
+                        INSERT INTO candidates
+                        (campaign_id, email, full_name, phone, invite_token,
+                         questions_snapshot, invite_expires_at, reference_id)
+                        VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s)
+                        RETURNING id
+                        """,
+                        (
+                            campaign_id, c["email"], c["full_name"], c["phone"],
+                            invite_token, json.dumps(questions_snapshot),
+                            invite_expires_at, reference_id,
+                        ),
+                    )
+                    candidate_row = cur.fetchone()
+                    invited_count += 1
+
+                    # Audit log
+                    cur.execute(
+                        """
+                        INSERT INTO audit_log (user_id, action, entity_type, entity_id, metadata, ip_address)
+                        VALUES (%s, %s, %s, %s, %s::jsonb, %s)
+                        """,
+                        (
+                            g.current_user["id"], "candidate.invited", "candidate",
+                            str(candidate_row[0]),
+                            json.dumps({"campaign_id": campaign_id, "email": c["email"], "bulk": True}),
+                            request.remote_addr,
+                        ),
+                    )
+
+                    # Send email (non-blocking — don't fail batch on email error)
+                    try:
+                        from services.email_service import get_email_service
+                        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+                        interview_url = f"{frontend_url}/interview/{invite_token}/welcome"
+                        email_svc = get_email_service()
+                        email_svc.send_candidate_invitation(
+                            to_email=c["email"],
+                            to_name=c["full_name"],
+                            company_name=g.current_user.get("company_name", "the company"),
+                            job_title=campaign[2],
+                            interview_url=interview_url,
+                            expires_at=invite_expires_at,
+                            question_count=len(questions_snapshot),
+                        )
+                    except Exception as email_err:
+                        logger.error("Bulk invite email error for %s: %s", c["email"], str(email_err))
+    except Exception as e:
+        logger.error("Bulk invite DB error: %s", str(e))
+        return jsonify({"error": "Failed to create invitations"}), 500
+
+    return jsonify({
+        "message": f"Successfully invited {invited_count} candidates",
+        "invited": invited_count,
+        "skipped": len(invalid),
+        "details": invalid if invalid else None,
+    }), 201
+
+
+# ──────────────────────────────────────────────────────────────
+# POST /api/campaigns/:id/remind
+# Send reminders to candidates who haven't started
+# ──────────────────────────────────────────────────────────────
+
+@campaigns_bp.route("/<campaign_id>/remind", methods=["POST"])
+@require_auth
+def send_reminders(campaign_id):
+    """
+    Send reminder emails to candidates with status='invited' who
+    haven't been reminded in the last 48 hours.
+    """
+    import json
+    import datetime
+    import os
+
+    # Verify campaign ownership
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, name, job_title, questions, invite_expiry_days, status
+                    FROM campaigns
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (campaign_id, g.current_user["id"]),
+                )
+                campaign = cur.fetchone()
+    except Exception as e:
+        logger.error("Remind — campaign lookup error: %s", str(e))
+        return jsonify({"error": "Failed to verify campaign"}), 500
+
+    if not campaign:
+        return jsonify({"error": "Campaign not found"}), 404
+    if campaign[5] != "active":
+        return jsonify({"error": "Cannot send reminders for a closed campaign"}), 400
+
+    # Find candidates who need reminders
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=48)
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, email, full_name, invite_token, invite_expires_at
+                    FROM candidates
+                    WHERE campaign_id = %s
+                      AND status = 'invited'
+                      AND invite_expires_at > NOW()
+                      AND (reminder_sent_at IS NULL OR reminder_sent_at < %s)
+                    ORDER BY created_at
+                    """,
+                    (campaign_id, cutoff),
+                )
+                to_remind = cur.fetchall()
+
+                if not to_remind:
+                    return jsonify({"message": "No candidates need reminders", "reminded": 0})
+
+                reminded_count = 0
+                from services.email_service import get_email_service
+                frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+
+                for c in to_remind:
+                    cand_id, email, full_name, invite_token, expires_at = c
+                    interview_url = f"{frontend_url}/interview/{invite_token}/welcome"
+
+                    try:
+                        email_svc = get_email_service()
+                        email_svc.send_candidate_invitation(
+                            to_email=email,
+                            to_name=full_name,
+                            company_name=g.current_user.get("company_name", "the company"),
+                            job_title=campaign[2],
+                            interview_url=interview_url,
+                            expires_at=expires_at,
+                            question_count=len(campaign[3]) if isinstance(campaign[3], list) else 0,
+                        )
+
+                        cur.execute(
+                            """
+                            UPDATE candidates
+                            SET reminder_sent_at = NOW(),
+                                reminder_count = COALESCE(reminder_count, 0) + 1
+                            WHERE id = %s
+                            """,
+                            (str(cand_id),),
+                        )
+                        reminded_count += 1
+                    except Exception as email_err:
+                        logger.error("Reminder email error for %s: %s", email, str(email_err))
+
+                # Audit log
+                cur.execute(
+                    """
+                    INSERT INTO audit_log (user_id, action, entity_type, entity_id, metadata, ip_address)
+                    VALUES (%s, %s, %s, %s, %s::jsonb, %s)
+                    """,
+                    (
+                        g.current_user["id"], "campaign.reminders_sent", "campaign",
+                        campaign_id,
+                        json.dumps({"count": reminded_count}),
+                        request.remote_addr,
+                    ),
+                )
+
+    except Exception as e:
+        logger.error("Remind DB error: %s", str(e))
+        return jsonify({"error": "Failed to send reminders"}), 500
+
+    return jsonify({
+        "message": f"Sent {reminded_count} reminder(s)",
+        "reminded": reminded_count,
+    })

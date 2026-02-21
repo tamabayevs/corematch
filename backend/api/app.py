@@ -198,8 +198,10 @@ if __name__ == "__main__":
 
     # Initialize DB schema on startup
     from database.schema import create_tables
+    from database.migrations import run_migrations
     try:
         create_tables()
+        run_migrations()
         logging.info("Database schema ready")
     except Exception as e:
         logging.error("Failed to initialize database: %s", e)
