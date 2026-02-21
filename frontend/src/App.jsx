@@ -17,6 +17,7 @@ import CandidateDetailPage from "./pages/dashboard/CandidateDetailPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import ReviewQueuePage from "./pages/dashboard/ReviewQueuePage";
 import ReviewSessionPage from "./pages/dashboard/ReviewSessionPage";
+import TemplatesPage from "./pages/dashboard/TemplatesPage";
 
 // Candidate interview pages
 import WelcomePage from "./pages/candidate/WelcomePage";
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="candidates/:id" element={<CandidateDetailPage />} />
         <Route path="reviews" element={<ReviewQueuePage />} />
         <Route path="reviews/:candidateId" element={<ReviewSessionPage />} />
+        <Route path="templates" element={<TemplatesPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 

@@ -99,6 +99,23 @@
       "campaignCreated": "تم إنشاء حملة"
     }
   },
+  "template": {
+    "library": "مكتبة القوالب",
+    "createTemplate": "إنشاء قالب",
+    "system": "نظام",
+    "custom": "مخصص",
+    "useTemplate": "استخدام القالب",
+    "editTemplate": "تعديل القالب",
+    "deleteConfirm": "هل أنت متأكد من حذف هذا القالب؟",
+    "deleteSuccess": "تم حذف القالب",
+    "noTemplates": "لا توجد قوالب بعد",
+    "noTemplatesDesc": "أنشئ قالباً أو احفظ واحداً من حملة موجودة.",
+    "questions": "{{count}} أسئلة",
+    "saveAsTemplate": "حفظ كقالب",
+    "duplicateCampaign": "تكرار الحملة",
+    "duplicateSuccess": "تم تكرار الحملة بنجاح",
+    "savedAsTemplate": "تم الحفظ كقالب"
+  },
   "review": {
     "queue": "مراجعة الفيديو",
     "toReview": "بانتظار المراجعة",

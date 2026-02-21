@@ -99,6 +99,23 @@
       "campaignCreated": "Created campaign"
     }
   },
+  "template": {
+    "library": "Template Library",
+    "createTemplate": "Create Template",
+    "system": "System",
+    "custom": "Custom",
+    "useTemplate": "Use Template",
+    "editTemplate": "Edit Template",
+    "deleteConfirm": "Are you sure you want to delete this template?",
+    "deleteSuccess": "Template deleted",
+    "noTemplates": "No templates yet",
+    "noTemplatesDesc": "Create a template or save one from an existing campaign.",
+    "questions": "{{count}} questions",
+    "saveAsTemplate": "Save as Template",
+    "duplicateCampaign": "Duplicate Campaign",
+    "duplicateSuccess": "Campaign duplicated successfully",
+    "savedAsTemplate": "Saved as template"
+  },
   "review": {
     "queue": "Video Reviews",
     "toReview": "to review",

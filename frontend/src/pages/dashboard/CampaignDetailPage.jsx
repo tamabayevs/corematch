@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
 import { campaignsApi } from "../../api/campaigns";
 import { candidatesApi } from "../../api/candidates";
+import { templatesApi } from "../../api/templates";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -214,6 +215,27 @@ export default function CampaignDetailPage() {
     }
   };
 
+  // ── Duplicate & Save as Template ────────────────────────
+  const handleDuplicate = async () => {
+    try {
+      const res = await templatesApi.duplicateCampaign(id);
+      navigate(`/dashboard/campaigns/${res.data.campaign.id}`);
+    } catch {
+      // Handle error silently
+    }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    try {
+      await templatesApi.saveFromCampaign(id);
+      // Show brief success (reuse reminder toast pattern)
+      setReminderResult({ message: t("template.savedAsTemplate") });
+      setTimeout(() => setReminderResult(null), 3000);
+    } catch {
+      // Handle error silently
+    }
+  };
+
   // ── Derived counts ────────────────────────────────────────
   const invitedCount = candidates.filter((c) => c.status === "invited").length;
 
@@ -257,6 +279,12 @@ export default function CampaignDetailPage() {
               {t("bulkInvite.remind")} ({invitedCount})
             </Button>
           )}
+          <Button variant="secondary" onClick={handleSaveAsTemplate}>
+            {t("template.saveAsTemplate")}
+          </Button>
+          <Button variant="secondary" onClick={handleDuplicate}>
+            {t("template.duplicateCampaign")}
+          </Button>
           <Button variant="secondary" onClick={() => setShowBulkModal(true)}>
             {t("bulkInvite.title")}
           </Button>
@@ -269,7 +297,7 @@ export default function CampaignDetailPage() {
       {/* Reminder toast */}
       {reminderResult && (
         <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${reminderResult.error ? "bg-red-50 border border-red-200 text-red-700" : "bg-teal-50 border border-teal-200 text-teal-700"}`}>
-          {reminderResult.error || t("bulkInvite.reminderSent", { count: reminderResult.reminded })}
+          {reminderResult.error || reminderResult.message || t("bulkInvite.reminderSent", { count: reminderResult.reminded })}
         </div>
       )}
 

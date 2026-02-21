@@ -849,3 +849,74 @@ def send_reminders(campaign_id):
         "message": f"Sent {reminded_count} reminder(s)",
         "reminded": reminded_count,
     })
+
+
+# ──────────────────────────────────────────────────────────────
+# POST /api/campaigns/:id/duplicate
+# Duplicate a campaign (copies all fields except candidates)
+# ──────────────────────────────────────────────────────────────
+
+@campaigns_bp.route("/<campaign_id>/duplicate", methods=["POST"])
+@require_auth
+def duplicate_campaign(campaign_id):
+    """
+    Duplicate an existing campaign. Creates a new campaign with
+    name 'Copy of [original name]' and copies all configuration
+    fields. Candidates are NOT copied.
+    """
+    import json
+
+    # Verify campaign ownership
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT name, job_title, job_description, language, questions,
+                           invite_expiry_days, allow_retakes, max_recording_seconds
+                    FROM campaigns
+                    WHERE id = %s AND user_id = %s
+                    """,
+                    (campaign_id, g.current_user["id"]),
+                )
+                campaign = cur.fetchone()
+    except Exception as e:
+        logger.error("Duplicate campaign lookup error: %s", str(e))
+        return jsonify({"error": "Failed to verify campaign"}), 500
+
+    if not campaign:
+        return jsonify({"error": "Campaign not found"}), 404
+
+    new_name = f"Copy of {campaign[0]}"
+    questions = campaign[4]
+    if isinstance(questions, str):
+        questions = json.loads(questions)
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO campaigns
+                    (user_id, name, job_title, job_description, language, questions,
+                     invite_expiry_days, allow_retakes, max_recording_seconds)
+                    VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s)
+                    RETURNING id, name, job_title, job_description, language, questions,
+                              invite_expiry_days, allow_retakes, max_recording_seconds,
+                              status, created_at, updated_at
+                    """,
+                    (
+                        g.current_user["id"], new_name, campaign[1], campaign[2],
+                        campaign[3], json.dumps(questions),
+                        campaign[5], campaign[6], campaign[7],
+                    ),
+                )
+                row = cur.fetchone()
+    except Exception as e:
+        logger.error("Duplicate campaign DB error: %s", str(e))
+        return jsonify({"error": "Failed to duplicate campaign"}), 500
+
+    return jsonify({
+        "message": "Campaign duplicated successfully",
+        "campaign": _format_campaign(row),
+    }), 201
