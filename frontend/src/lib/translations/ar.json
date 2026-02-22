@@ -18,7 +18,10 @@
     "or": "أو",
     "error": "خطأ",
     "success": "نجاح",
-    "required": "مطلوب"
+    "required": "مطلوب",
+    "view": "عرض",
+    "previous": "السابق",
+    "copied": "تم النسخ!"
   },
   "brand": {
     "name": "CoreMatch",
@@ -134,7 +137,7 @@
   },
   "review": {
     "queue": "مراجعة الفيديو",
-    "toReview": "بانتظار المراجعة",
+    "toReview": "{count} مرشحين بانتظار المراجعة",
     "reviewed": "تمت المراجعة",
     "unreviewed": "لم تتم المراجعة",
     "startSession": "بدء جلسة المراجعة",
@@ -157,7 +160,16 @@
     "saveDecision": "حفظ القرار",
     "decisionSaved": "تم حفظ القرار",
     "markReviewed": "تعيين كمُراجَع",
-    "totalSubmissions": "إجمالي الطلبات"
+    "totalSubmissions": "إجمالي الطلبات",
+    "campaign": "الحملة",
+    "sortBy": {
+      "score": "الدرجة",
+      "name": "الاسم",
+      "date": "التاريخ"
+    },
+    "page": "صفحة {{current}} من {{total}}",
+    "previous": "السابق",
+    "next": "التالي"
   },
   "bulkInvite": {
     "title": "دعوة جماعية",
@@ -208,7 +220,9 @@
     "maxQuestions": "٧ أسئلة كحد أقصى",
     "editWarning": "تغييرات الأسئلة تنطبق فقط على الدعوات المستقبلية.",
     "exportCSV": "تصدير CSV",
-    "exportSuccess": "تم التصدير"
+    "exportSuccess": "تم التصدير",
+    "copyPublicLink": "نسخ رابط التقديم",
+    "publicLinkCopied": "تم نسخ رابط التقديم العام!"
   },
   "candidate": {
     "score": "الدرجة",
@@ -426,7 +440,31 @@
     "searchName": "اسم البحث",
     "noResults": "لا يوجد مرشحون يطابقون معايير البحث",
     "noSavedSearches": "لا توجد عمليات بحث محفوظة بعد",
-    "viewCandidate": "عرض"
+    "viewCandidate": "عرض",
+    "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني أو محتوى النص...",
+    "tier": "المستوى",
+    "decision": "القرار",
+    "campaign": "الحملة",
+    "scoreMin": "أدنى درجة",
+    "scoreMax": "أعلى درجة",
+    "dateFrom": "من تاريخ",
+    "resultCount": "{{count}} مرشحين تم العثور عليهم",
+    "score": "الدرجة",
+    "tiers": {
+      "gold": "ذهبي",
+      "silver": "فضي",
+      "bronze": "برونزي",
+      "no_tier": "بدون مستوى"
+    },
+    "decisions": {
+      "shortlisted": "في القائمة المختصرة",
+      "rejected": "مرفوض",
+      "on_hold": "قيد الانتظار",
+      "pending": "معلق"
+    },
+    "noResultsDesc": "لا يوجد مرشحون يطابقون معايير البحث. حاول تعديل الفلاتر.",
+    "page": "صفحة {{current}} من {{total}}",
+    "searchNamePlaceholder": "أدخل اسماً لهذا البحث..."
   },
   "assignments": {
     "title": "مهام المراجعة",
@@ -441,7 +479,32 @@
     "completed": "مكتمل",
     "markComplete": "وضع علامة مكتمل",
     "noAssignments": "لا توجد مهام بعد",
-    "assignSuccess": "تم تعيين المراجعين بنجاح"
+    "assignSuccess": "تم تعيين المراجعين بنجاح",
+    "status": {
+      "pending": "معلق",
+      "completed": "مكتمل"
+    },
+    "noAssignmentsDesc": "لا توجد مهام مراجعة بعد. قم بتعيين المرشحين للمراجعين للبدء.",
+    "campaignManagement": "إدارة الحملات",
+    "selectCampaign": "اختر الحملة",
+    "noCampaigns": "لا توجد حملات متاحة",
+    "selectCampaignPrompt": "اختر حملة لإدارة تعيينات المراجعين",
+    "totalAssignments": "إجمالي المهام",
+    "noAssignmentsForCampaign": "لا توجد مهام لهذه الحملة",
+    "assignedDate": "تاريخ التعيين",
+    "assignMode": "وضع التعيين",
+    "roundRobinDesc": "توزيع المرشحين تلقائياً بالتساوي على المراجعين",
+    "manualDesc": "اختيار يدوي للمرشحين لكل مراجع",
+    "candidatesPerReviewer": "المرشحون لكل مراجع",
+    "reviewerIds": "بريد المراجعين",
+    "reviewerIdsPlaceholder": "أدخل عناوين البريد الإلكتروني للمراجعين",
+    "reviewerIdsHint": "عناوين بريد إلكتروني مفصولة بفواصل",
+    "assign": "تعيين",
+    "candidate": "المرشح",
+    "markedComplete": "تم وضع علامة مكتمل",
+    "assigned": "تم التعيين",
+    "assignedOn": "تم التعيين في",
+    "review": "مراجعة"
   },
   "comments": {
     "title": "النقاش",
@@ -459,7 +522,13 @@
     "website": "موقع الشركة",
     "preview": "معاينة",
     "previewWelcome": "مرحباً بك في مقابلة الفيديو",
-    "saved": "تم حفظ إعدادات العلامة التجارية"
+    "saved": "تم حفظ إعدادات العلامة التجارية",
+    "logo": "شعار الشركة",
+    "logoUpload": "رفع الشعار",
+    "logoHint": "PNG أو JPEG أو SVG. الحد الأقصى 2 ميجابايت.",
+    "removeLogo": "إزالة الشعار",
+    "logoUploaded": "تم رفع الشعار بنجاح",
+    "logoRemoved": "تم إزالة الشعار"
   },
   "dsr": {
     "title": "طلبات أصحاب البيانات",
@@ -489,7 +558,23 @@
       "completed": "مكتمل"
     },
     "noRequests": "لا توجد طلبات بيانات بعد",
-    "created": "تم إنشاء الطلب بنجاح"
+    "created": "تم إنشاء الطلب بنجاح",
+    "statuses": {
+      "pending": "معلق",
+      "in_progress": "قيد التنفيذ",
+      "overdue": "متأخر",
+      "completed": "مكتمل",
+      "rejected": "مرفوض"
+    },
+    "subject": "صاحب البيانات",
+    "type": "النوع",
+    "allTypes": "جميع الأنواع",
+    "createdDate": "تاريخ الإنشاء",
+    "statusUpdated": "تم تحديث الحالة بنجاح",
+    "subjectNamePlaceholder": "الاسم الكامل لصاحب البيانات",
+    "subjectEmailPlaceholder": "عنوان البريد الإلكتروني لصاحب البيانات",
+    "descriptionPlaceholder": "وصف طلب صاحب البيانات...",
+    "noRequestsDesc": "لا توجد طلبات بيانات بعد. أنشئ طلباً جديداً لتتبع الامتثال."
   },
   "dropoff": {
     "title": "تحليل الانسحاب",
@@ -506,7 +591,19 @@
     "started": "بدأ",
     "submitted": "أرسل",
     "completionRate": "معدل الإكمال",
-    "dropoffRate": "معدل الانسحاب"
+    "dropoffRate": "معدل الانسحاب",
+    "questionLabel": "السؤال {{num}}",
+    "varianceLabel": "التباين",
+    "abandonmentTitle": "الانسحاب حسب المرحلة",
+    "abandonmentDesc": "أين يتوقف المرشحون في عملية المقابلة",
+    "totalStarted": "إجمالي البدء",
+    "totalCompleted": "إجمالي الإكمال",
+    "overallDropoff": "الانسحاب الإجمالي",
+    "completionComparison": "مقارنة إكمال الحملات",
+    "completionDesc": "قارن معدلات الإكمال عبر حملاتك",
+    "completedSegment": "مكتمل",
+    "startedSegment": "بدأ ولم يرسل",
+    "notStartedSegment": "لم يبدأ"
   },
   "status": {
     "title": "تحقق من حالة المقابلة",
@@ -578,6 +675,7 @@
     "title": "التقارير",
     "subtitle": "تحليلات تنفيذية واتجاهات وتقارير قابلة للتصدير",
     "exportCSV": "تصدير CSV",
+    "exportPDF": "تصدير PDF",
     "totalCandidates": "إجمالي المرشحين",
     "completionRate": "معدل الإكمال",
     "shortlistRate": "معدل القائمة المختصرة",

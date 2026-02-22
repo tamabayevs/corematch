@@ -47,6 +47,7 @@ import ConfirmationPage from "./pages/candidate/ConfirmationPage";
 import ExpiredPage from "./pages/candidate/ExpiredPage";
 import AlreadySubmittedPage from "./pages/candidate/AlreadySubmittedPage";
 import StatusPage from "./pages/candidate/StatusPage";
+import ApplyPage from "./pages/candidate/ApplyPage";
 
 export default function App() {
   return (
@@ -103,6 +104,9 @@ export default function App() {
         <Route path="expired" element={<ExpiredPage />} />
         <Route path="submitted" element={<AlreadySubmittedPage />} />
       </Route>
+
+      {/* Public application page */}
+      <Route path="/apply/:campaignId" element={<ApplyPage />} />
 
       {/* Public candidate status portal */}
       <Route path="/status" element={<StatusPage />} />

@@ -41,14 +41,52 @@ export default function DropoffPage() {
     setLoading(true);
     const config = buildParams();
     try {
-      const [questionRes, abandonRes, completionRes] = await Promise.all([
-        api.get("/insights/question-performance", config),
-        api.get("/insights/abandonment", config),
-        api.get("/insights/campaign-completion", config),
-      ]);
-      setQuestionPerformance(questionRes.data);
-      setAbandonmentData(abandonRes.data);
-      setCampaignCompletion(completionRes.data);
+      const res = await api.get("/insights/dropoff", config);
+      const data = res.data;
+
+      // Map per_question data to the format the chart expects
+      if (data.per_question && data.per_question.length > 0) {
+        setQuestionPerformance({
+          questions: data.per_question.map((q) => ({
+            question_index: q.question_index,
+            avg_score: q.avg_score || 0,
+            score_variance: q.score_variance || 0,
+            answer_count: q.answer_count || 0,
+            question_text: q.question_text || "",
+          })),
+        });
+      } else {
+        setQuestionPerformance(null);
+      }
+
+      // Map abandonment data to stages format
+      if (data.abandonment && data.abandonment.length > 0) {
+        setAbandonmentData({
+          stages: data.abandonment.map((a) => ({
+            name: a.last_question_answered === -1 ? "Before Q1" : `After Q${a.last_question_answered + 1}`,
+            label: a.last_question_answered === -1 ? "Before Q1" : `After Q${a.last_question_answered + 1}`,
+            count: a.count,
+          })),
+        });
+      } else {
+        setAbandonmentData(null);
+      }
+
+      // Map campaign_completion data
+      if (data.campaign_completion && data.campaign_completion.length > 0) {
+        setCampaignCompletion({
+          campaigns: data.campaign_completion.map((c) => ({
+            campaign_id: c.campaign_id,
+            name: c.name,
+            invited_count: c.total,
+            started_count: c.submitted, // best approximation
+            submitted_count: c.submitted,
+            completion_rate: c.completion_rate,
+          })),
+        });
+      } else {
+        setCampaignCompletion(null);
+      }
     } catch {
       // Handle silently — empty states will render
     } finally {

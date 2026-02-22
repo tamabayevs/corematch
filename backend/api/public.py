@@ -16,6 +16,191 @@ from api.middleware import require_invite_token
 logger = logging.getLogger(__name__)
 public_bp = Blueprint("public", __name__)
 
+
+# ──────────────────────────────────────────────────────────────
+# GET /api/public/campaign-info/:campaign_id
+# Public endpoint — returns campaign info for the apply page
+# ──────────────────────────────────────────────────────────────
+
+@public_bp.route("/campaign-info/<campaign_id>", methods=["GET"])
+def get_campaign_info(campaign_id):
+    """
+    Public endpoint returning campaign info for the self-registration page.
+    No auth required — this is the landing page for public application links.
+    """
+    # Validate UUID format
+    try:
+        uuid.UUID(campaign_id)
+    except ValueError:
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT c.id, c.name, c.job_title, c.job_description,
+                           c.company_name, c.language, c.status,
+                           c.questions, c.max_recording_seconds,
+                           b.logo_url, b.primary_color, b.secondary_color
+                    FROM campaigns c
+                    LEFT JOIN company_branding b ON b.user_id = c.user_id
+                    WHERE c.id = %s
+                    """,
+                    (campaign_id,),
+                )
+                row = cur.fetchone()
+    except Exception as e:
+        logger.error("Campaign info DB error: %s", str(e))
+        return jsonify({"error": "Failed to fetch campaign info"}), 500
+
+    if not row:
+        return jsonify({"error": "Campaign not found"}), 404
+
+    if row[6] != "active":
+        return jsonify({"error": "This campaign is no longer accepting applications"}), 410
+
+    questions = row[7] if isinstance(row[7], list) else json.loads(row[7]) if row[7] else []
+
+    return jsonify({
+        "campaign": {
+            "id": str(row[0]),
+            "name": row[1],
+            "job_title": row[2],
+            "job_description": row[3],
+            "company_name": row[4],
+            "language": row[5],
+            "question_count": len(questions),
+            "max_recording_seconds": row[8],
+        },
+        "branding": {
+            "logo_url": row[9],
+            "primary_color": row[10] or "#0D9488",
+            "secondary_color": row[11] or "#F59E0B",
+        },
+    })
+
+
+# ──────────────────────────────────────────────────────────────
+# POST /api/public/apply/:campaign_id
+# Public self-registration endpoint
+# ──────────────────────────────────────────────────────────────
+
+@public_bp.route("/apply/<campaign_id>", methods=["POST"])
+def public_apply(campaign_id):
+    """
+    Public self-registration endpoint.
+    Candidates submit name/email to receive an invite token and start the interview.
+    """
+    # Validate UUID format
+    try:
+        uuid.UUID(campaign_id)
+    except ValueError:
+        return jsonify({"error": "Invalid campaign ID format"}), 400
+
+    data = request.get_json(silent=True) or {}
+    full_name = (data.get("full_name") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    phone = (data.get("phone") or "").strip() or None
+
+    if not full_name:
+        return jsonify({"error": "Full name is required"}), 400
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    # Basic email validation
+    import re
+    if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+        return jsonify({"error": "Invalid email format"}), 400
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Check campaign exists and is active
+                cur.execute(
+                    """
+                    SELECT id, name, job_title, company_name, questions, status,
+                           user_id, invite_expiry_days, language
+                    FROM campaigns WHERE id = %s
+                    """,
+                    (campaign_id,),
+                )
+                campaign = cur.fetchone()
+
+                if not campaign:
+                    return jsonify({"error": "Campaign not found"}), 404
+
+                if campaign[5] != "active":
+                    return jsonify({"error": "This campaign is no longer accepting applications"}), 410
+
+                # Check for duplicate email in this campaign
+                cur.execute(
+                    """
+                    SELECT id FROM candidates
+                    WHERE campaign_id = %s AND email = %s
+                    """,
+                    (campaign_id, email),
+                )
+                existing = cur.fetchone()
+                if existing:
+                    return jsonify({"error": "You have already applied to this campaign"}), 409
+
+                # Create candidate
+                candidate_id = str(uuid.uuid4())
+                invite_token = str(uuid.uuid4())
+                reference_id = f"CM-{uuid.uuid4().hex[:6].upper()}"
+                questions = campaign[4] if isinstance(campaign[4], list) else json.loads(campaign[4]) if campaign[4] else []
+                expiry_days = campaign[7] or 7
+                invite_expires_at = datetime.datetime.utcnow() + datetime.timedelta(days=expiry_days)
+
+                cur.execute(
+                    """
+                    INSERT INTO candidates
+                    (id, campaign_id, full_name, email, phone, status, invite_token,
+                     reference_id, questions_snapshot, invite_expires_at, source, created_at)
+                    VALUES (%s, %s, %s, %s, %s, 'invited', %s, %s, %s::jsonb, %s,
+                            'public_application', NOW())
+                    """,
+                    (
+                        candidate_id, campaign_id, full_name, email, phone,
+                        invite_token, reference_id,
+                        json.dumps(questions), invite_expires_at,
+                    ),
+                )
+
+                # Audit log
+                cur.execute(
+                    """
+                    INSERT INTO audit_log (action, entity_type, entity_id, metadata, ip_address)
+                    VALUES (%s, %s, %s, %s::jsonb, %s)
+                    """,
+                    (
+                        "candidate.public_application",
+                        "candidate",
+                        candidate_id,
+                        json.dumps({
+                            "campaign_id": campaign_id,
+                            "campaign_name": campaign[1],
+                            "email": email,
+                        }),
+                        request.remote_addr,
+                    ),
+                )
+
+    except Exception as e:
+        logger.error("Public apply DB error: %s", str(e))
+        return jsonify({"error": "Failed to process application"}), 500
+
+    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    interview_url = f"{frontend_url}/interview/{invite_token}/welcome"
+
+    return jsonify({
+        "message": "Application submitted successfully",
+        "invite_token": invite_token,
+        "reference_id": reference_id,
+        "interview_url": interview_url,
+    }), 201
+
 # Valid video MIME types and their magic bytes
 VALID_VIDEO_TYPES = {
     "video/webm": b"\x1a\x45\xdf\xa3",   # WebM EBML header

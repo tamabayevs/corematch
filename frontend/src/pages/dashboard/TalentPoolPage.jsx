@@ -9,7 +9,7 @@ const DECISIONS = ["all", "shortlisted", "rejected", "on_hold", "pending"];
 const PAGE_SIZE = 20;
 
 export default function TalentPoolPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const navigate = useNavigate();
 
   const [candidates, setCandidates] = useState([]);
@@ -229,6 +229,7 @@ export default function TalentPoolPage() {
               <label className="block text-xs font-medium text-navy-500 mb-1">{t("talentPool.dateFrom")}</label>
               <input type="date" value={filters.date_from}
                 onChange={e => setFilters(p => ({ ...p, date_from: e.target.value }))}
+                lang={locale === "ar" ? "ar" : "en"}
                 className="w-full border border-navy-200 rounded-lg px-2 py-1.5 text-sm" />
             </div>
           </div>

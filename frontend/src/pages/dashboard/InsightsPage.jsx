@@ -7,7 +7,7 @@ import Spinner from "../../components/ui/Spinner";
 import clsx from "clsx";
 
 export default function InsightsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   // Filters
   const [dateFrom, setDateFrom] = useState("");
@@ -77,12 +77,14 @@ export default function InsightsPage() {
             type="date"
             value={dateFrom}
             onChange={setDateFrom}
+            lang={locale === "ar" ? "ar" : "en"}
           />
           <FilterInput
             label={t("insights.dateTo")}
             type="date"
             value={dateTo}
             onChange={setDateTo}
+            lang={locale === "ar" ? "ar" : "en"}
           />
           <div className="flex flex-col">
             <label className="text-xs font-medium text-navy-500 mb-1">
@@ -129,7 +131,7 @@ export default function InsightsPage() {
 
 // ─── Filter Input ──────────────────────────────────────────────
 
-function FilterInput({ label, type, value, onChange }) {
+function FilterInput({ label, type, value, onChange, lang }) {
   return (
     <div className="flex flex-col">
       <label className="text-xs font-medium text-navy-500 mb-1">{label}</label>
@@ -137,6 +139,7 @@ function FilterInput({ label, type, value, onChange }) {
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        lang={lang}
         className="h-9 rounded-lg border border-navy-200 bg-white px-3 text-sm text-navy-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
       />
     </div>

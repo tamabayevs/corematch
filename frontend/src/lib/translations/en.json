@@ -18,7 +18,10 @@
     "or": "or",
     "error": "Error",
     "success": "Success",
-    "required": "Required"
+    "required": "Required",
+    "view": "View",
+    "previous": "Previous",
+    "copied": "Copied!"
   },
   "brand": {
     "name": "CoreMatch",
@@ -134,7 +137,7 @@
   },
   "review": {
     "queue": "Video Reviews",
-    "toReview": "to review",
+    "toReview": "{count} candidates to review",
     "reviewed": "Reviewed",
     "unreviewed": "Unreviewed",
     "startSession": "Start Review Session",
@@ -157,7 +160,16 @@
     "saveDecision": "Save Decision",
     "decisionSaved": "Decision saved",
     "markReviewed": "Mark as Reviewed",
-    "totalSubmissions": "Total Submissions"
+    "totalSubmissions": "Total Submissions",
+    "campaign": "Campaign",
+    "sortBy": {
+      "score": "Score",
+      "name": "Name",
+      "date": "Date"
+    },
+    "page": "Page {{current}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next"
   },
   "bulkInvite": {
     "title": "Bulk Invite",
@@ -208,7 +220,9 @@
     "maxQuestions": "Maximum 7 questions allowed",
     "editWarning": "Question changes only apply to future invitations.",
     "exportCSV": "Export CSV",
-    "exportSuccess": "Export complete"
+    "exportSuccess": "Export complete",
+    "copyPublicLink": "Copy Public Link",
+    "publicLinkCopied": "Public application link copied!"
   },
   "candidate": {
     "score": "Score",
@@ -426,7 +440,31 @@
     "searchName": "Search Name",
     "noResults": "No candidates match your search criteria",
     "noSavedSearches": "No saved searches yet",
-    "viewCandidate": "View"
+    "viewCandidate": "View",
+    "searchPlaceholder": "Search by name, email, or transcript content...",
+    "tier": "Tier",
+    "decision": "Decision",
+    "campaign": "Campaign",
+    "scoreMin": "Min Score",
+    "scoreMax": "Max Score",
+    "dateFrom": "From Date",
+    "resultCount": "{{count}} candidates found",
+    "score": "Score",
+    "tiers": {
+      "gold": "Gold",
+      "silver": "Silver",
+      "bronze": "Bronze",
+      "no_tier": "No Tier"
+    },
+    "decisions": {
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected",
+      "on_hold": "On Hold",
+      "pending": "Pending"
+    },
+    "noResultsDesc": "No candidates match your search criteria. Try adjusting your filters.",
+    "page": "Page {{current}} of {{total}}",
+    "searchNamePlaceholder": "Enter a name for this search..."
   },
   "assignments": {
     "title": "Review Assignments",
@@ -441,7 +479,32 @@
     "completed": "Completed",
     "markComplete": "Mark Complete",
     "noAssignments": "No assignments yet",
-    "assignSuccess": "Reviewers assigned successfully"
+    "assignSuccess": "Reviewers assigned successfully",
+    "status": {
+      "pending": "Pending",
+      "completed": "Completed"
+    },
+    "noAssignmentsDesc": "No review assignments yet. Assign candidates to reviewers to get started.",
+    "campaignManagement": "Campaign Management",
+    "selectCampaign": "Select Campaign",
+    "noCampaigns": "No campaigns available",
+    "selectCampaignPrompt": "Choose a campaign to manage reviewer assignments",
+    "totalAssignments": "total assignments",
+    "noAssignmentsForCampaign": "No assignments for this campaign",
+    "assignedDate": "Assigned Date",
+    "assignMode": "Assignment Mode",
+    "roundRobinDesc": "Automatically distribute candidates evenly across reviewers",
+    "manualDesc": "Manually select which candidates each reviewer evaluates",
+    "candidatesPerReviewer": "Candidates per Reviewer",
+    "reviewerIds": "Reviewer Emails",
+    "reviewerIdsPlaceholder": "Enter reviewer email addresses",
+    "reviewerIdsHint": "Comma-separated email addresses of team members",
+    "assign": "Assign",
+    "candidate": "Candidate",
+    "markedComplete": "Marked as Complete",
+    "assigned": "Assigned",
+    "assignedOn": "Assigned on",
+    "review": "Review"
   },
   "comments": {
     "title": "Discussion",
@@ -459,7 +522,13 @@
     "website": "Company Website",
     "preview": "Preview",
     "previewWelcome": "Welcome to your video interview",
-    "saved": "Branding settings saved"
+    "saved": "Branding settings saved",
+    "logo": "Company Logo",
+    "logoUpload": "Upload Logo",
+    "logoHint": "PNG, JPEG, or SVG. Max 2MB.",
+    "removeLogo": "Remove Logo",
+    "logoUploaded": "Logo uploaded successfully",
+    "logoRemoved": "Logo removed"
   },
   "dsr": {
     "title": "Data Subject Requests",
@@ -489,7 +558,23 @@
       "completed": "Completed"
     },
     "noRequests": "No data subject requests yet",
-    "created": "Request created successfully"
+    "created": "Request created successfully",
+    "statuses": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "overdue": "Overdue",
+      "completed": "Completed",
+      "rejected": "Rejected"
+    },
+    "subject": "Subject",
+    "type": "Type",
+    "allTypes": "All Types",
+    "createdDate": "Created",
+    "statusUpdated": "Status updated successfully",
+    "subjectNamePlaceholder": "Full name of the data subject",
+    "subjectEmailPlaceholder": "Email address of the data subject",
+    "descriptionPlaceholder": "Describe the data subject request...",
+    "noRequestsDesc": "No data subject requests yet. Create a new request to track PDPL compliance."
   },
   "dropoff": {
     "title": "Drop-off Analysis",
@@ -506,7 +591,19 @@
     "started": "Started",
     "submitted": "Submitted",
     "completionRate": "Completion Rate",
-    "dropoffRate": "Drop-off Rate"
+    "dropoffRate": "Drop-off Rate",
+    "questionLabel": "Question {{num}}",
+    "varianceLabel": "Var",
+    "abandonmentTitle": "Abandonment by Stage",
+    "abandonmentDesc": "Where candidates stop in the interview process",
+    "totalStarted": "Total Started",
+    "totalCompleted": "Total Completed",
+    "overallDropoff": "Overall Drop-off",
+    "completionComparison": "Campaign Completion Comparison",
+    "completionDesc": "Compare completion rates across your campaigns",
+    "completedSegment": "Completed",
+    "startedSegment": "Started but not submitted",
+    "notStartedSegment": "Not started"
   },
   "status": {
     "title": "Check Interview Status",
@@ -578,6 +675,7 @@
     "title": "Reports",
     "subtitle": "Executive-ready analytics, trends, and exportable reports",
     "exportCSV": "Export CSV",
+    "exportPDF": "Export PDF",
     "totalCandidates": "Total Candidates",
     "completionRate": "Completion Rate",
     "shortlistRate": "Shortlist Rate",

@@ -189,7 +189,7 @@ export default function DSRPage() {
                 <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.type")}</th>
                 <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("candidate.status")}</th>
                 <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.deadline")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.created")}</th>
+                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.createdDate")}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>

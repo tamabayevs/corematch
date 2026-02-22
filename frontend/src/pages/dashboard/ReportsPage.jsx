@@ -40,6 +40,18 @@ export default function ReportsPage() {
     } catch {}
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const res = await reportsAPI.exportPDF({});
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "corematch-report.pdf";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch {}
+  };
+
   const tierColors = {
     strong_proceed: "#0d9488",
     consider: "#f59e0b",
@@ -53,20 +65,25 @@ export default function ReportsPage() {
           <h1 className="text-2xl font-bold text-navy-900">{t("reports.title")}</h1>
           <p className="text-navy-500 mt-1">{t("reports.subtitle")}</p>
         </div>
-        <button onClick={handleExportCSV} className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-          {t("reports.exportCSV")}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={handleExportPDF} className="bg-navy-100 hover:bg-navy-200 text-navy-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            {t("reports.exportPDF")}
+          </button>
+          <button onClick={handleExportCSV} className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            {t("reports.exportCSV")}
+          </button>
+        </div>
       </div>
 
       {/* Date filters */}
       <div className="bg-white rounded-xl border border-navy-200 p-4 flex items-center gap-4">
         <div className="flex items-center gap-2">
           <label className="text-sm text-navy-600">{t("insights.dateFrom")}:</label>
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="px-3 py-1.5 border border-navy-300 rounded-lg text-sm" />
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} lang={locale === "ar" ? "ar" : "en"} className="px-3 py-1.5 border border-navy-300 rounded-lg text-sm" />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-navy-600">{t("insights.dateTo")}:</label>
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="px-3 py-1.5 border border-navy-300 rounded-lg text-sm" />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} lang={locale === "ar" ? "ar" : "en"} className="px-3 py-1.5 border border-navy-300 rounded-lg text-sm" />
         </div>
       </div>
 

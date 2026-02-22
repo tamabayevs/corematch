@@ -134,7 +134,7 @@ def executive_summary():
             "avg_score": round(float(kpi_row[4]), 1) if kpi_row[4] else None,
             "campaigns_used": kpi_row[5] or 0,
             "completion_rate": round(submitted / total * 100, 1) if total > 0 else 0,
-            "shortlist_rate": round((kpi_row[2] or 0) / max(submitted, 1) * 100, 1),
+            "shortlist_rate": round((kpi_row[2] or 0) / max(total, 1) * 100, 1),
         },
         "monthly_trends": [
             {
