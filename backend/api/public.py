@@ -48,11 +48,12 @@ def get_campaign_info(campaign_id):
                     cur.execute(
                         """
                         SELECT c.id, c.name, c.job_title, c.job_description,
-                               c.company_name, c.language, c.status,
+                               u.company_name, c.language, c.status,
                                c.questions, c.max_recording_seconds,
                                b.logo_url, b.primary_color, b.secondary_color,
                                c.pipeline_enabled
                         FROM campaigns c
+                        JOIN users u ON c.user_id = u.id
                         LEFT JOIN company_branding b ON b.user_id = c.user_id
                         WHERE c.id = %s
                         """,
@@ -62,11 +63,12 @@ def get_campaign_info(campaign_id):
                     cur.execute(
                         """
                         SELECT c.id, c.name, c.job_title, c.job_description,
-                               c.company_name, c.language, c.status,
+                               u.company_name, c.language, c.status,
                                c.questions, c.max_recording_seconds,
                                b.logo_url, b.primary_color, b.secondary_color,
                                FALSE as pipeline_enabled
                         FROM campaigns c
+                        JOIN users u ON c.user_id = u.id
                         LEFT JOIN company_branding b ON b.user_id = c.user_id
                         WHERE c.id = %s
                         """,
@@ -180,20 +182,24 @@ def public_apply(campaign_id):
                 if has_pipeline_col:
                     cur.execute(
                         """
-                        SELECT id, name, job_title, company_name, questions, status,
-                               user_id, invite_expiry_days, language, pipeline_enabled,
-                               job_description
-                        FROM campaigns WHERE id = %s
+                        SELECT c.id, c.name, c.job_title, u.company_name, c.questions, c.status,
+                               c.user_id, c.invite_expiry_days, c.language, c.pipeline_enabled,
+                               c.job_description
+                        FROM campaigns c
+                        JOIN users u ON c.user_id = u.id
+                        WHERE c.id = %s
                         """,
                         (campaign_id,),
                     )
                 else:
                     cur.execute(
                         """
-                        SELECT id, name, job_title, company_name, questions, status,
-                               user_id, invite_expiry_days, language, FALSE as pipeline_enabled,
-                               job_description
-                        FROM campaigns WHERE id = %s
+                        SELECT c.id, c.name, c.job_title, u.company_name, c.questions, c.status,
+                               c.user_id, c.invite_expiry_days, c.language, FALSE as pipeline_enabled,
+                               c.job_description
+                        FROM campaigns c
+                        JOIN users u ON c.user_id = u.id
+                        WHERE c.id = %s
                         """,
                         (campaign_id,),
                     )
