@@ -234,6 +234,26 @@ def process_candidate(candidate_id: str) -> dict:
         overall_score = None
         tier = None
 
+    # ── Step 4b: Trigger pipeline Stage 2 if campaign is pipeline-enabled ──
+    if all_scores:
+        try:
+            from services.pipeline_service import get_pipeline_config, _enqueue_stage
+            pipeline_config = get_pipeline_config(str(row[1]))  # campaign_id
+            if pipeline_config:
+                # Update candidate status to video_scored and enqueue Stage 2 agent
+                with get_db() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute("""
+                            UPDATE candidates
+                            SET status = 'video_scored', pipeline_stage = 2, updated_at = NOW()
+                            WHERE id = %s AND pipeline_stage IS NOT NULL AND pipeline_stage >= 1
+                        """, (candidate_id,))
+                        if cur.rowcount > 0:
+                            logger.info("Pipeline-enabled: enqueuing Stage 2 for candidate %s", candidate_id)
+                _enqueue_stage(candidate_id, str(row[1]), stage=2)
+        except Exception as e:
+            logger.warning("Pipeline Stage 2 trigger failed (non-critical): %s", e)
+
     # ── Step 5: Send notification emails ──
     email_svc = get_email_service()
 

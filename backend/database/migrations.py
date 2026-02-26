@@ -431,6 +431,96 @@ MIGRATIONS = [
     CREATE INDEX IF NOT EXISTS idx_video_answers_transcript_fts
         ON video_answers USING GIN (to_tsvector('english', COALESCE(transcript, '')));
     """,
+    # ── v2.0: Agentic Pipeline — pipeline_configs, candidate_documents, agent_evaluations ──
+    """
+    -- Pipeline configuration per campaign
+    CREATE TABLE IF NOT EXISTS pipeline_configs (
+        id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        campaign_id         UUID NOT NULL UNIQUE REFERENCES campaigns(id) ON DELETE CASCADE,
+        stages              JSONB NOT NULL DEFAULT '[]'::jsonb,
+        default_provider    VARCHAR(50) DEFAULT 'groq',
+        default_model       VARCHAR(100) DEFAULT 'llama-3.3-70b-versatile',
+        created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_pipeline_configs_campaign ON pipeline_configs(campaign_id);
+
+    DROP TRIGGER IF EXISTS trg_update_pipeline_configs_updated_at ON pipeline_configs;
+    CREATE TRIGGER trg_update_pipeline_configs_updated_at
+    BEFORE UPDATE ON pipeline_configs
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    """,
+    """
+    -- Candidate documents (CV uploads, extracted text)
+    CREATE TABLE IF NOT EXISTS candidate_documents (
+        id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        candidate_id        UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+        document_type       VARCHAR(20) NOT NULL
+                            CHECK (document_type IN ('cv', 'cover_letter', 'other')),
+        original_filename   VARCHAR(500),
+        storage_key         VARCHAR(500) NOT NULL,
+        content_type        VARCHAR(100),
+        file_size_bytes     BIGINT,
+        extracted_text      TEXT,
+        extraction_status   VARCHAR(20) DEFAULT 'pending'
+                            CHECK (extraction_status IN ('pending', 'processing', 'complete', 'failed')),
+        metadata            JSONB DEFAULT '{}'::jsonb,
+        created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_candidate_docs_candidate ON candidate_documents(candidate_id);
+    """,
+    """
+    -- Agent evaluations (AI agent assessments across all pipeline stages)
+    CREATE TABLE IF NOT EXISTS agent_evaluations (
+        id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        candidate_id        UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+        campaign_id         UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+        stage               INTEGER NOT NULL CHECK (stage BETWEEN 1 AND 4),
+        agent_type          VARCHAR(30) NOT NULL
+                            CHECK (agent_type IN ('cv_screener', 'video_scorer', 'deep_evaluator', 'shortlist_ranker')),
+        overall_score       NUMERIC(5,2),
+        scores_detail       JSONB DEFAULT '{}'::jsonb,
+        recommendation      VARCHAR(20) NOT NULL
+                            CHECK (recommendation IN ('advance', 'reject', 'needs_review')),
+        confidence          NUMERIC(4,2),
+        summary             TEXT,
+        strengths           JSONB DEFAULT '[]'::jsonb,
+        concerns            JSONB DEFAULT '[]'::jsonb,
+        evidence            JSONB DEFAULT '[]'::jsonb,
+        hr_decision         VARCHAR(20)
+                            CHECK (hr_decision IN ('approved', 'rejected', 'overridden')),
+        hr_decision_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+        hr_decision_at      TIMESTAMPTZ,
+        hr_override_reason  TEXT,
+        provider            VARCHAR(50),
+        model_used          VARCHAR(100),
+        raw_response        JSONB,
+        tokens_used         INTEGER,
+        latency_ms          INTEGER,
+        created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_agent_evals_candidate ON agent_evaluations(candidate_id);
+    CREATE INDEX IF NOT EXISTS idx_agent_evals_campaign_stage ON agent_evaluations(campaign_id, stage);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_evals_unique ON agent_evaluations(candidate_id, stage, agent_type);
+    """,
+    """
+    -- Add pipeline columns to campaigns and candidates
+    ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS pipeline_enabled BOOLEAN DEFAULT FALSE;
+
+    ALTER TABLE candidates ADD COLUMN IF NOT EXISTS linkedin_url VARCHAR(500);
+    ALTER TABLE candidates ADD COLUMN IF NOT EXISTS pipeline_stage INTEGER DEFAULT 0;
+    """,
+    """
+    -- Expand candidates status CHECK to include pipeline statuses
+    ALTER TABLE candidates DROP CONSTRAINT IF EXISTS candidates_status_check;
+    ALTER TABLE candidates ADD CONSTRAINT candidates_status_check
+        CHECK (status IN (
+            'invited', 'started', 'submitted', 'erased',
+            'applied', 'screening', 'screen_complete',
+            'video_scored', 'deep_eval', 'deep_complete',
+            'shortlisted', 'rejected', 'on_hold'
+        ));
+    """,
 ]
 
 

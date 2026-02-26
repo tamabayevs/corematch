@@ -36,6 +36,7 @@ import NotificationTemplatesPage from "./pages/dashboard/NotificationTemplatesPa
 import IntegrationsPage from "./pages/dashboard/IntegrationsPage";
 import ReportsPage from "./pages/dashboard/ReportsPage";
 import SaudizationPage from "./pages/dashboard/SaudizationPage";
+import PipelinePage from "./pages/dashboard/PipelinePage";
 
 // Candidate interview pages
 import WelcomePage from "./pages/candidate/WelcomePage";
@@ -91,6 +92,8 @@ export default function App() {
         <Route path="integrations" element={<IntegrationsPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="saudization" element={<SaudizationPage />} />
+        {/* Pipeline */}
+        <Route path="campaigns/:id/pipeline" element={<PipelinePage />} />
       </Route>
 
       {/* Candidate interview routes */}

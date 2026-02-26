@@ -46,6 +46,7 @@ const navSections = [
     items: [
       { path: "/dashboard/reviews", label: "review.queue", icon: ReviewsIcon },
       { path: "/dashboard/assignments", label: "nav.assignments", icon: AssignmentsIcon },
+      // Pipeline nav is accessed per-campaign, not as a top-level item
       { path: "/dashboard/calibration", label: "nav.calibration", icon: CalibrationIcon },
       { path: "/dashboard/insights", label: "nav.insights", icon: InsightsIcon },
       { path: "/dashboard/reports", label: "nav.reports", icon: ReportsIcon },

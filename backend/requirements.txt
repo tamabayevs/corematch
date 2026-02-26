@@ -56,5 +56,9 @@ email-validator==2.2.0
 # PDF Generation
 fpdf2>=2.7.0
 
+# Document Parsing (CV extraction for AI pipeline)
+PyPDF2>=3.0.0
+python-docx>=0.8.11
+
 # WSGI server for production
 gunicorn==22.0.0

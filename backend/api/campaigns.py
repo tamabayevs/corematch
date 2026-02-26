@@ -57,7 +57,7 @@ def _normalize_question(q: dict, index: int) -> dict:
 
 def _format_campaign(row) -> dict:
     """Format a DB row into a campaign dict."""
-    return {
+    result = {
         "id": str(row[0]),
         "name": row[1],
         "job_title": row[2],
@@ -72,7 +72,9 @@ def _format_campaign(row) -> dict:
         "updated_at": row[11].isoformat() if row[11] else None,
         "candidate_count": row[12] if len(row) > 12 else None,
         "submitted_count": row[13] if len(row) > 13 else None,
+        "pipeline_enabled": row[14] if len(row) > 14 else False,
     }
+    return result
 
 
 # ──────────────────────────────────────────────────────────────
@@ -95,7 +97,8 @@ def list_campaigns():
                                c.questions, c.invite_expiry_days, c.allow_retakes,
                                c.max_recording_seconds, c.status, c.created_at, c.updated_at,
                                COUNT(cand.id) as candidate_count,
-                               COUNT(cand.id) FILTER (WHERE cand.status = 'submitted') as submitted_count
+                               COUNT(cand.id) FILTER (WHERE cand.status = 'submitted') as submitted_count,
+                               c.pipeline_enabled
                         FROM campaigns c
                         LEFT JOIN candidates cand ON cand.campaign_id = c.id
                         WHERE c.user_id = %s AND c.status = %s
@@ -111,7 +114,8 @@ def list_campaigns():
                                c.questions, c.invite_expiry_days, c.allow_retakes,
                                c.max_recording_seconds, c.status, c.created_at, c.updated_at,
                                COUNT(cand.id) as candidate_count,
-                               COUNT(cand.id) FILTER (WHERE cand.status = 'submitted') as submitted_count
+                               COUNT(cand.id) FILTER (WHERE cand.status = 'submitted') as submitted_count,
+                               c.pipeline_enabled
                         FROM campaigns c
                         LEFT JOIN candidates cand ON cand.campaign_id = c.id
                         WHERE c.user_id = %s AND c.status != 'archived'
@@ -172,6 +176,7 @@ def create_campaign():
         return jsonify({"error": f"max_recording_seconds must be {MIN_RECORDING_SECONDS}-{MAX_RECORDING_SECONDS}"}), 400
 
     job_description = data.get("job_description", "").strip() or None
+    pipeline_enabled = bool(data.get("pipeline_enabled", False))
 
     import json
     try:
@@ -181,19 +186,46 @@ def create_campaign():
                     """
                     INSERT INTO campaigns
                     (user_id, name, job_title, job_description, language, questions,
-                     invite_expiry_days, allow_retakes, max_recording_seconds)
-                    VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s)
+                     invite_expiry_days, allow_retakes, max_recording_seconds,
+                     pipeline_enabled)
+                    VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s, %s)
                     RETURNING id, name, job_title, job_description, language, questions,
                               invite_expiry_days, allow_retakes, max_recording_seconds,
-                              status, created_at, updated_at
+                              status, created_at, updated_at, 0, 0, pipeline_enabled
                     """,
                     (
                         g.current_user["id"], name, job_title, job_description,
                         language, json.dumps(questions),
                         invite_expiry_days, allow_retakes, max_recording_seconds,
+                        pipeline_enabled,
                     ),
                 )
                 row = cur.fetchone()
+
+                # If pipeline enabled, create default pipeline config
+                if pipeline_enabled:
+                    campaign_id = str(row[0])
+                    cur.execute(
+                        """
+                        INSERT INTO pipeline_configs (campaign_id, stages, default_provider, default_model)
+                        VALUES (%s, %s::jsonb, 'groq', 'llama-3.3-70b-versatile')
+                        ON CONFLICT (campaign_id) DO NOTHING
+                        """,
+                        (
+                            campaign_id,
+                            json.dumps([
+                                {"stage": 1, "name": "cv_screening", "enabled": True,
+                                 "provider": "groq", "model": "llama-3.3-70b-versatile",
+                                 "advance_threshold": 70, "reject_threshold": 30},
+                                {"stage": 2, "name": "video_scoring", "enabled": True,
+                                 "provider": "groq", "model": "llama-3.3-70b-versatile"},
+                                {"stage": 3, "name": "deep_evaluation", "enabled": True,
+                                 "provider": "groq", "model": "llama-3.3-70b-versatile"},
+                                {"stage": 4, "name": "shortlist_ranking", "enabled": True,
+                                 "provider": "groq", "model": "llama-3.3-70b-versatile"},
+                            ]),
+                        ),
+                    )
     except Exception as e:
         logger.error("Create campaign DB error: %s", str(e))
         return jsonify({"error": "Failed to create campaign"}), 500
@@ -224,7 +256,8 @@ def get_campaign(campaign_id):
                            c.questions, c.invite_expiry_days, c.allow_retakes,
                            c.max_recording_seconds, c.status, c.created_at, c.updated_at,
                            COUNT(cand.id) as candidate_count,
-                           COUNT(cand.id) FILTER (WHERE cand.status = 'submitted') as submitted_count
+                           COUNT(cand.id) FILTER (WHERE cand.status = 'submitted') as submitted_count,
+                           c.pipeline_enabled
                     FROM campaigns c
                     LEFT JOIN candidates cand ON cand.campaign_id = c.id
                     WHERE c.id = %s AND c.user_id = %s

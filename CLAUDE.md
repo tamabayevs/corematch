@@ -1,10 +1,10 @@
-# CoreMatch — Project Guide (v1.1)
+# CoreMatch — Project Guide (v1.2)
 
 ## What is this?
 AI-powered video interview platform for MENA HR teams. Candidates record async video answers; AI scores them; HR reviews and decides.
 
-**Version:** 1.1 (2026-02-21)
-**Status:** All 26 features fully wired end-to-end. v1.1 fixes 6 gaps found in v1.0 audit: notification service, logo upload, full-text transcript search, @mentions, PDF export. 105 backend tests passing. 85/85 network stress tests passing.
+**Version:** 1.2 (2026-02-22)
+**Status:** All 26 features fully wired end-to-end. v1.2 adds 61 missing translation keys, fixes data calculation bugs, UI polish, and public application flow. 105 backend tests passing. 85/85 network stress tests passing.
 
 ## Tech Stack
 - **Backend:** Flask 3.0 + PostgreSQL 15 + Redis/RQ + Groq API (Python 3.9)
@@ -30,7 +30,7 @@ frontend/
   src/
     api/         # Axios API clients (client.js, campaigns.js, dashboard.js, templates.js, etc.)
     components/  # ui/ (Button, Card, Badge, Input, Modal, etc.), layout/ (DashboardLayout)
-    pages/       # auth/, dashboard/ (15 pages), candidate/
+    pages/       # auth/, dashboard/ (15 pages), candidate/ (incl. ApplyPage)
     store/       # Zustand stores (authStore)
     lib/         # i18n.jsx, translations/, formatDate.js, hijriCalendar.js
 ```
@@ -82,6 +82,8 @@ bash stress_test.sh
 - Custom Tailwind colors: `primary-*` (teal), `accent-*` (amber), `navy-*` (dark slate)
 - Dates: Use shared `formatDate.js` utility (supports Hijri dual-display in Arabic mode)
 - MENA weekends: Invite/remind endpoints include weekend warnings on Fri/Sat (non-blocking)
+- Public application flow: `/apply/:campaignId` → self-registration → auto-redirect to interview
+- Date inputs: Add `lang` attribute matching current locale to avoid system-locale date format
 
 ## Sidebar Navigation
 ```
@@ -155,8 +157,26 @@ SETTINGS
 - ✅ PDF export (`GET /api/reports/export/pdf`) — executive report with KPIs, tier distribution, top campaigns via fpdf2
 - ✅ Migration 14: FTS index on video_answers transcript
 
-## Stress Test Summary (v1.1)
-- **85/85 tests passing** — auth, dashboard, campaigns, candidates, reviews, assignments, insights, reports, templates, scorecards, compliance, DSR, branding, team, integrations, talent pool, saudization, public endpoints, error handling, concurrent stress, sequential burst
+### v1.2 UI Polish & Public Application Flow ✅
+- ✅ 61 missing translation keys added to en.json and ar.json (Assignments, Talent Pool, DSR, Video Reviews)
+- ✅ Fixed DSRPage column header bug (success message displayed as column header)
+- ✅ Fixed "Shortlist Rate: 300%" on Reports page (capped conversion rates, fixed denominator)
+- ✅ Fixed "Reviewed: 300%" on Insights funnel (capped step-to-step rates at 100%)
+- ✅ Added `lang` attribute to all date inputs to fix Russian locale date format issue
+- ✅ Fixed "1 questions" grammar on Template Library (proper singular/plural)
+- ✅ Added "Export PDF" button to Reports page (calls existing PDF endpoint)
+- ✅ Added logo upload UI to Branding page (file input, preview, delete)
+- ✅ Populated Drop-off Analysis page with per-question charts and abandonment data
+- ✅ Fixed Review Queue subtitle to show candidate count
+- ✅ **Public Application Flow** — new feature:
+  - `GET /api/public/campaign-info/:id` — returns campaign details + branding for public landing page
+  - `POST /api/public/apply/:id` — candidate self-registration (name, email, phone → creates candidate + invite token)
+  - `ApplyPage.jsx` at `/apply/:campaignId` — branded landing page with registration form
+  - "Copy Public Link" button on Campaign Detail page — clipboard copy with toast notification
+  - Duplicate email detection (409), closed campaign detection (410), full audit trail
+
+## Stress Test Summary (v1.2)
+- **85/85 tests passing** — auth, dashboard, campaigns, candidates, reviews, assignments, insights, reports, templates, scorecards, compliance, DSR, branding, team, integrations, talent pool, saudization, public endpoints (incl. apply), error handling, concurrent stress, sequential burst
 - **Avg response time:** ~350ms
 - **Concurrent (10x):** 100% success rate across 8 endpoints
 - **Sequential burst (50x):** 50/50 OK, avg 420ms

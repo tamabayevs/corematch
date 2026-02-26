@@ -713,5 +713,84 @@
     "saudiPct": "نسبة السعودة",
     "shortlisted": "في القائمة المختصرة",
     "noData": "لا توجد بيانات جنسية متاحة"
+  },
+  "pipeline": {
+    "title": "خط فحص الذكاء الاصطناعي",
+    "subtitle": "وكلاء الذكاء الاصطناعي يفحصون المرشحين عبر مراحل متعددة قبل المراجعة البشرية",
+    "enableToggle": "تفعيل خط فحص الذكاء الاصطناعي",
+    "enableDescription": "يقدم المرشحون سيرتهم الذاتية أولاً. يفحص الذكاء الاصطناعي ملفهم الشخصي قبل دعوتهم لمقابلة فيديو.",
+    "viewPipeline": "عرض خط الفحص",
+    "candidates": "مرشحو خط الفحص",
+    "noCandidates": "لا يوجد مرشحون بعد",
+    "noCandidatesDesc": "سيظهر المرشحون هنا بمجرد تقديمهم عبر رابط التقديم العام.",
+    "selectCandidate": "اختر مرشحاً لعرض تفاصيل تقييمه",
+    "cvDocument": "مستند السيرة الذاتية",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "override": "تجاوز",
+    "submitOverride": "تقديم التجاوز",
+    "overridePlaceholder": "اشرح سبب تجاوزك لتوصية الذكاء الاصطناعي (مطلوب للامتثال)...",
+    "overrideReason": "سبب التجاوز",
+    "confidence": "الثقة",
+    "strengths": "نقاط القوة",
+    "concerns": "المخاوف",
+    "showEvidence": "عرض الأدلة",
+    "hideEvidence": "إخفاء الأدلة",
+    "stage": {
+      "cv_screening": "فحص السيرة الذاتية",
+      "video_scoring": "مقابلة الفيديو",
+      "deep_evaluation": "التقييم المعمق",
+      "shortlist_ranking": "القائمة المختصرة النهائية"
+    },
+    "agent": {
+      "cv_screener": "وكيل فحص السيرة الذاتية",
+      "video_scorer": "وكيل تقييم الفيديو",
+      "deep_evaluator": "وكيل التقييم المعمق",
+      "shortlist_ranker": "وكيل ترتيب القائمة المختصرة"
+    },
+    "recommendation": {
+      "advance": "تقدم",
+      "reject": "رفض",
+      "needs_review": "يحتاج مراجعة"
+    },
+    "hr_decision": {
+      "approved": "موافق عليه من الموارد البشرية",
+      "rejected": "مرفوض من الموارد البشرية",
+      "overridden": "تم التجاوز"
+    },
+    "status": {
+      "applied": "تم التقديم",
+      "screening": "قيد الفحص",
+      "screen_complete": "اكتمل الفحص",
+      "invited": "تمت الدعوة",
+      "started": "بدأ",
+      "submitted": "تم الإرسال",
+      "video_scored": "تم تقييم الفيديو",
+      "deep_eval": "التقييم المعمق",
+      "deep_complete": "اكتمل التقييم",
+      "shortlisted": "في القائمة المختصرة",
+      "rejected": "مرفوض",
+      "on_hold": "قيد الانتظار"
+    },
+    "score": {
+      "relevance": "الصلة",
+      "experience_match": "تطابق الخبرة",
+      "skills_match": "تطابق المهارات",
+      "education_match": "تطابق التعليم",
+      "technical_fit": "التوافق التقني",
+      "cultural_fit": "التوافق الثقافي",
+      "growth_potential": "إمكانية النمو",
+      "composite_score": "النتيجة المركبة"
+    },
+    "funnel": {
+      "title": "قمع خط الفحص",
+      "applied": "تقدموا",
+      "screening": "قيد الفحص",
+      "screened": "اكتمل الفحص",
+      "interviewing": "في المقابلة",
+      "evaluated": "تم التقييم",
+      "shortlisted": "في القائمة المختصرة",
+      "rejected": "مرفوض"
+    }
   }
 }

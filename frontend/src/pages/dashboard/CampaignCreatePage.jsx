@@ -29,6 +29,7 @@ export default function CampaignCreatePage() {
     invite_expiry_days: 7,
     max_recording_seconds: 120,
     allow_retakes: true,
+    pipeline_enabled: false,
   });
 
   const updateField = (field) => (e) =>
@@ -278,6 +279,29 @@ export default function CampaignCreatePage() {
                 {t("campaign.allowRetakes")}
               </label>
             </div>
+
+            {/* AI Pipeline Toggle */}
+            <div className="border-t border-navy-200 pt-4 mt-4">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="pipeline_enabled"
+                  checked={form.pipeline_enabled}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, pipeline_enabled: e.target.checked }))
+                  }
+                  className="h-4 w-4 mt-0.5 rounded border-navy-300 text-primary-600 focus:ring-primary-500"
+                />
+                <div>
+                  <label htmlFor="pipeline_enabled" className="text-sm font-medium text-navy-700">
+                    {t("pipeline.enableToggle")}
+                  </label>
+                  <p className="text-xs text-navy-500 mt-0.5">
+                    {t("pipeline.enableDescription")}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -310,6 +334,14 @@ export default function CampaignCreatePage() {
                 <dt className="text-sm text-navy-500">{t("campaign.allowRetakes")}</dt>
                 <dd className="text-sm font-medium">
                   {form.allow_retakes ? t("common.yes") : t("common.no")}
+                </dd>
+              </div>
+              <div className="py-3 flex justify-between">
+                <dt className="text-sm text-navy-500">{t("pipeline.enableToggle")}</dt>
+                <dd className="text-sm font-medium">
+                  {form.pipeline_enabled ? (
+                    <span className="text-primary-600">{t("common.yes")}</span>
+                  ) : t("common.no")}
                 </dd>
               </div>
             </dl>

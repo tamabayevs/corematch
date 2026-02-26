@@ -713,5 +713,84 @@
     "saudiPct": "Saudi %",
     "shortlisted": "Shortlisted",
     "noData": "No nationality data available"
+  },
+  "pipeline": {
+    "title": "AI Screening Pipeline",
+    "subtitle": "AI agents screen candidates through multiple stages before human review",
+    "enableToggle": "Enable AI Screening Pipeline",
+    "enableDescription": "Candidates submit their CV first. AI screens their profile before inviting them to a video interview.",
+    "viewPipeline": "View Pipeline",
+    "candidates": "Pipeline Candidates",
+    "noCandidates": "No candidates yet",
+    "noCandidatesDesc": "Candidates will appear here once they apply through the public application link.",
+    "selectCandidate": "Select a candidate to view their evaluation details",
+    "cvDocument": "CV Document",
+    "approve": "Approve",
+    "reject": "Reject",
+    "override": "Override",
+    "submitOverride": "Submit Override",
+    "overridePlaceholder": "Explain why you are overriding the AI recommendation (required for compliance)...",
+    "overrideReason": "Override Reason",
+    "confidence": "Confidence",
+    "strengths": "Strengths",
+    "concerns": "Concerns",
+    "showEvidence": "Show Evidence",
+    "hideEvidence": "Hide Evidence",
+    "stage": {
+      "cv_screening": "CV Screen",
+      "video_scoring": "Video Interview",
+      "deep_evaluation": "Deep Evaluation",
+      "shortlist_ranking": "Final Shortlist"
+    },
+    "agent": {
+      "cv_screener": "CV Screening Agent",
+      "video_scorer": "Video Scoring Agent",
+      "deep_evaluator": "Deep Evaluation Agent",
+      "shortlist_ranker": "Shortlist Ranking Agent"
+    },
+    "recommendation": {
+      "advance": "Advance",
+      "reject": "Reject",
+      "needs_review": "Needs Review"
+    },
+    "hr_decision": {
+      "approved": "HR Approved",
+      "rejected": "HR Rejected",
+      "overridden": "HR Override"
+    },
+    "status": {
+      "applied": "Applied",
+      "screening": "Screening",
+      "screen_complete": "Screen Complete",
+      "invited": "Invited",
+      "started": "Started",
+      "submitted": "Submitted",
+      "video_scored": "Video Scored",
+      "deep_eval": "Deep Evaluation",
+      "deep_complete": "Evaluation Complete",
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected",
+      "on_hold": "On Hold"
+    },
+    "score": {
+      "relevance": "Relevance",
+      "experience_match": "Experience Match",
+      "skills_match": "Skills Match",
+      "education_match": "Education Match",
+      "technical_fit": "Technical Fit",
+      "cultural_fit": "Cultural Fit",
+      "growth_potential": "Growth Potential",
+      "composite_score": "Composite Score"
+    },
+    "funnel": {
+      "title": "Pipeline Funnel",
+      "applied": "Applied",
+      "screening": "Screening",
+      "screened": "Screen Complete",
+      "interviewing": "Interviewing",
+      "evaluated": "Evaluated",
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected"
+    }
   }
 }

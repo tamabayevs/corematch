@@ -37,18 +37,41 @@ def get_campaign_info(campaign_id):
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT c.id, c.name, c.job_title, c.job_description,
-                           c.company_name, c.language, c.status,
-                           c.questions, c.max_recording_seconds,
-                           b.logo_url, b.primary_color, b.secondary_color
-                    FROM campaigns c
-                    LEFT JOIN company_branding b ON b.user_id = c.user_id
-                    WHERE c.id = %s
-                    """,
-                    (campaign_id,),
-                )
+                # Check if pipeline_enabled column exists (v2.0+)
+                cur.execute("""
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'campaigns' AND column_name = 'pipeline_enabled'
+                """)
+                has_pipeline = cur.fetchone() is not None
+
+                if has_pipeline:
+                    cur.execute(
+                        """
+                        SELECT c.id, c.name, c.job_title, c.job_description,
+                               c.company_name, c.language, c.status,
+                               c.questions, c.max_recording_seconds,
+                               b.logo_url, b.primary_color, b.secondary_color,
+                               c.pipeline_enabled
+                        FROM campaigns c
+                        LEFT JOIN company_branding b ON b.user_id = c.user_id
+                        WHERE c.id = %s
+                        """,
+                        (campaign_id,),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        SELECT c.id, c.name, c.job_title, c.job_description,
+                               c.company_name, c.language, c.status,
+                               c.questions, c.max_recording_seconds,
+                               b.logo_url, b.primary_color, b.secondary_color,
+                               FALSE as pipeline_enabled
+                        FROM campaigns c
+                        LEFT JOIN company_branding b ON b.user_id = c.user_id
+                        WHERE c.id = %s
+                        """,
+                        (campaign_id,),
+                    )
                 row = cur.fetchone()
     except Exception as e:
         logger.error("Campaign info DB error: %s", str(e))
@@ -72,6 +95,7 @@ def get_campaign_info(campaign_id):
             "language": row[5],
             "question_count": len(questions),
             "max_recording_seconds": row[8],
+            "pipeline_enabled": row[12] or False,
         },
         "branding": {
             "logo_url": row[9],
@@ -90,7 +114,10 @@ def get_campaign_info(campaign_id):
 def public_apply(campaign_id):
     """
     Public self-registration endpoint.
-    Candidates submit name/email to receive an invite token and start the interview.
+    Supports two modes:
+    1. Standard (JSON): Candidates submit name/email to start the interview.
+    2. Pipeline (multipart): Candidates submit name/email + CV file + LinkedIn URL.
+       For pipeline-enabled campaigns, triggers AI CV screening (Stage 1).
     """
     # Validate UUID format
     try:
@@ -98,33 +125,78 @@ def public_apply(campaign_id):
     except ValueError:
         return jsonify({"error": "Invalid campaign ID format"}), 400
 
-    data = request.get_json(silent=True) or {}
-    full_name = (data.get("full_name") or "").strip()
-    email = (data.get("email") or "").strip().lower()
-    phone = (data.get("phone") or "").strip() or None
+    # Support both JSON and multipart/form-data
+    import re
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        full_name = (request.form.get("full_name") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        phone = (request.form.get("phone") or "").strip() or None
+        linkedin_url = (request.form.get("linkedin_url") or "").strip() or None
+        cv_file = request.files.get("cv")
+    else:
+        data = request.get_json(silent=True) or {}
+        full_name = (data.get("full_name") or "").strip()
+        email = (data.get("email") or "").strip().lower()
+        phone = (data.get("phone") or "").strip() or None
+        linkedin_url = (data.get("linkedin_url") or "").strip() or None
+        cv_file = None
 
     if not full_name:
         return jsonify({"error": "Full name is required"}), 400
     if not email:
         return jsonify({"error": "Email is required"}), 400
 
-    # Basic email validation
-    import re
     if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
         return jsonify({"error": "Invalid email format"}), 400
+
+    # Validate LinkedIn URL format if provided
+    if linkedin_url and not re.match(r'^https?://(www\.)?linkedin\.com/', linkedin_url):
+        return jsonify({"error": "Invalid LinkedIn URL. Must start with https://linkedin.com/"}), 400
+
+    # Validate CV file if provided
+    cv_data = None
+    cv_content_type = None
+    cv_filename = None
+    if cv_file:
+        from services.document_service import validate_cv_file, SUPPORTED_TYPES
+        cv_data = cv_file.read()
+        cv_content_type = cv_file.content_type or ""
+        cv_filename = cv_file.filename or "cv"
+        validation_error = validate_cv_file(cv_data, cv_content_type, cv_filename)
+        if validation_error:
+            return jsonify({"error": validation_error}), 400
 
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
+                # Check if pipeline columns exist (v2.0+)
+                cur.execute("""
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'campaigns' AND column_name = 'pipeline_enabled'
+                """)
+                has_pipeline_col = cur.fetchone() is not None
+
                 # Check campaign exists and is active
-                cur.execute(
-                    """
-                    SELECT id, name, job_title, company_name, questions, status,
-                           user_id, invite_expiry_days, language
-                    FROM campaigns WHERE id = %s
-                    """,
-                    (campaign_id,),
-                )
+                if has_pipeline_col:
+                    cur.execute(
+                        """
+                        SELECT id, name, job_title, company_name, questions, status,
+                               user_id, invite_expiry_days, language, pipeline_enabled,
+                               job_description
+                        FROM campaigns WHERE id = %s
+                        """,
+                        (campaign_id,),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        SELECT id, name, job_title, company_name, questions, status,
+                               user_id, invite_expiry_days, language, FALSE as pipeline_enabled,
+                               job_description
+                        FROM campaigns WHERE id = %s
+                        """,
+                        (campaign_id,),
+                    )
                 campaign = cur.fetchone()
 
                 if not campaign:
@@ -132,6 +204,8 @@ def public_apply(campaign_id):
 
                 if campaign[5] != "active":
                     return jsonify({"error": "This campaign is no longer accepting applications"}), 410
+
+                pipeline_enabled = campaign[9] or False
 
                 # Check for duplicate email in this campaign
                 cur.execute(
@@ -153,20 +227,92 @@ def public_apply(campaign_id):
                 expiry_days = campaign[7] or 7
                 invite_expires_at = datetime.datetime.utcnow() + datetime.timedelta(days=expiry_days)
 
-                cur.execute(
-                    """
-                    INSERT INTO candidates
-                    (id, campaign_id, full_name, email, phone, status, invite_token,
-                     reference_id, questions_snapshot, invite_expires_at, source, created_at)
-                    VALUES (%s, %s, %s, %s, %s, 'invited', %s, %s, %s::jsonb, %s,
-                            'public_application', NOW())
-                    """,
-                    (
-                        candidate_id, campaign_id, full_name, email, phone,
-                        invite_token, reference_id,
-                        json.dumps(questions), invite_expires_at,
-                    ),
-                )
+                # Pipeline candidates start as 'applied'; standard flow as 'invited'
+                initial_status = "applied" if pipeline_enabled else "invited"
+
+                # Check if pipeline columns exist on candidates table
+                cur.execute("""
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'candidates' AND column_name = 'linkedin_url'
+                """)
+                has_candidate_pipeline_cols = cur.fetchone() is not None
+
+                if has_candidate_pipeline_cols:
+                    cur.execute(
+                        """
+                        INSERT INTO candidates
+                        (id, campaign_id, full_name, email, phone, status, invite_token,
+                         reference_id, questions_snapshot, invite_expires_at, source,
+                         linkedin_url, pipeline_stage, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s,
+                                'public_application', %s, %s, NOW())
+                        """,
+                        (
+                            candidate_id, campaign_id, full_name, email, phone,
+                            initial_status, invite_token, reference_id,
+                            json.dumps(questions), invite_expires_at,
+                            linkedin_url, 1 if pipeline_enabled else 0,
+                        ),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        INSERT INTO candidates
+                        (id, campaign_id, full_name, email, phone, status, invite_token,
+                         reference_id, questions_snapshot, invite_expires_at, source,
+                         created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s,
+                                'public_application', NOW())
+                        """,
+                        (
+                            candidate_id, campaign_id, full_name, email, phone,
+                            initial_status, invite_token, reference_id,
+                            json.dumps(questions), invite_expires_at,
+                        ),
+                    )
+
+                # Store CV document if provided (requires v2.0 tables)
+                cv_storage_key = None
+                if cv_data and has_candidate_pipeline_cols:
+                    from services.document_service import extract_text
+                    from services.storage_service import get_storage_service
+
+                    # Upload CV to storage
+                    file_ext = "pdf" if cv_content_type == "application/pdf" else "docx"
+                    cv_storage_key = f"cvs/{campaign_id}/{candidate_id}/cv.{file_ext}"
+                    try:
+                        storage = get_storage_service()
+                        storage.upload_file(io.BytesIO(cv_data), cv_storage_key, content_type=cv_content_type)
+                    except Exception as e:
+                        logger.warning("CV storage upload failed: %s", str(e))
+                        cv_storage_key = f"local:{candidate_id}"  # Fallback marker
+
+                    # Extract text from CV
+                    extracted_text = ""
+                    extraction_status = "pending"
+                    try:
+                        extracted_text = extract_text(cv_data, cv_content_type)
+                        extraction_status = "complete" if extracted_text else "failed"
+                    except Exception as e:
+                        logger.warning("CV text extraction failed: %s", str(e))
+                        extraction_status = "failed"
+
+                    # Save document record
+                    doc_id = str(uuid.uuid4())
+                    cur.execute(
+                        """
+                        INSERT INTO candidate_documents
+                        (id, candidate_id, document_type, original_filename, storage_key,
+                         content_type, file_size_bytes, extracted_text, extraction_status,
+                         created_at)
+                        VALUES (%s, %s, 'cv', %s, %s, %s, %s, %s, %s, NOW())
+                        """,
+                        (
+                            doc_id, candidate_id, cv_filename, cv_storage_key,
+                            cv_content_type, len(cv_data), extracted_text,
+                            extraction_status,
+                        ),
+                    )
 
                 # Audit log
                 cur.execute(
@@ -182,6 +328,9 @@ def public_apply(campaign_id):
                             "campaign_id": campaign_id,
                             "campaign_name": campaign[1],
                             "email": email,
+                            "pipeline_enabled": pipeline_enabled,
+                            "cv_uploaded": cv_data is not None,
+                            "linkedin_provided": linkedin_url is not None,
                         }),
                         request.remote_addr,
                     ),
@@ -192,6 +341,22 @@ def public_apply(campaign_id):
         return jsonify({"error": "Failed to process application"}), 500
 
     frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+
+    # For pipeline campaigns: trigger Stage 1 CV screening
+    if pipeline_enabled:
+        try:
+            from services.pipeline_service import start_pipeline
+            start_pipeline(candidate_id, campaign_id)
+        except Exception as e:
+            logger.error("Failed to start pipeline for candidate %s: %s", candidate_id, str(e))
+
+        return jsonify({
+            "message": "Application submitted successfully. We will review your profile and get back to you.",
+            "reference_id": reference_id,
+            "pipeline": True,
+        }), 201
+
+    # Standard flow: redirect to interview immediately
     interview_url = f"{frontend_url}/interview/{invite_token}/welcome"
 
     return jsonify({
