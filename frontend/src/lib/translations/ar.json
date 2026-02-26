@@ -104,9 +104,13 @@
     },
     "action": {
       "new_submissions": "طلبات بانتظار المراجعة",
+      "new_submissions_one": "طلب بانتظار المراجعة",
       "overdue_decisions": "مرشحون بانتظار القرار أكثر من ٤٨ ساعة",
+      "overdue_decisions_one": "مرشح بانتظار القرار أكثر من ٤٨ ساعة",
       "not_started": "مرشحون لم يبدأوا بعد",
-      "expiring_invites": "دعوات تنتهي قريباً"
+      "not_started_one": "مرشح لم يبدأ بعد",
+      "expiring_invites": "دعوات تنتهي قريباً",
+      "expiring_invites_one": "دعوة تنتهي قريباً"
     },
     "activity": {
       "invited": "تمت دعوة مرشح",
@@ -137,7 +141,7 @@
   },
   "review": {
     "queue": "مراجعة الفيديو",
-    "toReview": "{count} مرشحين بانتظار المراجعة",
+    "toReview": "{{count}} مرشحين بانتظار المراجعة",
     "reviewed": "تمت المراجعة",
     "unreviewed": "لم تتم المراجعة",
     "startSession": "بدء جلسة المراجعة",
@@ -584,6 +588,7 @@
     "campaignCompletion": "مقارنة إكمال الحملات",
     "avgScore": "متوسط الدرجة",
     "variance": "التباين",
+    "answer": "إجابة",
     "answers": "الإجابات",
     "question": "السؤال",
     "noData": "لا توجد بيانات متاحة",

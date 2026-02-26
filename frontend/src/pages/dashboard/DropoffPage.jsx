@@ -200,7 +200,7 @@ function QuestionPerformanceChart({ data, t }) {
                   )}
                 </span>
                 <span className="text-xs text-navy-500 shrink-0 ml-2">
-                  {q.answer_count} {t("dropoff.answers")}
+                  {q.answer_count} {q.answer_count === 1 ? t("dropoff.answer") : t("dropoff.answers")}
                 </span>
               </div>
 

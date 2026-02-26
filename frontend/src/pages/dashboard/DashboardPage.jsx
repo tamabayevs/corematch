@@ -222,7 +222,9 @@ function ActionItemCard({ item, t, navigate }) {
       </svg>
       <span className="text-sm font-medium">
         <span className="font-bold">{item.count}</span>{" "}
-        {t(`dashboard.action.${item.type}`)}
+        {item.count === 1 && t(`dashboard.action.${item.type}_one`)
+          ? t(`dashboard.action.${item.type}_one`)
+          : t(`dashboard.action.${item.type}`)}
       </span>
     </button>
   );

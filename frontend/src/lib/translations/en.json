@@ -104,9 +104,13 @@
     },
     "action": {
       "new_submissions": "submissions to review",
+      "new_submissions_one": "submission to review",
       "overdue_decisions": "candidates awaiting decision >48h",
+      "overdue_decisions_one": "candidate awaiting decision >48h",
       "not_started": "candidates haven't started",
-      "expiring_invites": "invites expiring soon"
+      "not_started_one": "candidate hasn't started",
+      "expiring_invites": "invites expiring soon",
+      "expiring_invites_one": "invite expiring soon"
     },
     "activity": {
       "invited": "Invited candidate",
@@ -137,7 +141,7 @@
   },
   "review": {
     "queue": "Video Reviews",
-    "toReview": "{count} candidates to review",
+    "toReview": "{{count}} candidates to review",
     "reviewed": "Reviewed",
     "unreviewed": "Unreviewed",
     "startSession": "Start Review Session",
@@ -585,6 +589,7 @@
     "avgScore": "Avg Score",
     "variance": "Variance",
     "answers": "Answers",
+    "answer": "Answer",
     "question": "Question",
     "noData": "No data available",
     "invited": "Invited",
