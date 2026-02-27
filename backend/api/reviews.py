@@ -167,9 +167,31 @@ def review_queue():
 
     total_pages = (total + per_page - 1) // per_page  # ceiling division
 
+    # Count unreviewed (no decision) across all submitted candidates for this user
+    unreviewed_count = 0
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM candidates cand
+                    JOIN campaigns camp ON cand.campaign_id = camp.id
+                    WHERE camp.user_id = %s
+                      AND cand.status = 'submitted'
+                      AND cand.status != 'erased'
+                      AND cand.hr_decision IS NULL
+                    """,
+                    (user_id,),
+                )
+                unreviewed_count = cur.fetchone()[0]
+    except Exception:
+        pass
+
     return jsonify({
         "candidates": candidates,
         "total": total,
+        "unreviewed_count": unreviewed_count,
         "page": page,
         "per_page": per_page,
         "total_pages": total_pages,

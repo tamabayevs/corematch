@@ -119,7 +119,8 @@
       "hold": "تم وضع مرشح قيد الانتظار",
       "erased": "تم مسح بيانات مرشح",
       "submitted": "أرسل المرشح المقابلة",
-      "campaignCreated": "تم إنشاء حملة"
+      "campaignCreated": "تم إنشاء حملة",
+      "commentCreated": "تم نشر تعليق"
     }
   },
   "template": {
@@ -171,6 +172,9 @@
       "name": "الاسم",
       "date": "التاريخ"
     },
+    "question": "السؤال {{number}}",
+    "questionLabel": "السؤال {{number}}",
+    "speed": "السرعة",
     "page": "صفحة {{current}} من {{total}}",
     "previous": "السابق",
     "next": "التالي"
@@ -263,6 +267,15 @@
     "processing": "جاري المعالجة...",
     "noCandidates": "لا يوجد مرشحون بعد",
     "noCandidatesDesc": "ادعُ المرشحين لبدء استقبال مقابلات الفيديو."
+  },
+  "discussion": {
+    "title": "النقاش",
+    "placeholder": "أضف تعليقًا أو اذكر @أحد أعضاء الفريق...",
+    "post": "نشر",
+    "reply": "رد",
+    "replyPlaceholder": "اكتب ردًا...",
+    "noComments": "لا توجد تعليقات بعد. ابدأ نقاشًا حول هذا المرشح.",
+    "justNow": "الآن"
   },
   "settings": {
     "title": "الإعدادات",

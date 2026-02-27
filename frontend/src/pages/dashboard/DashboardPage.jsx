@@ -292,6 +292,7 @@ function ActivityFeed({ activities, t, locale }) {
     "candidate.erased": t("dashboard.activity.erased"),
     "candidate.submitted": t("dashboard.activity.submitted"),
     "campaign.created": t("dashboard.activity.campaignCreated"),
+    "comment.created": t("dashboard.activity.commentCreated"),
   };
 
   const actionIcons = {
@@ -302,6 +303,7 @@ function ActivityFeed({ activities, t, locale }) {
     "candidate.submitted": "text-primary-600",
     "candidate.erased": "text-navy-400",
     "campaign.created": "text-primary-500",
+    "comment.created": "text-blue-400",
   };
 
   return (

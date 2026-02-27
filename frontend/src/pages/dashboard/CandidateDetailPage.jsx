@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
 import { candidatesApi } from "../../api/candidates";
+import { commentsApi } from "../../api/comments";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -208,6 +209,9 @@ export default function CandidateDetailPage() {
         </Card>
       ))}
 
+      {/* Discussion / Comments */}
+      <DiscussionSection candidateId={id} t={t} />
+
       {/* PDPL Erasure */}
       <Card className="border-red-200 mt-8">
         <h3 className="text-sm font-semibold text-red-700 mb-2">{t("candidate.eraseData")}</h3>
@@ -234,6 +238,220 @@ export default function CandidateDetailPage() {
         </div>
       </Modal>
     </div>
+  );
+}
+
+function DiscussionSection({ candidateId, t }) {
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [replyTo, setReplyTo] = useState(null);
+  const [replyText, setReplyText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [posting, setPosting] = useState(false);
+
+  useEffect(() => {
+    loadComments();
+  }, [candidateId]);
+
+  const loadComments = async () => {
+    try {
+      const res = await commentsApi.list(candidateId);
+      setComments(res.data.comments || []);
+    } catch {
+      // Handle silently
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePost = async () => {
+    if (!newComment.trim()) return;
+    setPosting(true);
+    try {
+      await commentsApi.create(candidateId, { content: newComment.trim() });
+      setNewComment("");
+      loadComments();
+    } catch {
+      // Handle silently
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleReply = async (parentId) => {
+    if (!replyText.trim()) return;
+    setPosting(true);
+    try {
+      await commentsApi.create(candidateId, {
+        content: replyText.trim(),
+        parent_id: parentId,
+      });
+      setReplyTo(null);
+      setReplyText("");
+      loadComments();
+    } catch {
+      // Handle silently
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const topLevel = comments.filter((c) => !c.parent_id);
+  const replies = comments.filter((c) => c.parent_id);
+
+  const getReplies = (parentId) =>
+    replies.filter((r) => r.parent_id === parentId);
+
+  const formatTime = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return t("discussion.justNow");
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    return d.toLocaleDateString();
+  };
+
+  return (
+    <Card className="mb-6">
+      <h2 className="text-lg font-semibold text-navy-900 mb-4">
+        {t("discussion.title")}
+      </h2>
+
+      {/* New comment input */}
+      <div className="flex gap-3 mb-6">
+        <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold shrink-0">
+          U
+        </div>
+        <div className="flex-1">
+          <textarea
+            rows={2}
+            className="block w-full rounded-lg border border-navy-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder={t("discussion.placeholder")}
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handlePost();
+            }}
+          />
+          <div className="flex justify-end mt-2">
+            <Button size="sm" onClick={handlePost} loading={posting} disabled={!newComment.trim()}>
+              {t("discussion.post")}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Comments list */}
+      {loading ? (
+        <div className="flex justify-center py-4">
+          <Spinner />
+        </div>
+      ) : topLevel.length === 0 ? (
+        <p className="text-sm text-navy-400 text-center py-4">
+          {t("discussion.noComments")}
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {topLevel.map((comment) => (
+            <div key={comment.id}>
+              {/* Top-level comment */}
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-navy-100 text-navy-600 flex items-center justify-center text-sm font-bold shrink-0">
+                  {(comment.author_name || "U").charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-navy-900">
+                      {comment.author_name || "User"}
+                    </span>
+                    <span className="text-xs text-navy-400">
+                      {formatTime(comment.created_at)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-navy-700 whitespace-pre-wrap">
+                    {comment.content}
+                  </p>
+                  <button
+                    onClick={() =>
+                      setReplyTo(replyTo === comment.id ? null : comment.id)
+                    }
+                    className="text-xs text-primary-600 hover:text-primary-700 mt-1 font-medium"
+                  >
+                    {t("discussion.reply")}
+                  </button>
+                </div>
+              </div>
+
+              {/* Replies */}
+              {getReplies(comment.id).map((reply) => (
+                <div key={reply.id} className="flex gap-3 ms-11 mt-3">
+                  <div className="w-6 h-6 rounded-full bg-navy-100 text-navy-500 flex items-center justify-center text-xs font-bold shrink-0">
+                    {(reply.author_name || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-sm font-semibold text-navy-800">
+                        {reply.author_name || "User"}
+                      </span>
+                      <span className="text-xs text-navy-400">
+                        {formatTime(reply.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-navy-600 whitespace-pre-wrap">
+                      {reply.content}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Reply input */}
+              {replyTo === comment.id && (
+                <div className="flex gap-3 ms-11 mt-3">
+                  <div className="flex-1">
+                    <textarea
+                      rows={1}
+                      className="block w-full rounded-lg border border-navy-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder={t("discussion.replyPlaceholder")}
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
+                          handleReply(comment.id);
+                      }}
+                      autoFocus
+                    />
+                    <div className="flex justify-end gap-2 mt-1">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          setReplyTo(null);
+                          setReplyText("");
+                        }}
+                      >
+                        {t("common.cancel")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleReply(comment.id)}
+                        loading={posting}
+                        disabled={!replyText.trim()}
+                      >
+                        {t("discussion.reply")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 

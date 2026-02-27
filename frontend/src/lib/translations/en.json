@@ -119,7 +119,8 @@
       "hold": "Put candidate on hold",
       "erased": "Erased candidate data",
       "submitted": "Candidate submitted interview",
-      "campaignCreated": "Created campaign"
+      "campaignCreated": "Created campaign",
+      "commentCreated": "Comment posted"
     }
   },
   "template": {
@@ -171,6 +172,9 @@
       "name": "Name",
       "date": "Date"
     },
+    "question": "Question {{number}}",
+    "questionLabel": "Question {{number}}",
+    "speed": "Speed",
     "page": "Page {{current}} of {{total}}",
     "previous": "Previous",
     "next": "Next"
@@ -263,6 +267,15 @@
     "processing": "Processing...",
     "noCandidates": "No candidates yet",
     "noCandidatesDesc": "Invite candidates to start receiving video interviews."
+  },
+  "discussion": {
+    "title": "Discussion",
+    "placeholder": "Add a comment or @mention a team member...",
+    "post": "Post",
+    "reply": "Reply",
+    "replyPlaceholder": "Write a reply...",
+    "noComments": "No comments yet. Start a discussion about this candidate.",
+    "justNow": "just now"
   },
   "settings": {
     "title": "Settings",
