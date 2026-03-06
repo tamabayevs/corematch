@@ -8,6 +8,8 @@ export const useInterviewStore = create((set, get) => ({
   currentStep: null, // 'welcome' | 'consent' | 'camera' | 'recording' | 'review' | 'confirmation'
   inviteExpiresAt: null,
   error: null,       // { type: 'expired' | 'submitted', data: {...} }
+  branding: null,    // { logo_url, primary_color, secondary_color, welcome_message }
+  practiceQuestion: null, // { text, enabled }
 
   setInviteData(data) {
     set({
@@ -15,6 +17,10 @@ export const useInterviewStore = create((set, get) => ({
       campaign: data.campaign,
       questions: data.questions,
       inviteExpiresAt: data.invite_expires_at,
+      branding: data.campaign?.branding || null,
+      practiceQuestion: data.campaign?.practice_question_enabled
+        ? { text: data.campaign.practice_question_text, enabled: true }
+        : null,
       error: null,
     });
   },
@@ -50,6 +56,8 @@ export const useInterviewStore = create((set, get) => ({
       currentStep: null,
       inviteExpiresAt: null,
       error: null,
+      branding: null,
+      practiceQuestion: null,
     });
   },
 }));

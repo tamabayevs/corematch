@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
+import { useInterviewStore } from "../../store/interviewStore";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 
@@ -8,6 +9,7 @@ export default function CameraTestPage() {
   const { token } = useParams();
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { practiceQuestion } = useInterviewStore();
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [error, setError] = useState(false);
@@ -66,7 +68,12 @@ export default function CameraTestPage() {
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
-    navigate(`/interview/${token}/record/0`);
+    // If practice question enabled, go to practice first
+    if (practiceQuestion?.enabled) {
+      navigate(`/interview/${token}/practice`);
+    } else {
+      navigate(`/interview/${token}/record/0`);
+    }
   };
 
   const handleRetry = () => {

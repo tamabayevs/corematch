@@ -280,30 +280,122 @@ def _render_password_reset(
 
 
 # ──────────────────────────────────────────────────────────────
+# Notification Template Resolution
+# ──────────────────────────────────────────────────────────────
+
+def _resolve_template(user_id, template_type, variables):
+    """
+    Look up a user-customized notification template from the DB.
+    Falls back to system template, then returns None (use hardcoded).
+    template_type: e.g. "Interview Invitation", "Interview Reminder", etc.
+    variables: dict of {{key}} → value substitutions.
+    Returns (subject, html_body) or None if no template found.
+    """
+    if not user_id:
+        return None
+    try:
+        from database.connection import get_db
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Try user's custom template first, then system template
+                cur.execute(
+                    """
+                    SELECT subject, body FROM notification_templates
+                    WHERE (user_id = %s OR is_system = TRUE)
+                      AND LOWER(name) = LOWER(%s)
+                    ORDER BY is_system ASC
+                    LIMIT 1
+                    """,
+                    (user_id, template_type),
+                )
+                row = cur.fetchone()
+        if not row:
+            return None
+        subject = row[0] or ""
+        body = row[1] or ""
+        # Perform {{variable}} substitution
+        for key, val in variables.items():
+            placeholder = "{{" + key + "}}"
+            subject = subject.replace(placeholder, str(val) if val else "")
+            body = body.replace(placeholder, str(val) if val else "")
+        # Wrap body in basic HTML if it doesn't look like HTML
+        if "<html" not in body.lower():
+            body = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>body {{ font-family: -apple-system, Arial, sans-serif; background:#f8fafc; padding:20px; }}
+.container {{ max-width:600px; margin:0 auto; background:#fff; border-radius:12px; padding:32px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }}</style></head>
+<body><div class="container">{body}</div></body></html>"""
+        return subject, body
+    except Exception as e:
+        logger.debug("Template resolution failed (falling back to hardcoded): %s", e)
+        return None
+
+
+# ──────────────────────────────────────────────────────────────
 # Abstract base
 # ──────────────────────────────────────────────────────────────
 
 class EmailService(ABC):
     def send_candidate_invitation(self, to_email, to_name, company_name, job_title,
-                                   interview_url, expires_at, question_count, language="en"):
-        subject, html = _render_candidate_invitation(
-            to_name, company_name, job_title, interview_url, expires_at, question_count, language
-        )
+                                   interview_url, expires_at, question_count, language="en",
+                                   user_id=None):
+        # Try user-customized or system template first
+        variables = {
+            "candidate_name": to_name,
+            "job_title": job_title,
+            "company_name": company_name,
+            "interview_link": interview_url,
+            "expiry_date": expires_at.strftime("%B %d, %Y") if expires_at else "7 days",
+            "sender_name": company_name,
+            "question_count": str(question_count),
+        }
+        resolved = _resolve_template(user_id, "Interview Invitation", variables)
+        if resolved:
+            subject, html = resolved
+        else:
+            subject, html = _render_candidate_invitation(
+                to_name, company_name, job_title, interview_url, expires_at, question_count, language
+            )
         self._send(to_email, subject, html)
 
     def send_candidate_confirmation(self, to_email, to_name, company_name, job_title,
-                                     reference_id, submitted_at):
-        subject, html = _render_candidate_confirmation(
-            to_name, company_name, job_title, reference_id, submitted_at
-        )
+                                     reference_id, submitted_at, user_id=None):
+        variables = {
+            "candidate_name": to_name,
+            "job_title": job_title,
+            "company_name": company_name,
+            "reference_id": reference_id,
+            "submitted_at": submitted_at.strftime("%B %d, %Y") if submitted_at else "just now",
+        }
+        resolved = _resolve_template(user_id, "Interview Confirmation", variables)
+        if resolved:
+            subject, html = resolved
+        else:
+            subject, html = _render_candidate_confirmation(
+                to_name, company_name, job_title, reference_id, submitted_at
+            )
         self._send(to_email, subject, html)
 
     def send_hr_notification(self, to_email, hr_name, candidate_name, job_title,
-                              campaign_name, overall_score, tier, strengths, dashboard_url):
-        subject, html = _render_hr_notification(
-            hr_name, candidate_name, job_title, campaign_name,
-            overall_score, tier, strengths, dashboard_url
-        )
+                              campaign_name, overall_score, tier, strengths, dashboard_url,
+                              user_id=None):
+        variables = {
+            "candidate_name": candidate_name,
+            "job_title": job_title,
+            "campaign_name": campaign_name,
+            "overall_score": f"{overall_score:.0f}" if overall_score else "N/A",
+            "tier": tier,
+            "dashboard_url": dashboard_url,
+            "hr_name": hr_name,
+        }
+        resolved = _resolve_template(user_id, "HR Notification", variables)
+        if resolved:
+            subject, html = resolved
+        else:
+            subject, html = _render_hr_notification(
+                hr_name, candidate_name, job_title, campaign_name,
+                overall_score, tier, strengths, dashboard_url
+            )
         self._send(to_email, subject, html)
 
     def send_password_reset(self, to_email, to_name, reset_url, expires_in_hours=1, request_ip="unknown"):

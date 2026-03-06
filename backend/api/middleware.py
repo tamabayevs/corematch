@@ -156,10 +156,14 @@ def require_invite_token(f):
                         camp.id as camp_id, camp.name as camp_name,
                         camp.job_title, camp.job_description, camp.language,
                         camp.max_recording_seconds, camp.allow_retakes,
-                        u.company_name, u.email as hr_email
+                        u.company_name, u.email as hr_email,
+                        cb.logo_url, cb.primary_color, cb.secondary_color,
+                        cb.custom_welcome_message,
+                        camp.practice_question_text, camp.practice_question_enabled
                     FROM candidates c
                     JOIN campaigns camp ON c.campaign_id = camp.id
                     JOIN users u ON camp.user_id = u.id
+                    LEFT JOIN company_branding cb ON cb.user_id = camp.user_id
                     WHERE c.invite_token = %s
                     """,
                     (token,),
@@ -184,6 +188,15 @@ def require_invite_token(f):
             "reference_id": row[11],
         }
 
+        branding = None
+        if row[21] or row[22] or row[23] or row[24]:
+            branding = {
+                "logo_url": row[21],
+                "primary_color": row[22],
+                "secondary_color": row[23],
+                "welcome_message": row[24],
+            }
+
         campaign = {
             "id": str(row[12]),
             "name": row[13],
@@ -194,6 +207,9 @@ def require_invite_token(f):
             "allow_retakes": row[18],
             "company_name": row[19],
             "hr_email": row[20],
+            "branding": branding,
+            "practice_question_text": row[25],
+            "practice_question_enabled": row[26] or False,
         }
 
         # Check if link has expired

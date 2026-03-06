@@ -48,6 +48,7 @@ import ConfirmationPage from "./pages/candidate/ConfirmationPage";
 import ExpiredPage from "./pages/candidate/ExpiredPage";
 import AlreadySubmittedPage from "./pages/candidate/AlreadySubmittedPage";
 import StatusPage from "./pages/candidate/StatusPage";
+import PracticePage from "./pages/candidate/PracticePage";
 import ApplyPage from "./pages/candidate/ApplyPage";
 
 export default function App() {
@@ -101,6 +102,7 @@ export default function App() {
         <Route path="welcome" element={<WelcomePage />} />
         <Route path="consent" element={<ConsentPage />} />
         <Route path="camera" element={<CameraTestPage />} />
+        <Route path="practice" element={<PracticePage />} />
         <Route path="record/:qi" element={<RecordingPage />} />
         <Route path="review" element={<ReviewPage />} />
         <Route path="submit" element={<ConfirmationPage />} />

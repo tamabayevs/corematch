@@ -38,7 +38,7 @@ def process_candidate(candidate_id: str) -> dict:
                     SELECT c.id, c.campaign_id, c.email, c.full_name, c.reference_id,
                            camp.job_title, camp.job_description, camp.language, camp.name as campaign_name,
                            u.email as hr_email, u.full_name as hr_name,
-                           u.notify_on_complete, u.company_name
+                           u.notify_on_complete, u.company_name, u.id as hr_user_id
                     FROM candidates c
                     JOIN campaigns camp ON c.campaign_id = camp.id
                     JOIN users u ON camp.user_id = u.id
@@ -66,6 +66,7 @@ def process_candidate(candidate_id: str) -> dict:
     hr_name = row[10]
     notify_on_complete = row[11]
     company_name = row[12] or "the company"
+    hr_user_id = str(row[13]) if row[13] else None
 
     # ── Step 2: Fetch video answers ──
     try:
@@ -266,6 +267,7 @@ def process_candidate(candidate_id: str) -> dict:
             job_title=job_title,
             reference_id=reference_id,
             submitted_at=datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+            user_id=hr_user_id,
         )
         logger.info("Sent confirmation email to candidate %s", candidate_email)
     except Exception as e:
@@ -314,6 +316,7 @@ def process_candidate(candidate_id: str) -> dict:
                 tier=tier,
                 strengths=unique_strengths,
                 dashboard_url=dashboard_url,
+                user_id=hr_user_id,
             )
             logger.info("Sent HR notification to %s", hr_email)
         except Exception as e:

@@ -810,5 +810,21 @@
       "shortlisted": "Shortlisted",
       "rejected": "Rejected"
     }
+  },
+  "practice": {
+    "badge": "PRACTICE",
+    "title": "Practice Question",
+    "disclaimer": "This is a practice question. Your recording will NOT be saved or scored. Use it to get comfortable with the format.",
+    "startRecording": "Start Recording",
+    "stopRecording": "Stop Recording",
+    "tryAgain": "Try Again",
+    "continue": "Continue to Interview",
+    "skip": "Skip practice"
+  },
+  "offline": {
+    "banner": "You are offline. Some features may be unavailable.",
+    "savedLocally": "Video saved locally. It will be uploaded when you reconnect.",
+    "retrying": "Reconnected. Uploading saved videos...",
+    "uploadComplete": "All videos uploaded successfully."
   }
 }

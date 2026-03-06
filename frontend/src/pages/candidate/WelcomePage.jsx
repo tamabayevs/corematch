@@ -8,7 +8,7 @@ export default function WelcomePage() {
   const { token } = useParams();
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { candidate, campaign, questions } = useInterviewStore();
+  const { candidate, campaign, questions, branding } = useInterviewStore();
 
   if (!campaign) return null;
 
@@ -26,6 +26,12 @@ export default function WelcomePage() {
           {t("interview.welcome.greeting", { name: candidate?.full_name })}
         </p>
       </div>
+
+      {branding?.welcome_message && (
+        <div className="bg-navy-50 border border-navy-200 rounded-lg p-4 mb-6 text-navy-700 text-sm">
+          {branding.welcome_message}
+        </div>
+      )}
 
       <p className="text-navy-500 mb-6">
         {t("interview.welcome.description", {

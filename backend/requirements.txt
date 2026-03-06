@@ -27,6 +27,10 @@ botocore==1.34.131
 # AI - Groq
 groq==0.9.0
 
+# AI - Pipeline providers (optional, for multi-provider support)
+anthropic>=0.25.0
+openai>=1.30.0
+
 # Video Processing
 # ffmpeg-python is a Python wrapper; ffmpeg binary must be installed separately
 ffmpeg-python==0.2.0

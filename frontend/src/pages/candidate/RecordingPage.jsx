@@ -4,6 +4,7 @@ import { useI18n } from "../../lib/i18n";
 import { useInterviewStore } from "../../store/interviewStore";
 import { publicApiClient } from "../../api/public";
 import useMediaRecorder from "../../lib/useMediaRecorder";
+import { saveVideoBlob } from "../../lib/offlineStorage";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import clsx from "clsx";
@@ -28,6 +29,7 @@ export default function RecordingPage() {
   const [prepCountdown, setPrepCountdown] = useState(thinkTime);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState(false);
+  const [savedLocally, setSavedLocally] = useState(false);
   const [reviewUrl, setReviewUrl] = useState(null);
 
   const videoRef = useRef(null);
@@ -119,6 +121,7 @@ export default function RecordingPage() {
     setReviewUrl(null);
     reset();
     setUploadError(false);
+    setSavedLocally(false);
     setPrepCountdown(thinkTime);
     setPhase(thinkTime > 0 ? STATES.PREP : STATES.RECORDING);
 
@@ -167,7 +170,32 @@ export default function RecordingPage() {
           navigate(`/interview/${token}/review`);
         }
       }, 1000);
-    } catch {
+    } catch (err) {
+      // If offline or network error, save to IndexedDB for later upload
+      if (!navigator.onLine || err?.code === "ERR_NETWORK") {
+        try {
+          await saveVideoBlob(token, questionIndex, blob, elapsed);
+          setSavedLocally(true);
+          setAnswer(questionIndex, { blob, uploaded: false, savedLocally: true });
+          setPhase(STATES.COMPLETE);
+
+          // Auto-advance after 2s (slightly longer to show "saved locally" message)
+          setTimeout(() => {
+            if (streamRef.current) {
+              streamRef.current.getTracks().forEach((t) => t.stop());
+            }
+            if (reviewUrl) URL.revokeObjectURL(reviewUrl);
+            if (questionIndex + 1 < totalQuestions) {
+              navigate(`/interview/${token}/record/${questionIndex + 1}`);
+            } else {
+              navigate(`/interview/${token}/review`);
+            }
+          }, 2000);
+          return;
+        } catch {
+          // IndexedDB also failed — fall through to show error
+        }
+      }
       setUploadError(true);
       setPhase(STATES.REVIEW);
     }
@@ -310,14 +338,29 @@ export default function RecordingPage() {
       {/* COMPLETE phase */}
       {phase === STATES.COMPLETE && (
         <div className="text-center py-8">
-          <div className="w-16 h-16 mx-auto bg-primary-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+          <div className={clsx(
+            "w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4",
+            savedLocally ? "bg-amber-100" : "bg-primary-100"
+          )}>
+            {savedLocally ? (
+              <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+            ) : (
+              <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
           </div>
-          <p className="text-lg font-medium text-primary-700">
-            {t("interview.recording.uploadComplete")}
+          <p className={clsx(
+            "text-lg font-medium",
+            savedLocally ? "text-amber-700" : "text-primary-700"
+          )}>
+            {savedLocally ? t("offline.savedLocally") : t("interview.recording.uploadComplete")}
           </p>
+          {savedLocally && (
+            <p className="text-sm text-navy-500 mt-1">{t("offline.retrying")}</p>
+          )}
         </div>
       )}
     </Card>

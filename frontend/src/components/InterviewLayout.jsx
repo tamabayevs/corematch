@@ -10,8 +10,20 @@ export default function InterviewLayout() {
   const { token } = useParams();
   const navigate = useNavigate();
   const { t } = useI18n();
-  const { setInviteData, setError, candidate } = useInterviewStore();
+  const { setInviteData, setError, candidate, branding, campaign } = useInterviewStore();
   const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const goOffline = () => setOffline(true);
+    const goOnline = () => setOffline(false);
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -54,10 +66,48 @@ export default function InterviewLayout() {
     );
   }
 
+  const primaryColor = branding?.primary_color || null;
+  const companyName = campaign?.company_name || "CoreMatch";
+  const logoUrl = branding?.logo_url || null;
+
   return (
-    <div className="min-h-screen bg-navy-50">
-      <header className="bg-white border-b border-navy-200 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-primary-600">CoreMatch</h1>
+    <div
+      className="min-h-screen bg-navy-50"
+      style={primaryColor ? { "--brand-primary": primaryColor } : undefined}
+    >
+      {/* Offline banner */}
+      {offline && (
+        <div className="bg-amber-500 text-white text-center py-2 text-sm font-medium">
+          {t("offline.banner") || "You are offline. Some features may be unavailable."}
+        </div>
+      )}
+
+      <header
+        className="border-b border-navy-200 px-4 py-3 flex items-center justify-between"
+        style={primaryColor
+          ? { backgroundColor: primaryColor, borderColor: "transparent" }
+          : { backgroundColor: "white" }
+        }
+      >
+        <div className="flex items-center gap-3">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={companyName}
+              className="h-8 w-auto max-w-[120px] object-contain"
+            />
+          ) : null}
+          <h1
+            className="text-lg font-bold"
+            style={primaryColor ? { color: "white" } : undefined}
+          >
+            {logoUrl ? "" : (
+              <span className={primaryColor ? "text-white" : "text-primary-600"}>
+                {companyName}
+              </span>
+            )}
+          </h1>
+        </div>
         <LanguageToggle />
       </header>
       <main className="max-w-2xl mx-auto px-4 py-8">

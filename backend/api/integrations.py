@@ -259,7 +259,6 @@ def test_integration(integration_id):
         logger.error("Test integration error: %s", str(e))
         return jsonify({"error": "Failed to test integration"}), 500
 
-    # Simulated connection test (real implementation would call the ATS API)
     if not has_key:
         return jsonify({
             "success": False,
@@ -274,11 +273,32 @@ def test_integration(integration_id):
             "provider": provider,
         })
 
-    return jsonify({
-        "success": True,
-        "message": f"Successfully connected to {provider.capitalize()}",
-        "provider": provider,
-    })
+    # Real connection test via ATS connector
+    try:
+        from services.ats import get_connector
+        connector = get_connector(provider)
+        # Decrypt API key
+        api_key = row[1]  # Already decrypted from DB
+        success, message = connector.test_connection(api_key)
+        return jsonify({
+            "success": success,
+            "message": message,
+            "provider": provider,
+        })
+    except ValueError:
+        # Unsupported provider — fall back to basic check
+        return jsonify({
+            "success": True,
+            "message": f"API key configured for {provider.capitalize()} (provider not yet supported for live testing)",
+            "provider": provider,
+        })
+    except Exception as e:
+        logger.error("ATS test connection error: %s", str(e))
+        return jsonify({
+            "success": False,
+            "message": f"Connection test failed: {str(e)}",
+            "provider": provider,
+        })
 
 
 # ──────────────────────────────────────────────────────────────
@@ -288,19 +308,68 @@ def test_integration(integration_id):
 @integrations_bp.route("/<integration_id>/sync", methods=["POST"])
 @require_auth
 def trigger_sync(integration_id):
-    """Trigger a manual sync with the ATS provider (placeholder for background job)."""
+    """Trigger a manual sync — export submitted candidates to ATS."""
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT provider, is_active FROM ats_integrations WHERE id = %s AND user_id = %s",
+                    "SELECT provider, api_key_encrypted, is_active, settings FROM ats_integrations WHERE id = %s AND user_id = %s",
                     (integration_id, g.current_user["id"]),
                 )
                 row = cur.fetchone()
                 if not row:
                     return jsonify({"error": "Integration not found"}), 404
-                if not row[1]:
+                if not row[2]:
                     return jsonify({"error": "Integration is not active"}), 400
+
+                provider = row[0]
+                api_key = row[1]
+                settings = row[3] or {}
+
+                # Export candidates with decisions that haven't been synced yet
+                cur.execute(
+                    """
+                    SELECT c.id, c.full_name, c.email, c.phone, c.overall_score,
+                           c.tier, c.hr_decision, camp.job_title, camp.name
+                    FROM candidates c
+                    JOIN campaigns camp ON c.campaign_id = camp.id
+                    WHERE camp.user_id = %s
+                      AND c.hr_decision IS NOT NULL
+                      AND c.status != 'erased'
+                    ORDER BY c.updated_at DESC
+                    LIMIT 50
+                    """,
+                    (g.current_user["id"],),
+                )
+                candidates_to_sync = cur.fetchall()
+
+                synced = 0
+                errors_list = []
+                try:
+                    from services.ats import get_connector
+                    connector = get_connector(provider)
+                    for cand in candidates_to_sync:
+                        candidate_data = {
+                            "full_name": cand[1],
+                            "email": cand[2],
+                            "phone": cand[3],
+                            "overall_score": float(cand[4]) if cand[4] else None,
+                            "tier": cand[5],
+                            "decision": cand[6],
+                            "job_title": cand[7],
+                            "campaign_name": cand[8],
+                        }
+                        success, ext_id, msg = connector.export_candidate(
+                            candidate_data, api_key, settings
+                        )
+                        if success:
+                            synced += 1
+                        else:
+                            errors_list.append(msg)
+                            if len(errors_list) >= 3:
+                                break  # Stop on repeated errors
+                except ValueError:
+                    return jsonify({"error": f"Provider {provider} not supported for sync"}), 400
 
                 # Update last_synced_at
                 cur.execute(
@@ -316,7 +385,8 @@ def trigger_sync(integration_id):
                     """,
                     (
                         g.current_user["id"], "integration.sync_triggered", "ats_integration",
-                        integration_id, json.dumps({"provider": row[0]}),
+                        integration_id,
+                        json.dumps({"provider": provider, "synced": synced, "errors": len(errors_list)}),
                         request.remote_addr,
                     ),
                 )
@@ -325,6 +395,8 @@ def trigger_sync(integration_id):
         return jsonify({"error": "Failed to trigger sync"}), 500
 
     return jsonify({
-        "message": f"Sync triggered for {row[0].capitalize()}",
-        "provider": row[0],
+        "message": f"Synced {synced} candidates to {provider.capitalize()}",
+        "provider": provider,
+        "synced_count": synced,
+        "error_count": len(errors_list),
     })

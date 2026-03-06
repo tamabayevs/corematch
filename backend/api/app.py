@@ -197,6 +197,20 @@ def create_app() -> Flask:
         return jsonify({"status": "ok", "service": "corematch-api"}), 200
 
     # ──────────────────────────────────────────────────────────
+    # Internal: Saved Search Auto-Notify Trigger
+    # ──────────────────────────────────────────────────────────
+    @app.route("/api/internal/check-saved-searches", methods=["POST"])
+    def check_saved_searches_endpoint():
+        # Authenticate with shared secret (for cron/scheduler calls)
+        secret = request.headers.get("X-Internal-Secret", "")
+        expected = os.environ.get("INTERNAL_API_SECRET", "")
+        if not expected or secret != expected:
+            return jsonify({"error": "Unauthorized"}), 401
+        from workers.saved_search_checker import check_saved_searches
+        result = check_saved_searches()
+        return jsonify(result), 200
+
+    # ──────────────────────────────────────────────────────────
     # Global Error Handlers
     # ──────────────────────────────────────────────────────────
     @app.errorhandler(400)

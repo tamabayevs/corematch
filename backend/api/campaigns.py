@@ -573,6 +573,7 @@ def invite_candidate(campaign_id):
             interview_url=interview_url,
             expires_at=invite_expires_at,
             question_count=len(questions_snapshot),
+            user_id=g.current_user["id"],
         )
     except Exception as e:
         logger.error("Failed to send invitation email: %s", str(e))
@@ -776,6 +777,7 @@ def bulk_invite(campaign_id):
                             interview_url=interview_url,
                             expires_at=invite_expires_at,
                             question_count=len(questions_snapshot),
+                            user_id=g.current_user["id"],
                         )
                     except Exception as email_err:
                         logger.error("Bulk invite email error for %s: %s", c["email"], str(email_err))
@@ -878,6 +880,7 @@ def send_reminders(campaign_id):
                             interview_url=interview_url,
                             expires_at=expires_at,
                             question_count=len(campaign[3]) if isinstance(campaign[3], list) else 0,
+                            user_id=g.current_user["id"],
                         )
 
                         cur.execute(
