@@ -1,12 +1,15 @@
 """
 CoreMatch — SMS Service
-Pluggable adapter: mock (dev) or Twilio (prod).
-Provider selected via SMS_PROVIDER env var: 'mock' | 'twilio'
+Pluggable adapter: mock (dev), Twilio, or Brevo (prod).
+Provider selected via SMS_PROVIDER env var: 'mock' | 'twilio' | 'brevo'
 SMS only sent for candidate invitations when phone number is provided.
 """
 import os
+import json
 import logging
 from abc import ABC, abstractmethod
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +85,42 @@ class TwilioSMSService(SMSService):
 
 
 # ──────────────────────────────────────────────────────────────
+# Brevo SMS via HTTP API — no SDK needed
+# ──────────────────────────────────────────────────────────────
+
+class BrevoSMSService(SMSService):
+    API_URL = "https://api.brevo.com/v3/transactionalSMS/sms"
+
+    def __init__(self):
+        self.api_key = os.environ["BREVO_API_KEY"]
+        self.sender = os.environ.get("BREVO_SMS_SENDER", "CoreMatch")
+
+    def _send(self, to_phone: str, message: str) -> None:
+        payload = json.dumps({
+            "sender": self.sender,
+            "recipient": to_phone,
+            "content": message,
+            "type": "transactional",
+        }).encode("utf-8")
+
+        req = Request(self.API_URL, data=payload, method="POST")
+        req.add_header("api-key", self.api_key)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json")
+
+        try:
+            with urlopen(req, timeout=15) as resp:
+                logger.info("SMS sent via Brevo to %s", to_phone[:4] + "***")
+        except HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")
+            logger.error("Brevo SMS failed (%d): %s", e.code, body)
+            raise
+        except URLError as e:
+            logger.error("Brevo SMS network error: %s", e.reason)
+            raise
+
+
+# ──────────────────────────────────────────────────────────────
 # Factory
 # ──────────────────────────────────────────────────────────────
 
@@ -95,6 +134,9 @@ def get_sms_service() -> SMSService:
         if provider == "twilio" and os.environ.get("SMS_ENABLED", "false").lower() == "true":
             _sms_instance = TwilioSMSService()
             logger.info("SMS provider: Twilio")
+        elif provider == "brevo" and os.environ.get("SMS_ENABLED", "false").lower() == "true":
+            _sms_instance = BrevoSMSService()
+            logger.info("SMS provider: Brevo")
         else:
             _sms_instance = MockSMSService()
             logger.info("SMS provider: mock (dev)")

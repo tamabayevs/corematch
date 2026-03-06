@@ -1,15 +1,18 @@
 """
 CoreMatch — Email Service
-Pluggable adapter: mock (dev) or AWS SES via SMTP (prod).
-Provider selected via EMAIL_PROVIDER env var: 'mock' | 'ses'
+Pluggable adapter: mock (dev), AWS SES via SMTP, or Brevo API (prod).
+Provider selected via EMAIL_PROVIDER env var: 'mock' | 'ses' | 'brevo'
 """
 import os
+import json
 import smtplib
 import logging
 from abc import ABC, abstractmethod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -458,6 +461,45 @@ class SESEmailService(EmailService):
 
 
 # ──────────────────────────────────────────────────────────────
+# Brevo (formerly Sendinblue) via HTTP API — no SDK needed
+# ──────────────────────────────────────────────────────────────
+
+class BrevoEmailService(EmailService):
+    API_URL = "https://api.brevo.com/v3/smtp/email"
+
+    def __init__(self):
+        self.api_key = os.environ["BREVO_API_KEY"]
+        self.from_address = os.environ.get("EMAIL_FROM_ADDRESS", "noreply@corematch.ai")
+        self.from_name = os.environ.get("EMAIL_FROM_NAME", "CoreMatch")
+
+    def _send(self, to_email: str, subject: str, html_body: str) -> None:
+        payload = json.dumps({
+            "sender": {"name": self.from_name, "email": self.from_address},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "htmlContent": html_body,
+        }).encode("utf-8")
+
+        req = Request(self.API_URL, data=payload, method="POST")
+        req.add_header("api-key", self.api_key)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json")
+
+        try:
+            with urlopen(req, timeout=15) as resp:
+                logger.info("Email sent via Brevo to %s | %s (messageId: %s)",
+                            to_email[:3] + "***", subject,
+                            json.loads(resp.read()).get("messageId", "?"))
+        except HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")
+            logger.error("Brevo email failed (%d): %s", e.code, body)
+            raise
+        except URLError as e:
+            logger.error("Brevo email network error: %s", e.reason)
+            raise
+
+
+# ──────────────────────────────────────────────────────────────
 # Factory
 # ──────────────────────────────────────────────────────────────
 
@@ -471,6 +513,9 @@ def get_email_service() -> EmailService:
         if provider == "ses":
             _email_instance = SESEmailService()
             logger.info("Email provider: AWS SES")
+        elif provider == "brevo":
+            _email_instance = BrevoEmailService()
+            logger.info("Email provider: Brevo")
         else:
             _email_instance = MockEmailService()
             logger.info("Email provider: mock (dev)")
