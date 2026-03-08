@@ -4,7 +4,7 @@ import { useAuthStore } from "../store/authStore";
 import Spinner from "./ui/Spinner";
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading, initialize } = useAuthStore();
+  const { isAuthenticated, emailVerified, isLoading, initialize } = useAuthStore();
 
   useEffect(() => {
     if (!isAuthenticated && isLoading) {
@@ -22,6 +22,11 @@ export default function ProtectedRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Redirect unverified users to email verification page
+  if (!emailVerified) {
+    return <Navigate to="/verify-email" replace />;
   }
 
   return children;

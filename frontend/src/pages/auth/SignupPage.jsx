@@ -45,13 +45,17 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      await signup({
+      const data = await signup({
         full_name: form.full_name,
         email: form.email,
         password: form.password,
         company_name: form.company_name,
       });
-      navigate("/dashboard");
+      if (data.email_verified === false) {
+        navigate("/verify-email");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       const data = err.response?.data;
       if (data?.details) {

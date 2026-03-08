@@ -21,8 +21,12 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      navigate("/dashboard");
+      const data = await login(email, password);
+      if (data.email_verified === false) {
+        navigate("/verify-email");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       setError(err.response?.data?.error || t("auth.invalidCredentials"));
     } finally {

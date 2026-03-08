@@ -405,6 +405,76 @@ class EmailService(ABC):
         subject, html = _render_password_reset(to_name, reset_url, expires_in_hours, request_ip)
         self._send(to_email, subject, html)
 
+    def send_verification_code(self, to_email, to_name, code):
+        """Send 6-digit email verification code."""
+        subject = f"Your CoreMatch verification code: {code}"
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background:#f8fafc; margin:0; padding:20px; }}
+  .container {{ max-width:600px; margin:0 auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); }}
+  .header {{ background:#0D9488; padding:24px; text-align:center; }}
+  .header h1 {{ color:#fff; margin:0; font-size:22px; }}
+  .body {{ padding:32px; text-align:center; }}
+  .code {{ display:inline-block; background:#f1f5f9; font-family:monospace; font-size:36px; font-weight:bold; letter-spacing:8px; padding:16px 32px; border-radius:12px; margin:24px 0; color:#0D9488; }}
+  .footer {{ background:#f8fafc; padding:16px; text-align:center; font-size:12px; color:#64748b; }}
+</style></head>
+<body>
+<div class="container">
+  <div class="header"><h1>CoreMatch</h1></div>
+  <div class="body">
+    <p>Hi {to_name},</p>
+    <p>Welcome to CoreMatch! Please verify your email address by entering this code:</p>
+    <div class="code">{code}</div>
+    <p style="color:#64748b;font-size:14px;">This code expires in <strong>15 minutes</strong>.</p>
+    <p style="color:#64748b;font-size:13px;">If you did not create a CoreMatch account, please ignore this email.</p>
+  </div>
+  <div class="footer">
+    <p>&copy; {datetime.utcnow().year} CoreMatch. All rights reserved.</p>
+  </div>
+</div>
+</body></html>"""
+        self._send(to_email, subject, html)
+
+    def send_waitlist_confirmation(self, to_email, to_name):
+        """Send waitlist confirmation email."""
+        subject = "Welcome to the CoreMatch waitlist!"
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background:#f8fafc; margin:0; padding:20px; }}
+  .container {{ max-width:600px; margin:0 auto; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); }}
+  .header {{ background:#0D9488; padding:24px; text-align:center; }}
+  .header h1 {{ color:#fff; margin:0; font-size:22px; }}
+  .body {{ padding:32px; }}
+  .body p {{ color:#334155; line-height:1.6; }}
+  .footer {{ background:#f8fafc; padding:20px; text-align:center; font-size:12px; color:#64748b; }}
+</style></head>
+<body>
+<div class="container">
+  <div class="header"><h1>CoreMatch</h1></div>
+  <div class="body">
+    <p>Hi {to_name},</p>
+    <p>Thanks for joining the CoreMatch waitlist! We're building the first AI video interview platform designed specifically for MENA HR teams.</p>
+    <p><strong>What to expect:</strong></p>
+    <ul style="color:#334155;line-height:1.8;">
+      <li>Early access when we launch new features</li>
+      <li>Exclusive updates on our progress</li>
+      <li>Priority onboarding when you're ready to start</li>
+    </ul>
+    <p>In the meantime, feel free to reply to this email if you have questions or want to chat about your hiring workflow. We read every message.</p>
+    <p>Best,<br/>The CoreMatch Team</p>
+  </div>
+  <div class="footer">
+    <p>CoreMatch &mdash; AI Video Interviews for MENA</p>
+    <p>&copy; {datetime.utcnow().year} CoreMatch. All rights reserved.</p>
+  </div>
+</div>
+</body></html>"""
+        self._send(to_email, subject, html)
+
     @abstractmethod
     def _send(self, to_email: str, subject: str, html_body: str) -> None:
         pass

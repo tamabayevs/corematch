@@ -2,12 +2,15 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import InterviewLayout from "./components/InterviewLayout";
 import DashboardLayout from "./components/layout/DashboardLayout";
+import LandingPage from "./pages/LandingPage";
+import { useAuthStore } from "./store/authStore";
 
 // Auth pages
 import LoginPage from "./pages/auth/LoginPage";
 import SignupPage from "./pages/auth/SignupPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 
 // Dashboard pages
 import DashboardPage from "./pages/dashboard/DashboardPage";
@@ -37,6 +40,7 @@ import IntegrationsPage from "./pages/dashboard/IntegrationsPage";
 import ReportsPage from "./pages/dashboard/ReportsPage";
 import SaudizationPage from "./pages/dashboard/SaudizationPage";
 import PipelinePage from "./pages/dashboard/PipelinePage";
+import DemandPage from "./pages/dashboard/DemandPage";
 
 // Candidate interview pages
 import WelcomePage from "./pages/candidate/WelcomePage";
@@ -51,6 +55,11 @@ import StatusPage from "./pages/candidate/StatusPage";
 import PracticePage from "./pages/candidate/PracticePage";
 import ApplyPage from "./pages/candidate/ApplyPage";
 
+function HomeRedirect() {
+  const { isAuthenticated } = useAuthStore();
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -59,6 +68,7 @@ export default function App() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
 
       {/* HR Dashboard routes */}
       <Route
@@ -95,6 +105,8 @@ export default function App() {
         <Route path="saudization" element={<SaudizationPage />} />
         {/* Pipeline */}
         <Route path="campaigns/:id/pipeline" element={<PipelinePage />} />
+        {/* Demand */}
+        <Route path="demand" element={<DemandPage />} />
       </Route>
 
       {/* Candidate interview routes */}
@@ -117,9 +129,9 @@ export default function App() {
       <Route path="/status" element={<StatusPage />} />
       <Route path="/status/:referenceId" element={<StatusPage />} />
 
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Landing page for unauthenticated, dashboard redirect for authenticated */}
+      <Route path="/" element={<HomeRedirect />} />
+      <Route path="*" element={<HomeRedirect />} />
     </Routes>
   );
 }

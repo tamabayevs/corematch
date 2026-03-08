@@ -162,6 +162,7 @@ def create_app() -> Flask:
     from api.reports import reports_bp
     from api.saudization import saudization_bp
     from api.pipeline import pipeline_bp
+    from api.demand import demand_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(campaigns_bp, url_prefix="/api/campaigns")
@@ -188,6 +189,7 @@ def create_app() -> Flask:
     app.register_blueprint(reports_bp, url_prefix="/api/reports")
     app.register_blueprint(saudization_bp, url_prefix="/api/saudization")
     app.register_blueprint(pipeline_bp, url_prefix="/api/pipeline")
+    app.register_blueprint(demand_bp, url_prefix="/api/demand")
 
     # ──────────────────────────────────────────────────────────
     # Health Check

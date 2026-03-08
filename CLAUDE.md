@@ -1,10 +1,10 @@
-# CoreMatch — Project Guide (v1.2)
+# CoreMatch — Project Guide (v3.0)
 
 ## What is this?
 AI-powered video interview platform for MENA HR teams. Candidates record async video answers; AI scores them; HR reviews and decides.
 
-**Version:** 1.2 (2026-02-22)
-**Status:** All 26 features fully wired end-to-end. v1.2 adds 61 missing translation keys, fixes data calculation bugs, UI polish, and public application flow. 105 backend tests passing. 85/85 network stress tests passing.
+**Version:** 3.0 (2026-03-08)
+**Status:** Full product (26 features + agentic pipeline) + go-to-market layer (Stripe billing, auth persistence, email verification, usage limits, onboarding, landing page, demand measurement). 105 backend tests passing.
 
 ## Tech Stack
 - **Backend:** Flask 3.0 + PostgreSQL 15 + Redis/RQ + Groq API (Python 3.9)
@@ -18,20 +18,24 @@ backend/
   api/           # Flask blueprints: auth, campaigns, candidates, public, dashboard,
                  # reviews, templates, insights, compliance, scorecards, comments,
                  # team, notifications, branding, assignments, calibration, dsr,
-                 # talent_pool, integrations, reports, saudization, notification_templates
+                 # talent_pool, integrations, reports, saudization, notification_templates,
+                 # pipeline, demand
   database/      # schema.py (raw SQL), connection.py (pool), migrations.py (incremental)
-  ai/            # scorer.py (Groq Whisper + LLM scoring)
-  workers/       # video_processor.py (RQ background jobs)
-  services/      # email (SES), sms (Twilio), storage (R2/local), scheduling (MENA weekend),
-                 # notification_service (in-app notifications), mention_service (@mentions)
-  tests/         # pytest suite — 105 tests across 6 test files
+  ai/            # scorer.py (Groq Whisper + LLM scoring), providers.py, cv_screener.py,
+                 # video_agent.py, deep_evaluator.py, shortlist_ranker.py
+  workers/       # video_processor.py (RQ background jobs), pipeline_worker.py
+  services/      # email (SES/Brevo), sms (Twilio), storage (R2/local), scheduling (MENA weekend),
+                 # notification_service, mention_service, pipeline_service, stripe_service
+  tests/         # pytest suite — 105 tests across 9 test files
 
 frontend/
   src/
-    api/         # Axios API clients (client.js, campaigns.js, dashboard.js, templates.js, etc.)
-    components/  # ui/ (Button, Card, Badge, Input, Modal, etc.), layout/ (DashboardLayout)
-    pages/       # auth/, dashboard/ (15 pages), candidate/ (incl. ApplyPage)
-    store/       # Zustand stores (authStore)
+    api/         # Axios API clients (client.js, campaigns.js, dashboard.js, demand.js, etc.)
+    components/  # ui/ (Button, Card, Badge, Input, Modal, etc.), layout/ (DashboardLayout),
+                 # OnboardingChecklist, ProtectedRoute
+    pages/       # auth/ (Login, Signup, VerifyEmail), dashboard/ (17 pages incl. DemandPage),
+                 # candidate/ (incl. ApplyPage), LandingPage
+    store/       # Zustand stores (authStore — JWT access + httpOnly refresh cookies)
     lib/         # i18n.jsx, translations/, formatDate.js, hijriCalendar.js
 ```
 
@@ -61,13 +65,17 @@ bash stress_test.sh
 - **Backend:** https://corematch-production.up.railway.app (Railway, auto-deploy)
 - **Test account:** olzhas.tamabayev@gmail.com / CoreMatch2026
 
-## Database Tables (22 tables)
+## Database Tables (28 tables)
 
 **Core:** `users`, `password_reset_tokens`, `campaigns`, `candidates`, `video_answers`, `ai_scores`, `audit_log`
 
 **Phase 1:** `campaign_templates`, `retention_policies`, `reminder_schedules`
 
 **Phase 2-3:** `scorecard_templates`, `candidate_evaluations`, `team_members`, `company_settings`, `candidate_comments`, `notifications`, `data_subject_requests`, `saved_searches`, `review_assignments`, `company_branding`, `notification_templates`, `ats_integrations`, `saudization_quotas`
+
+**v2.0 Pipeline:** `pipeline_configs`, `candidate_documents`, `agent_evaluations`
+
+**v3.0 GTM:** `plan_limits`, `waitlist_signups`, `page_events`
 
 ## Important Patterns
 - Python 3.9: Use `Optional[str]` not `str | None` (PEP 604 requires 3.10+)
@@ -84,28 +92,42 @@ bash stress_test.sh
 - MENA weekends: Invite/remind endpoints include weekend warnings on Fri/Sat (non-blocking)
 - Public application flow: `/apply/:campaignId` → self-registration → auto-redirect to interview
 - Date inputs: Add `lang` attribute matching current locale to avoid system-locale date format
+- Auth: JWT access tokens (15min) + httpOnly refresh cookies (7 days) with auto-rotation
+- Landing page at `/` for unauthenticated visitors, auto-redirects to `/dashboard` if logged in
+- Email verification: 6-digit code on signup, must verify before dashboard access
+- Usage limits: `plan_limits` table checked before campaign create, candidate invite, team invite
+- Demand tracking: `POST /api/demand/track` (public, fire-and-forget), `POST /api/demand/waitlist` (public)
+- Stripe billing: 3 plans (Free $0, Starter $99/mo, Growth $249/mo) via Checkout + Customer Portal
 
 ## Sidebar Navigation
 ```
 OVERVIEW
   Dashboard         — KPIs, pipeline, action items, activity feed
+  Demand            — Waitlist signups, page analytics, LinkedIn outreach funnel
   Campaigns         — List, create, detail, invite, bulk-invite, remind, export
 
 REVIEW
   Video Reviews     — Queue with filters, focused review mode with keyboard shortcuts
-  Insights          — Funnel, score distribution, campaign comparison, drop-off analysis
+  Assignments       — Reviewer assignment, round-robin, progress tracking
+  Calibration       — Side-by-side reviewer comparison
+  Insights          — Funnel, score distribution, campaign comparison
   Reports           — Executive summary, tier distribution, PDF/CSV export
+  Drop-off Analysis — Per-question abandonment charts
 
 MANAGE
+  Templates         — Campaign templates, system templates, duplication
+  Notification Tmpl — Email/WhatsApp templates with variable substitution
+  Scorecards        — Competency-based evaluation templates
   Talent Pool       — Cross-campaign search, saved searches, re-engage
-  Assignments       — Reviewer assignment, round-robin, progress tracking
+  Team              — Team members, role-based access
   Saudization       — Nationality quota monitoring
 
 SETTINGS
-  Settings          — Profile, team, scorecards, notification templates, integrations
-  PDPL Compliance   — Audit log, retention policy, data expiry timeline
-  DSR Management    — Data subject requests (access/erasure/rectification)
+  Settings          — Profile, billing (Stripe)
   Branding          — Company logo, colors, welcome message
+  Integrations      — Greenhouse + Lever ATS connectors
+  PDPL Compliance   — Audit log, retention policy, data expiry timeline
+  Data Requests     — Data subject requests (access/erasure/rectification)
 ```
 
 ## Feature Roadmap — All Phases Complete ✅
@@ -175,9 +197,27 @@ SETTINGS
   - "Copy Public Link" button on Campaign Detail page — clipboard copy with toast notification
   - Duplicate email detection (409), closed campaign detection (410), full audit trail
 
-## Stress Test Summary (v1.2)
-- **85/85 tests passing** — auth, dashboard, campaigns, candidates, reviews, assignments, insights, reports, templates, scorecards, compliance, DSR, branding, team, integrations, talent pool, saudization, public endpoints (incl. apply), error handling, concurrent stress, sequential burst
+### v2.0 Agentic Pipeline ✅
+- ✅ 4-stage AI pipeline: CV Screen → Video Interview → Deep Evaluation → Final Shortlist
+- ✅ Pipeline opt-in per campaign via `pipeline_enabled` boolean
+- ✅ AI Provider abstraction: Groq (default), Anthropic (Claude), OpenAI — configurable per stage
+- ✅ CV upload (PDF/DOCX) via multipart/form-data
+- ✅ Frontend: PipelinePage (Kanban), AgentEvaluation component, PipelineProgress stepper
+- ✅ Prompt templates in `backend/ai/prompts/*.txt`
+
+### v3.0 Go-to-Market ✅
+- ✅ **Stripe Billing** — 3 plans (Free $0 / Starter $99 / Growth $249), Checkout sessions, Customer Portal, webhook handler
+- ✅ **Auth Persistence** — JWT refresh token rotation (15min access + 7-day httpOnly refresh cookies)
+- ✅ **Email Verification** — 6-digit code on signup, resend with cooldown
+- ✅ **Usage Limits** — `plan_limits` table, enforced on campaign create / candidate invite / team invite, monthly auto-reset
+- ✅ **Onboarding Checklist** — 5-step progress card on dashboard for new users
+- ✅ **Landing Page** — Full marketing page at `/` with hero, value props, pricing, waitlist form
+- ✅ **SEO Meta Tags** — OpenGraph + Twitter Card
+- ✅ **Demand Measurement** — self-hosted analytics (page_events table), waitlist capture with auto-reply email, demand dashboard with KPIs/charts/LinkedIn funnel
+
+## Test Summary
+- **105/105 backend tests passing**
+- **85/85 network stress tests passing**
 - **Avg response time:** ~350ms
-- **Concurrent (10x):** 100% success rate across 8 endpoints
-- **Sequential burst (50x):** 50/50 OK, avg 420ms
-- **Zero 500 errors**, zero timeouts, zero slow responses
+- **Concurrent (10x):** 100% success rate
+- **Zero 500 errors**, zero timeouts

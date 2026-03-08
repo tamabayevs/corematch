@@ -8,6 +8,7 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
+import OnboardingChecklist from "../../components/OnboardingChecklist";
 import clsx from "clsx";
 
 const STATUS_FILTERS = ["all", "active", "closed", "archived"];
@@ -151,6 +152,8 @@ export default function DashboardPage() {
           <div className="flex justify-center py-12">
             <Spinner />
           </div>
+        ) : campaigns.length === 0 && filter === "all" ? (
+          <OnboardingChecklist campaigns={campaigns} summary={summary} />
         ) : campaigns.length === 0 ? (
           <EmptyState
             icon={

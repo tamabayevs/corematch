@@ -521,6 +521,84 @@ MIGRATIONS = [
             'shortlisted', 'rejected', 'on_hold'
         ));
     """,
+    # ── GTM Phase 2B: Email Verification ──
+    """
+    -- Add email_verified flag to users (default FALSE for new users, TRUE for existing)
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;
+
+    -- Set existing users as verified (they were already using the platform)
+    UPDATE users SET email_verified = TRUE WHERE email_verified = FALSE;
+
+    -- Email verification codes table
+    CREATE TABLE IF NOT EXISTS email_verification_codes (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        code        VARCHAR(6) NOT NULL,
+        expires_at  TIMESTAMPTZ NOT NULL,
+        used        BOOLEAN DEFAULT FALSE,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_evc_user_id ON email_verification_codes(user_id);
+    """,
+    # ── GTM Phase 2C: Usage Limits / Plan Tiers ──
+    """
+    CREATE TABLE IF NOT EXISTS plan_limits (
+        id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id                     UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        plan_tier                   VARCHAR(20) NOT NULL DEFAULT 'starter'
+                                    CHECK (plan_tier IN ('free', 'starter', 'growth', 'enterprise')),
+        max_campaigns               INTEGER NOT NULL DEFAULT 3,
+        max_candidates_per_month    INTEGER NOT NULL DEFAULT 50,
+        max_team_members            INTEGER NOT NULL DEFAULT 3,
+        current_candidates_this_month INTEGER NOT NULL DEFAULT 0,
+        period_start                DATE NOT NULL DEFAULT CURRENT_DATE,
+        created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_plan_limits_user ON plan_limits(user_id);
+
+    DROP TRIGGER IF EXISTS trg_update_plan_limits_updated_at ON plan_limits;
+    CREATE TRIGGER trg_update_plan_limits_updated_at
+    BEFORE UPDATE ON plan_limits
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Seed starter plan for all existing users
+    INSERT INTO plan_limits (user_id, plan_tier, max_campaigns, max_candidates_per_month, max_team_members)
+    SELECT id, 'starter', 3, 50, 3 FROM users
+    WHERE id NOT IN (SELECT user_id FROM plan_limits);
+    """,
+
+    # ── Migration 23: Demand Measurement (waitlist + page events) ──
+    """
+    CREATE TABLE IF NOT EXISTS waitlist_signups (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        full_name       VARCHAR(300) NOT NULL,
+        email           VARCHAR(320) NOT NULL,
+        company_name    VARCHAR(300),
+        source          VARCHAR(50) DEFAULT 'landing_page',
+        utm_source      VARCHAR(200),
+        utm_medium      VARCHAR(200),
+        utm_campaign    VARCHAR(200),
+        ip_address      VARCHAR(45),
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_waitlist_signups_email ON waitlist_signups(email);
+
+    CREATE TABLE IF NOT EXISTS page_events (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        event_type      VARCHAR(50) NOT NULL,
+        page            VARCHAR(500) DEFAULT '/',
+        referrer        VARCHAR(500),
+        utm_source      VARCHAR(200),
+        utm_medium      VARCHAR(200),
+        utm_campaign    VARCHAR(200),
+        ip_address      VARCHAR(45),
+        user_agent      VARCHAR(500),
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_page_events_created_at ON page_events(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_page_events_type ON page_events(event_type);
+    """,
 ]
 
 

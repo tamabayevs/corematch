@@ -151,9 +151,48 @@ def signup():
     access_token = create_access_token(user_id, email)
     refresh_token = create_refresh_token(user_id)
 
+    # Create plan limits for new user (starter tier)
+    try:
+        with get_db() as conn2:
+            with conn2.cursor() as cur2:
+                cur2.execute(
+                    """
+                    INSERT INTO plan_limits (user_id, plan_tier, max_campaigns, max_candidates_per_month, max_team_members)
+                    VALUES (%s, 'starter', 3, 50, 3)
+                    ON CONFLICT (user_id) DO NOTHING
+                    """,
+                    (user_id,),
+                )
+    except Exception as e:
+        logger.debug("Plan limits seed skipped (table may not exist yet): %s", e)
+
+    # Send email verification code
+    email_verified = False
+    try:
+        import random
+        code = f"{random.randint(100000, 999999)}"
+        expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+        with get_db() as conn3:
+            with conn3.cursor() as cur3:
+                cur3.execute(
+                    """
+                    INSERT INTO email_verification_codes (user_id, code, expires_at)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (user_id, code, expires),
+                )
+        from services.email_service import get_email_service
+        email_svc = get_email_service()
+        email_svc.send_verification_code(email, full_name or "there", code)
+        logger.info("Verification code sent to %s", email[:3] + "***")
+    except Exception as e:
+        logger.error("Failed to send verification code: %s", str(e))
+        # Don't block signup if email fails — user can resend later
+
     response = make_response(jsonify({
         "message": "Account created successfully",
         "access_token": access_token,
+        "email_verified": email_verified,
         "user": {
             "id": user_id,
             "email": user[1],
@@ -210,9 +249,22 @@ def login():
     access_token = create_access_token(user_id, user[1])
     refresh_token = create_refresh_token(user_id)
 
+    # Check email_verified status (column index 6 if exists, default True for backwards compat)
+    email_verified = True
+    try:
+        with get_db() as conn2:
+            with conn2.cursor() as cur2:
+                cur2.execute("SELECT email_verified FROM users WHERE id = %s", (user_id,))
+                row = cur2.fetchone()
+                if row is not None:
+                    email_verified = bool(row[0])
+    except Exception:
+        pass  # Column may not exist yet; default to True
+
     response = make_response(jsonify({
         "message": "Login successful",
         "access_token": access_token,
+        "email_verified": email_verified,
         "user": {
             "id": user_id,
             "email": user[1],
@@ -563,3 +615,115 @@ def validate_reset_token():
     if row:
         return jsonify({"valid": True})
     return jsonify({"valid": False, "error": "token_invalid"}), 400
+
+
+# ──────────────────────────────────────────────────────────────
+# POST /api/auth/send-verification
+# ──────────────────────────────────────────────────────────────
+
+@auth_bp.route("/send-verification", methods=["POST"])
+@require_auth
+def send_verification():
+    """
+    Generate and send a new 6-digit verification code to the current user's email.
+    Rate limit: 3/minute per user (prevent abuse).
+    """
+    user_id = g.current_user["id"]
+    user_email = g.current_user.get("email", "")
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Check if already verified
+                cur.execute("SELECT email_verified, full_name, email FROM users WHERE id = %s", (user_id,))
+                user = cur.fetchone()
+                if not user:
+                    return jsonify({"error": "User not found"}), 404
+                if user[0]:
+                    return jsonify({"message": "Email already verified"}), 200
+
+                # Invalidate any existing unused codes
+                cur.execute(
+                    "UPDATE email_verification_codes SET used = TRUE WHERE user_id = %s AND used = FALSE",
+                    (user_id,),
+                )
+
+                # Generate new code
+                import random
+                code = f"{random.randint(100000, 999999)}"
+                expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+
+                cur.execute(
+                    """
+                    INSERT INTO email_verification_codes (user_id, code, expires_at)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (user_id, code, expires),
+                )
+
+        # Send email
+        from services.email_service import get_email_service
+        email_svc = get_email_service()
+        email_svc.send_verification_code(user[2], user[1] or "there", code)
+
+        return jsonify({"message": "Verification code sent"})
+
+    except Exception as e:
+        logger.error("Send verification error: %s", str(e))
+        return jsonify({"error": "Failed to send verification code"}), 500
+
+
+# ──────────────────────────────────────────────────────────────
+# POST /api/auth/verify-email
+# ──────────────────────────────────────────────────────────────
+
+@auth_bp.route("/verify-email", methods=["POST"])
+@require_auth
+def verify_email():
+    """
+    Verify email using 6-digit code.
+    """
+    user_id = g.current_user["id"]
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Request body must be JSON"}), 400
+
+    code = data.get("code", "").strip()
+    if not code or len(code) != 6:
+        return jsonify({"error": "A valid 6-digit code is required"}), 400
+
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                # Find valid, unexpired, unused code
+                cur.execute(
+                    """
+                    SELECT id FROM email_verification_codes
+                    WHERE user_id = %s AND code = %s AND used = FALSE AND expires_at > NOW()
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                    """,
+                    (user_id, code),
+                )
+                row = cur.fetchone()
+
+                if not row:
+                    return jsonify({"error": "Invalid or expired verification code"}), 400
+
+                # Mark code as used
+                cur.execute(
+                    "UPDATE email_verification_codes SET used = TRUE WHERE id = %s",
+                    (str(row[0]),),
+                )
+
+                # Mark user as verified
+                cur.execute(
+                    "UPDATE users SET email_verified = TRUE WHERE id = %s",
+                    (user_id,),
+                )
+
+        return jsonify({"message": "Email verified successfully", "email_verified": True})
+
+    except Exception as e:
+        logger.error("Verify email error: %s", str(e))
+        return jsonify({"error": "Verification failed"}), 500

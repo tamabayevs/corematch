@@ -96,6 +96,32 @@ def invite_member():
     if email == g.current_user["email"]:
         return jsonify({"error": "Cannot invite yourself to your own team"}), 400
 
+    # ── Usage limit check: max team members ──
+    try:
+        with get_db() as conn_limit:
+            with conn_limit.cursor() as cur_limit:
+                cur_limit.execute(
+                    "SELECT max_team_members FROM plan_limits WHERE user_id = %s",
+                    (g.current_user["id"],),
+                )
+                limit_row = cur_limit.fetchone()
+                if limit_row:
+                    max_members = limit_row[0]
+                    cur_limit.execute(
+                        "SELECT COUNT(*) FROM team_members WHERE owner_id = %s",
+                        (g.current_user["id"],),
+                    )
+                    current_count = cur_limit.fetchone()[0]
+                    if current_count >= max_members:
+                        return jsonify({
+                            "error": f"Team member limit reached ({max_members}). Upgrade your plan to add more team members.",
+                            "limit_type": "max_team_members",
+                            "current": current_count,
+                            "limit": max_members,
+                        }), 403
+    except Exception as e:
+        logger.debug("Team limit check skipped: %s", e)
+
     try:
         with get_db() as conn:
             with conn.cursor() as cur:

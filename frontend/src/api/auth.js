@@ -36,4 +36,12 @@ export const authApi = {
   validateResetToken(token) {
     return api.get(`/auth/validate-reset-token?token=${encodeURIComponent(token)}`);
   },
+
+  sendVerification() {
+    return api.post("/auth/send-verification");
+  },
+
+  verifyEmail(code) {
+    return api.post("/auth/verify-email", { code });
+  },
 };

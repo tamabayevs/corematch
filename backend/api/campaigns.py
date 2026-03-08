@@ -178,6 +178,36 @@ def create_campaign():
     job_description = data.get("job_description", "").strip() or None
     pipeline_enabled = bool(data.get("pipeline_enabled", False))
 
+    # ── Usage limit check: max campaigns ──
+    try:
+        with get_db() as conn_limit:
+            with conn_limit.cursor() as cur_limit:
+                cur_limit.execute(
+                    """
+                    SELECT pl.max_campaigns
+                    FROM plan_limits pl
+                    WHERE pl.user_id = %s
+                    """,
+                    (g.current_user["id"],),
+                )
+                limit_row = cur_limit.fetchone()
+                if limit_row:
+                    max_campaigns = limit_row[0]
+                    cur_limit.execute(
+                        "SELECT COUNT(*) FROM campaigns WHERE user_id = %s AND status = 'active'",
+                        (g.current_user["id"],),
+                    )
+                    active_count = cur_limit.fetchone()[0]
+                    if active_count >= max_campaigns:
+                        return jsonify({
+                            "error": f"Campaign limit reached ({max_campaigns} active campaigns). Upgrade your plan to create more.",
+                            "limit_type": "max_campaigns",
+                            "current": active_count,
+                            "limit": max_campaigns,
+                        }), 403
+    except Exception as e:
+        logger.debug("Plan limit check skipped (table may not exist): %s", e)
+
     import json
     try:
         with get_db() as conn:
@@ -482,6 +512,41 @@ def invite_candidate(campaign_id):
     if campaign[9] != "active":
         return jsonify({"error": "Cannot invite to a closed or archived campaign"}), 400
 
+    # ── Usage limit check: max candidates per month ──
+    try:
+        with get_db() as conn_limit:
+            with conn_limit.cursor() as cur_limit:
+                cur_limit.execute(
+                    """
+                    SELECT max_candidates_per_month, current_candidates_this_month, period_start
+                    FROM plan_limits WHERE user_id = %s
+                    """,
+                    (g.current_user["id"],),
+                )
+                limit_row = cur_limit.fetchone()
+                if limit_row:
+                    import datetime as dt
+                    max_cands = limit_row[0]
+                    current_cands = limit_row[1]
+                    period_start = limit_row[2]
+                    today = dt.date.today()
+                    # Reset counter if new month
+                    if period_start and (today.year > period_start.year or today.month > period_start.month):
+                        cur_limit.execute(
+                            "UPDATE plan_limits SET current_candidates_this_month = 0, period_start = %s WHERE user_id = %s",
+                            (today, g.current_user["id"]),
+                        )
+                        current_cands = 0
+                    if current_cands >= max_cands:
+                        return jsonify({
+                            "error": f"Monthly candidate limit reached ({max_cands}). Upgrade your plan to invite more candidates.",
+                            "limit_type": "max_candidates_per_month",
+                            "current": current_cands,
+                            "limit": max_cands,
+                        }), 403
+    except Exception as e:
+        logger.debug("Candidate limit check skipped: %s", e)
+
     # Check for duplicate invite in this campaign
     try:
         with get_db() as conn:
@@ -591,6 +656,17 @@ def invite_candidate(campaign_id):
             )
         except Exception as e:
             logger.error("Failed to send invitation SMS: %s", str(e))
+
+    # Increment monthly candidate counter
+    try:
+        with get_db() as conn_inc:
+            with conn_inc.cursor() as cur_inc:
+                cur_inc.execute(
+                    "UPDATE plan_limits SET current_candidates_this_month = current_candidates_this_month + 1 WHERE user_id = %s",
+                    (g.current_user["id"],),
+                )
+    except Exception:
+        pass
 
     response = {
         "message": "Invitation sent successfully",
@@ -784,6 +860,18 @@ def bulk_invite(campaign_id):
     except Exception as e:
         logger.error("Bulk invite DB error: %s", str(e))
         return jsonify({"error": "Failed to create invitations"}), 500
+
+    # Increment monthly candidate counter by number invited
+    if invited_count > 0:
+        try:
+            with get_db() as conn_inc:
+                with conn_inc.cursor() as cur_inc:
+                    cur_inc.execute(
+                        "UPDATE plan_limits SET current_candidates_this_month = current_candidates_this_month + %s WHERE user_id = %s",
+                        (invited_count, g.current_user["id"]),
+                    )
+        except Exception:
+            pass
 
     response = {
         "message": f"Successfully invited {invited_count} candidates",
