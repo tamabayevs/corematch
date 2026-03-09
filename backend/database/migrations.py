@@ -1064,6 +1064,62 @@ MIGRATIONS = [
            'en', TRUE
     WHERE NOT EXISTS (SELECT 1 FROM campaign_templates WHERE is_system = TRUE AND name = 'Business Development Manager');
     """,
+
+    # ── Migration 27: AI Eval Bench tables ──
+    """
+    CREATE TABLE IF NOT EXISTS eval_benchmarks (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name            VARCHAR(300) NOT NULL,
+        question_text   TEXT NOT NULL,
+        job_title       VARCHAR(300) NOT NULL,
+        job_description TEXT DEFAULT '',
+        language        VARCHAR(5) DEFAULT 'en',
+        storage_key     VARCHAR(500) NOT NULL,
+        file_size_bytes INTEGER,
+        notes           TEXT,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_eval_benchmarks_user ON eval_benchmarks(user_id);
+
+    CREATE TABLE IF NOT EXISTS eval_runs (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        model_name      VARCHAR(100) NOT NULL,
+        status          VARCHAR(20) NOT NULL DEFAULT 'pending',
+        total_benchmarks    INTEGER DEFAULT 0,
+        completed_benchmarks INTEGER DEFAULT 0,
+        failed_benchmarks   INTEGER DEFAULT 0,
+        started_at      TIMESTAMPTZ,
+        completed_at    TIMESTAMPTZ,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_eval_runs_user ON eval_runs(user_id);
+
+    CREATE TABLE IF NOT EXISTS eval_results (
+        id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        run_id          UUID NOT NULL REFERENCES eval_runs(id) ON DELETE CASCADE,
+        benchmark_id    UUID NOT NULL REFERENCES eval_benchmarks(id) ON DELETE CASCADE,
+        status          VARCHAR(20) NOT NULL DEFAULT 'pending',
+        transcript      TEXT,
+        detected_language VARCHAR(10),
+        content_score   NUMERIC(5,2),
+        communication_score NUMERIC(5,2),
+        behavioral_score NUMERIC(5,2),
+        overall_score   NUMERIC(5,2),
+        tier            VARCHAR(20),
+        strengths       JSONB DEFAULT '[]'::jsonb,
+        improvements    JSONB DEFAULT '[]'::jsonb,
+        language_match  BOOLEAN,
+        model_used      VARCHAR(100),
+        latency_ms      INTEGER,
+        error_message   TEXT,
+        raw_response    JSONB DEFAULT '{}'::jsonb,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_eval_results_run ON eval_results(run_id);
+    CREATE INDEX IF NOT EXISTS idx_eval_results_benchmark ON eval_results(benchmark_id);
+    """,
 ]
 
 

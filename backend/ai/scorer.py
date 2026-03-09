@@ -147,6 +147,7 @@ def score_answer(
     duration_seconds: float,
     detected_language: str,
     expected_language: str,
+    scoring_model: Optional[str] = None,
 ) -> ScoreResult:
     """
     Score a single interview answer using Groq LLM.
@@ -204,7 +205,7 @@ Scoring criteria:
 - language_match: true if candidate responded in the expected language, false otherwise"""
 
     client = _get_groq_client()
-    model_used = MODEL_SCORING
+    model_used = scoring_model or MODEL_SCORING
 
     for attempt in range(2):  # Try primary model, fallback on failure
         try:

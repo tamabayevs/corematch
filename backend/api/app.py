@@ -101,6 +101,17 @@ def create_app() -> Flask:
                 "max-age=31536000; includeSubDomains"
             )
 
+        # Admin pages serve HTML with inline styles + external CDN — skip CSP
+        if request.path.startswith("/admin"):
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "font-src 'self' https://cdn.jsdelivr.net; "
+                "frame-ancestors 'none';"
+            )
+            return response
+
         # Basic CSP — candidate pages have camera permissions
         # Override per-route if needed for more specific pages
         if not response.headers.get("Content-Security-Policy"):
@@ -163,6 +174,8 @@ def create_app() -> Flask:
     from api.saudization import saudization_bp
     from api.pipeline import pipeline_bp
     from api.demand import demand_bp
+    from api.eval_bench import eval_bench_bp
+    from api.admin import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(campaigns_bp, url_prefix="/api/campaigns")
@@ -190,6 +203,8 @@ def create_app() -> Flask:
     app.register_blueprint(saudization_bp, url_prefix="/api/saudization")
     app.register_blueprint(pipeline_bp, url_prefix="/api/pipeline")
     app.register_blueprint(demand_bp, url_prefix="/api/demand")
+    app.register_blueprint(eval_bench_bp, url_prefix="/api/eval-bench")
+    app.register_blueprint(admin_bp, url_prefix="/admin")
 
     # ──────────────────────────────────────────────────────────
     # Health Check
