@@ -162,12 +162,12 @@ def invite_member():
                     """
                     INSERT INTO team_members
                     (owner_id, user_id, invited_email, role, status, invited_at, accepted_at)
-                    VALUES (%s, %s, %s, %s, %s, NOW(), %s)
+                    VALUES (%s, %s, %s, %s, %s, NOW(), CASE WHEN %s THEN NOW() ELSE NULL END)
                     RETURNING id, invited_at
                     """,
                     (
                         g.current_user["id"], user_id, email, role, status,
-                        "NOW()" if existing_user else None,
+                        existing_user is not None,
                     ),
                 )
                 row = cur.fetchone()

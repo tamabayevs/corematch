@@ -477,6 +477,9 @@ def invite_candidate(campaign_id):
     if not full_name or not email_raw:
         return jsonify({"error": "full_name and email are required"}), 400
 
+    if len(full_name) > 300:
+        return jsonify({"error": "Full name must be 300 characters or fewer"}), 400
+
     # Validate email
     from email_validator import validate_email, EmailNotValidError
     try:
@@ -754,6 +757,10 @@ def bulk_invite(campaign_id):
 
         if not full_name or not email_raw:
             invalid.append({"index": i, "reason": "name and email are required"})
+            continue
+
+        if len(full_name) > 300:
+            invalid.append({"index": i, "reason": "name too long (max 300 characters)"})
             continue
 
         try:

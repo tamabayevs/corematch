@@ -145,6 +145,8 @@ def public_apply(campaign_id):
 
     if not full_name:
         return jsonify({"error": "Full name is required"}), 400
+    if len(full_name) > 300:
+        return jsonify({"error": "Full name must be 300 characters or fewer"}), 400
     if not email:
         return jsonify({"error": "Email is required"}), 400
 

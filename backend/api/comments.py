@@ -3,6 +3,7 @@ CoreMatch — Comments Blueprint
 Candidate comments with threaded replies (parent_id support).
 """
 import json
+import uuid
 import logging
 from flask import Blueprint, request, jsonify, g
 from database.connection import get_db
@@ -23,6 +24,11 @@ def get_comments(candidate_id):
     Get all comments for a candidate, with replies threaded by parent_id.
     Returns a flat list; frontend groups by parent_id for nested display.
     """
+    try:
+        uuid.UUID(candidate_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid candidate ID format"}), 400
+
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
@@ -82,6 +88,11 @@ def create_comment(candidate_id):
     Create a new comment on a candidate.
     Optionally specify parent_id for threaded replies.
     """
+    try:
+        uuid.UUID(candidate_id)
+    except (ValueError, AttributeError):
+        return jsonify({"error": "Invalid candidate ID format"}), 400
+
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Request body must be JSON"}), 400
