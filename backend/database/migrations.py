@@ -599,6 +599,18 @@ MIGRATIONS = [
     CREATE INDEX IF NOT EXISTS idx_page_events_created_at ON page_events(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_page_events_type ON page_events(event_type);
     """,
+    # ── Migration 24: Fix team_members for pending invites ──
+    # user_id must be nullable (pending invites have no user yet)
+    # invited_email stores the email for pending invites
+    """
+    ALTER TABLE team_members ALTER COLUMN user_id DROP NOT NULL;
+    ALTER TABLE team_members ADD COLUMN IF NOT EXISTS invited_email VARCHAR(320);
+    DROP INDEX IF EXISTS idx_team_members_unique;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_team_members_owner_user
+        ON team_members(owner_id, user_id) WHERE user_id IS NOT NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_team_members_owner_email
+        ON team_members(owner_id, invited_email) WHERE invited_email IS NOT NULL;
+    """,
 ]
 
 

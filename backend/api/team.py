@@ -5,6 +5,7 @@ Roles: admin, recruiter, reviewer, viewer.
 Only the team owner can manage members.
 """
 import json
+import datetime
 import logging
 from flask import Blueprint, request, jsonify, g
 from database.connection import get_db
@@ -158,16 +159,17 @@ def invite_member():
                 display_name = full_name or (existing_user[1] if existing_user else None)
                 status = "active" if existing_user else "pending"
 
+                accepted_at = datetime.datetime.utcnow() if existing_user else None
                 cur.execute(
                     """
                     INSERT INTO team_members
                     (owner_id, user_id, invited_email, role, status, invited_at, accepted_at)
-                    VALUES (%s, %s, %s, %s, %s, NOW(), CASE WHEN %s THEN NOW() ELSE NULL END)
+                    VALUES (%s, %s, %s, %s, %s, NOW(), %s)
                     RETURNING id, invited_at
                     """,
                     (
                         g.current_user["id"], user_id, email, role, status,
-                        existing_user is not None,
+                        accepted_at,
                     ),
                 )
                 row = cur.fetchone()
