@@ -636,7 +636,7 @@ MIGRATIONS = [
     SELECT 'Housekeeping Staff',
            'Evaluate attention to detail, time management, and hygiene standards compliance',
            'Hospitality & Tourism',
-           '[{"id":"sys-16","text":"Walk us through how you organize and prioritize room cleaning when you have a full floor to complete before check-in time.","think_time_seconds":30},{"id":"sys-17","text":"Describe how you ensure hygiene and cleanliness standards are consistently met in every room you service.","think_time_seconds":30},{"id":"sys-18","text":"Tell us about a time you found a guest's lost or damaged item. How did you handle it?","think_time_seconds":30}]'::jsonb,
+           '[{"id":"sys-16","text":"Walk us through how you organize and prioritize room cleaning when you have a full floor to complete before check-in time.","think_time_seconds":30},{"id":"sys-17","text":"Describe how you ensure hygiene and cleanliness standards are consistently met in every room you service.","think_time_seconds":30},{"id":"sys-18","text":"Tell us about a time you found a guest''s lost or damaged item. How did you handle it?","think_time_seconds":30}]'::jsonb,
            'en', TRUE
     WHERE NOT EXISTS (SELECT 1 FROM campaign_templates WHERE is_system = TRUE AND name = 'Housekeeping Staff');
 
@@ -854,7 +854,7 @@ MIGRATIONS = [
     SELECT 'Cybersecurity Analyst',
            'Assess threat detection skills, incident response experience, and security protocol knowledge',
            'Technology & IT',
-           '[{"id":"sys-94","text":"Walk us through how you would investigate and respond to a suspected data breach or security incident.","think_time_seconds":30},{"id":"sys-95","text":"Describe your experience with security monitoring tools and how you identify potential threats.","think_time_seconds":30},{"id":"sys-96","text":"How do you stay current with evolving cyber threats and ensure your organization's defenses remain effective?","think_time_seconds":30}]'::jsonb,
+           '[{"id":"sys-94","text":"Walk us through how you would investigate and respond to a suspected data breach or security incident.","think_time_seconds":30},{"id":"sys-95","text":"Describe your experience with security monitoring tools and how you identify potential threats.","think_time_seconds":30},{"id":"sys-96","text":"How do you stay current with evolving cyber threats and ensure your organization''s defenses remain effective?","think_time_seconds":30}]'::jsonb,
            'en', TRUE
     WHERE NOT EXISTS (SELECT 1 FROM campaign_templates WHERE is_system = TRUE AND name = 'Cybersecurity Analyst');
 
@@ -896,7 +896,7 @@ MIGRATIONS = [
     SELECT 'SEO / SEM Specialist',
            'Evaluate search optimization expertise, keyword strategy, and analytics-driven decision making',
            'Digital & Marketing',
-           '[{"id":"sys-109","text":"Describe your process for auditing a website's SEO performance and creating an action plan for improvement.","think_time_seconds":30},{"id":"sys-110","text":"How do you conduct keyword research and decide which terms to target for a new campaign or product page?","think_time_seconds":30},{"id":"sys-111","text":"Tell us about a time your SEO or SEM strategy led to a measurable increase in organic traffic or conversions.","think_time_seconds":30}]'::jsonb,
+           '[{"id":"sys-109","text":"Describe your process for auditing a website''s SEO performance and creating an action plan for improvement.","think_time_seconds":30},{"id":"sys-110","text":"How do you conduct keyword research and decide which terms to target for a new campaign or product page?","think_time_seconds":30},{"id":"sys-111","text":"Tell us about a time your SEO or SEM strategy led to a measurable increase in organic traffic or conversions.","think_time_seconds":30}]'::jsonb,
            'en', TRUE
     WHERE NOT EXISTS (SELECT 1 FROM campaign_templates WHERE is_system = TRUE AND name = 'SEO / SEM Specialist');
     """,
