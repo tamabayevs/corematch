@@ -17,7 +17,6 @@ export default function CampaignCreatePage() {
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
-    name: "",
     job_title: "",
     job_description: "",
     language: "en",
@@ -60,7 +59,7 @@ export default function CampaignCreatePage() {
   };
 
   const canNext = () => {
-    if (step === 0) return form.name.trim() && form.job_title.trim();
+    if (step === 0) return form.job_title.trim();
     if (step === 1) return form.questions.every((q) => q.text.trim());
     return true;
   };
@@ -69,7 +68,8 @@ export default function CampaignCreatePage() {
     setError("");
     setLoading(true);
     try {
-      const res = await campaignsApi.create(form);
+      const payload = { ...form, name: form.job_title.trim() };
+      const res = await campaignsApi.create(payload);
       navigate(`/dashboard/campaigns/${res.data.campaign.id}`);
     } catch (err) {
       const data = err.response?.data;
@@ -112,13 +112,6 @@ export default function CampaignCreatePage() {
         {step === 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">{t("campaign.details")}</h2>
-            <Input
-              id="name"
-              label={t("campaign.name")}
-              value={form.name}
-              onChange={updateField("name")}
-              required
-            />
             <Input
               id="job_title"
               label={t("campaign.jobTitle")}
@@ -310,10 +303,6 @@ export default function CampaignCreatePage() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">{t("campaign.review")}</h2>
             <dl className="divide-y divide-navy-200">
-              <div className="py-3 flex justify-between">
-                <dt className="text-sm text-navy-500">{t("campaign.name")}</dt>
-                <dd className="text-sm font-medium">{form.name}</dd>
-              </div>
               <div className="py-3 flex justify-between">
                 <dt className="text-sm text-navy-500">{t("campaign.jobTitle")}</dt>
                 <dd className="text-sm font-medium">{form.job_title}</dd>
