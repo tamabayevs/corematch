@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
 import { campaignsApi } from "../../api/campaigns";
+import { templatesApi } from "../../api/templates";
 import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import Spinner from "../../components/ui/Spinner";
 import clsx from "clsx";
 
 const STEPS = ["details", "questions", "settings", "review"];
@@ -12,8 +14,11 @@ const STEPS = ["details", "questions", "settings", "review"];
 export default function CampaignCreatePage() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const templateId = searchParams.get("template");
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [templateLoading, setTemplateLoading] = useState(!!templateId);
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
@@ -30,6 +35,38 @@ export default function CampaignCreatePage() {
     allow_retakes: true,
     pipeline_enabled: false,
   });
+
+  // Prefill form from template when ?template=<id> is present
+  useEffect(() => {
+    if (!templateId) return;
+    setTemplateLoading(true);
+    templatesApi.list().then((res) => {
+      const tpl = (res.data.templates || []).find((t) => t.id === templateId);
+      if (tpl) {
+        const questions = (tpl.questions || []).map((q) => ({
+          text: q.text || "",
+          think_time_seconds: q.think_time_seconds || 30,
+        }));
+        setForm({
+          job_title: tpl.name || "",
+          job_description: tpl.description || "",
+          language: tpl.language || "en",
+          questions: questions.length >= 3 ? questions : [
+            ...questions,
+            ...Array(3 - questions.length).fill({ text: "", think_time_seconds: 30 }),
+          ],
+          invite_expiry_days: tpl.invite_expiry_days || 7,
+          max_recording_seconds: tpl.max_recording_seconds || 120,
+          allow_retakes: tpl.allow_retakes !== false,
+          pipeline_enabled: false,
+        });
+      }
+    }).catch(() => {
+      // Template load failed — continue with empty form
+    }).finally(() => {
+      setTemplateLoading(false);
+    });
+  }, [templateId]);
 
   const updateField = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -79,11 +116,29 @@ export default function CampaignCreatePage() {
     }
   };
 
+  if (templateLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-navy-900 mb-6">
         {t("campaign.create")}
       </h1>
+
+      {/* Template prefill banner */}
+      {templateId && form.job_title && (
+        <div className="bg-primary-50 border border-primary-200 text-primary-800 px-4 py-3 rounded-lg text-sm mb-4 flex items-center gap-2">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Pre-filled from template. Review and adjust the details, then create your job.
+        </div>
+      )}
 
       {/* Step indicator */}
       <div className="flex gap-2 mb-8">
