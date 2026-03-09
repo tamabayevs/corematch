@@ -102,7 +102,15 @@ def _key_param():
 # ── Overview ──────────────────────────────────────────────────
 
 
+@admin_bp.route("/ping")
+def admin_ping():
+    """Simple health check for admin panel."""
+    admin_key = os.environ.get("ADMIN_API_KEY", "not-set")
+    return {"status": "ok", "admin_key_configured": bool(admin_key and admin_key != "not-set")}
+
+
 @admin_bp.route("")
+@admin_bp.route("/")
 @require_admin_html
 def overview():
     stats = {}
