@@ -7,10 +7,10 @@ export default function ProtectedRoute({ children }) {
   const { isAuthenticated, emailVerified, isLoading, initialize } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated && isLoading) {
+    if (isLoading) {
       initialize();
     }
-  }, [isAuthenticated, isLoading, initialize]);
+  }, [isLoading, initialize]);
 
   if (isLoading) {
     return (

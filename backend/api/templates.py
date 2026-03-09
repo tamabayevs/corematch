@@ -33,13 +33,14 @@ def _format_template(row) -> dict:
         "is_system": row[9],
         "created_at": row[10].isoformat() if row[10] else None,
         "updated_at": row[11].isoformat() if row[11] else None,
+        "category": row[12] if len(row) > 12 else None,
     }
 
 
 TEMPLATE_SELECT_COLS = """
     id, user_id, name, description, questions, language,
     invite_expiry_days, allow_retakes, max_recording_seconds,
-    is_system, created_at, updated_at
+    is_system, created_at, updated_at, category
 """
 
 

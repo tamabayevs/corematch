@@ -153,7 +153,8 @@
     "saveAsTemplate": "حفظ كقالب",
     "duplicateCampaign": "تكرار الوظيفة",
     "duplicateSuccess": "تم تكرار الوظيفة بنجاح",
-    "savedAsTemplate": "تم الحفظ كقالب"
+    "savedAsTemplate": "تم الحفظ كقالب",
+    "searchPlaceholder": "ابحث في القوالب حسب الاسم أو الوصف أو الفئة..."
   },
   "review": {
     "queue": "مراجعة الفيديو",

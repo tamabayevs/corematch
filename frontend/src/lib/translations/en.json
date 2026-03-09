@@ -153,7 +153,8 @@
     "saveAsTemplate": "Save as Template",
     "duplicateCampaign": "Duplicate Job",
     "duplicateSuccess": "Job duplicated successfully",
-    "savedAsTemplate": "Saved as template"
+    "savedAsTemplate": "Saved as template",
+    "searchPlaceholder": "Search templates by name, description, or category..."
   },
   "review": {
     "queue": "Video Reviews",

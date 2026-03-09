@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
 import { templatesApi } from "../../api/templates";
@@ -8,12 +8,33 @@ import Button from "../../components/ui/Button";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
 
+/** Category order for display */
+const CATEGORY_ORDER = [
+  "Hospitality & Tourism",
+  "Retail",
+  "Logistics & Supply Chain",
+  "Construction & Facilities",
+  "Healthcare",
+  "Technology & IT",
+  "Digital & Marketing",
+  "Finance & Banking",
+  "Administrative & Office",
+  "Call Center & Support",
+  "Education",
+  "Oil & Gas / Energy",
+  "Security",
+  "Management",
+  "General",
+];
+
 export default function TemplatesPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     loadTemplates();
@@ -30,6 +51,62 @@ export default function TemplatesPage() {
       setLoading(false);
     }
   };
+
+  // Derive categories from templates
+  const categories = useMemo(() => {
+    const cats = new Set();
+    templates.forEach((t) => {
+      if (t.category) cats.add(t.category);
+    });
+    // Sort by predefined order, unknowns at end
+    return [...cats].sort((a, b) => {
+      const ia = CATEGORY_ORDER.indexOf(a);
+      const ib = CATEGORY_ORDER.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+  }, [templates]);
+
+  // Filter templates
+  const filtered = useMemo(() => {
+    let result = templates;
+    if (selectedCategory !== "all") {
+      if (selectedCategory === "custom") {
+        result = result.filter((t) => !t.is_system);
+      } else if (selectedCategory === "uncategorized") {
+        result = result.filter((t) => t.is_system && !t.category);
+      } else {
+        result = result.filter((t) => t.category === selectedCategory);
+      }
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          (t.description || "").toLowerCase().includes(q) ||
+          (t.category || "").toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [templates, selectedCategory, searchQuery]);
+
+  // Group filtered templates by category for display
+  const grouped = useMemo(() => {
+    const groups = {};
+    filtered.forEach((t) => {
+      const cat = t.category || (t.is_system ? "General" : "My Templates");
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(t);
+    });
+    // Sort groups by predefined order
+    return Object.entries(groups).sort(([a], [b]) => {
+      if (a === "My Templates") return -1;
+      if (b === "My Templates") return 1;
+      const ia = CATEGORY_ORDER.indexOf(a);
+      const ib = CATEGORY_ORDER.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+  }, [filtered]);
 
   const handleDelete = async (templateId, templateName) => {
     if (!window.confirm(t("template.deleteConfirm", { name: templateName }))) {
@@ -50,17 +127,79 @@ export default function TemplatesPage() {
     navigate(`/dashboard/campaigns/new?template=${templateId}`);
   };
 
+  const systemCount = templates.filter((t) => t.is_system).length;
+  const customCount = templates.filter((t) => !t.is_system).length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-navy-900">{t("template.library")}</h1>
+          <p className="text-sm text-navy-500 mt-1">
+            {systemCount} industry templates • {customCount} custom
+          </p>
         </div>
         <Button onClick={() => navigate("/dashboard/templates/new")}>
           {t("template.createTemplate")}
         </Button>
       </div>
+
+      {/* Search + Category Filter Bar */}
+      {!loading && templates.length > 0 && (
+        <div className="space-y-3">
+          {/* Search */}
+          <div className="relative">
+            <svg
+              className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-navy-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("template.searchPlaceholder") || "Search templates..."}
+              className="w-full ps-9 pe-4 py-2 border border-navy-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          {/* Category pills */}
+          <div className="flex flex-wrap gap-2">
+            <CategoryPill
+              label={`All (${templates.length})`}
+              active={selectedCategory === "all"}
+              onClick={() => setSelectedCategory("all")}
+            />
+            {customCount > 0 && (
+              <CategoryPill
+                label={`My Templates (${customCount})`}
+                active={selectedCategory === "custom"}
+                onClick={() => setSelectedCategory("custom")}
+              />
+            )}
+            {categories.map((cat) => {
+              const count = templates.filter((t) => t.category === cat).length;
+              return (
+                <CategoryPill
+                  key={cat}
+                  label={`${cat} (${count})`}
+                  active={selectedCategory === cat}
+                  onClick={() => setSelectedCategory(cat)}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       {loading ? (
@@ -84,18 +223,34 @@ export default function TemplatesPage() {
           actionLabel={t("template.createTemplate")}
           onAction={() => navigate("/dashboard/templates/new")}
         />
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-navy-500">
+          <p className="text-lg font-medium">No templates match your search</p>
+          <p className="text-sm mt-1">Try a different search term or category</p>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {templates.map((template) => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              onUse={handleUseTemplate}
-              onEdit={(id) => navigate(`/dashboard/templates/${id}/edit`)}
-              onDelete={handleDelete}
-              deleteLoading={deleteLoading}
-              t={t}
-            />
+        <div className="space-y-8">
+          {grouped.map(([category, items]) => (
+            <div key={category}>
+              <h2 className="text-lg font-semibold text-navy-800 mb-3 flex items-center gap-2">
+                <CategoryIcon category={category} />
+                {category}
+                <span className="text-sm font-normal text-navy-400">({items.length})</span>
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {items.map((template) => (
+                  <TemplateCard
+                    key={template.id}
+                    template={template}
+                    onUse={handleUseTemplate}
+                    onEdit={(id) => navigate(`/dashboard/templates/${id}/edit`)}
+                    onDelete={handleDelete}
+                    deleteLoading={deleteLoading}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -104,6 +259,44 @@ export default function TemplatesPage() {
 }
 
 // ─── Sub-components ────────────────────────────────────────────
+
+function CategoryPill({ label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+        active
+          ? "bg-primary-600 text-white shadow-sm"
+          : "bg-navy-100 text-navy-600 hover:bg-navy-200"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+/** Simple category icon mapping */
+function CategoryIcon({ category }) {
+  const icons = {
+    "Hospitality & Tourism": "🏨",
+    "Retail": "🛍️",
+    "Logistics & Supply Chain": "🚚",
+    "Construction & Facilities": "🏗️",
+    "Healthcare": "🏥",
+    "Technology & IT": "💻",
+    "Digital & Marketing": "📱",
+    "Finance & Banking": "🏦",
+    "Administrative & Office": "📋",
+    "Call Center & Support": "📞",
+    "Education": "🎓",
+    "Oil & Gas / Energy": "⚡",
+    "Security": "🛡️",
+    "Management": "📊",
+    "General": "📝",
+    "My Templates": "⭐",
+  };
+  return <span>{icons[category] || "📁"}</span>;
+}
 
 function TemplateCard({ template, onUse, onEdit, onDelete, deleteLoading, t }) {
   const isSystem = template.is_system;
@@ -115,7 +308,7 @@ function TemplateCard({ template, onUse, onEdit, onDelete, deleteLoading, t }) {
         {/* Header row: badge */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-navy-900 truncate">{template.name}</h3>
+            <h3 className="font-semibold text-navy-900 truncate text-sm">{template.name}</h3>
           </div>
           {isSystem ? (
             <Badge variant="blue">
@@ -141,7 +334,7 @@ function TemplateCard({ template, onUse, onEdit, onDelete, deleteLoading, t }) {
 
         {/* Description */}
         {template.description && (
-          <p className="text-sm text-navy-500 mb-3 line-clamp-2">{template.description}</p>
+          <p className="text-xs text-navy-500 mb-3 line-clamp-2">{template.description}</p>
         )}
 
         {/* Meta info */}
