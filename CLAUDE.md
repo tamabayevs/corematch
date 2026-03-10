@@ -1,10 +1,24 @@
-# CoreMatch — Project Guide (v3.0)
+# CoreMatch — Project Guide (v3.1)
+
+## IMPORTANT — Start of Every Conversation
+At the start of every new conversation, ALWAYS read these files first before doing anything:
+1. **This file** (`CLAUDE.md`) — project structure, patterns, and rules
+2. **MEMORY.md** — auto-memory with detailed build history, lessons learned, and current state
+
+These files contain critical context that prevents mistakes and repeated work. Read them fully before responding to any task.
+
+## IMPORTANT — End of Every Conversation
+Before the session ends or context runs out, ALWAYS update these files:
+1. **MEMORY.md** — add new lessons learned, bugs fixed, features built, deployment notes, and any decisions made
+2. **CLAUDE.md** — update version, tables, patterns, or features if anything structural changed
+
+Nothing should be lost between sessions. If you built something, fixed something, or learned something — write it down.
 
 ## What is this?
 AI-powered video interview platform for MENA HR teams. Candidates record async video answers; AI scores them; HR reviews and decides.
 
-**Version:** 3.0 (2026-03-08)
-**Status:** Full product (26 features + agentic pipeline) + go-to-market layer (Stripe billing, auth persistence, email verification, usage limits, onboarding, landing page, demand measurement). 105 backend tests passing.
+**Version:** 3.1 (2026-03-10)
+**Status:** Full product (26 features + agentic pipeline) + go-to-market layer + admin panel + AI eval bench. 105 backend tests passing.
 
 ## Tech Stack
 - **Backend:** Flask 3.0 + PostgreSQL 15 + Redis/RQ + Groq API (Python 3.9)
@@ -19,11 +33,11 @@ backend/
                  # reviews, templates, insights, compliance, scorecards, comments,
                  # team, notifications, branding, assignments, calibration, dsr,
                  # talent_pool, integrations, reports, saudization, notification_templates,
-                 # pipeline, demand
+                 # pipeline, demand, admin, eval_bench
   database/      # schema.py (raw SQL), connection.py (pool), migrations.py (incremental)
   ai/            # scorer.py (Groq Whisper + LLM scoring), providers.py, cv_screener.py,
                  # video_agent.py, deep_evaluator.py, shortlist_ranker.py
-  workers/       # video_processor.py (RQ background jobs), pipeline_worker.py
+  workers/       # video_processor.py (RQ background jobs), pipeline_worker.py, eval_bench_worker.py
   services/      # email (SES/Brevo), sms (Twilio), storage (R2/local), scheduling (MENA weekend),
                  # notification_service, mention_service, pipeline_service, stripe_service
   tests/         # pytest suite — 105 tests across 9 test files
@@ -65,7 +79,7 @@ bash stress_test.sh
 - **Backend:** https://corematch-production.up.railway.app (Railway, auto-deploy)
 - **Test account:** olzhas.tamabayev@gmail.com / CoreMatch2026
 
-## Database Tables (28 tables)
+## Database Tables (31 tables)
 
 **Core:** `users`, `password_reset_tokens`, `campaigns`, `candidates`, `video_answers`, `ai_scores`, `audit_log`
 
@@ -76,6 +90,8 @@ bash stress_test.sh
 **v2.0 Pipeline:** `pipeline_configs`, `candidate_documents`, `agent_evaluations`
 
 **v3.0 GTM:** `plan_limits`, `waitlist_signups`, `page_events`
+
+**v3.1 Eval:** `eval_benchmarks`, `eval_runs`, `eval_results`
 
 ## Important Patterns
 - Python 3.9: Use `Optional[str]` not `str | None` (PEP 604 requires 3.10+)
@@ -98,6 +114,9 @@ bash stress_test.sh
 - Usage limits: `plan_limits` table checked before campaign create, candidate invite, team invite
 - Demand tracking: `POST /api/demand/track` (public, fire-and-forget), `POST /api/demand/waitlist` (public)
 - Stripe billing: 3 plans (Free $0, Starter $99/mo, Growth $249/mo) via Checkout + Customer Portal
+- Admin panel: Server-rendered HTML at `/admin`, protected by `ADMIN_API_KEY` env var (query param `?key=` or cookie)
+- Eval bench API: `/api/eval-bench/*`, protected by `X-Admin-Key` header or `?key=` query param
+- Admin panel has 3 pages: Overview (DB stats), Eval Bench (upload videos, run evaluations), Database (browse any table)
 
 ## Sidebar Navigation
 ```
@@ -214,6 +233,19 @@ SETTINGS
 - ✅ **Landing Page** — Full marketing page at `/` with hero, value props, pricing, waitlist form
 - ✅ **SEO Meta Tags** — OpenGraph + Twitter Card
 - ✅ **Demand Measurement** — self-hosted analytics (page_events table), waitlist capture with auto-reply email, demand dashboard with KPIs/charts/LinkedIn funnel
+
+### v3.1 Admin Panel & AI Eval Bench ✅
+- ✅ **Admin Panel** — Server-rendered HTML at `/admin` (no React, no build step)
+  - Overview: DB table counts, quick links
+  - Database browser: View any table's rows (50 row limit)
+  - Eval Bench UI: Upload videos, trigger runs, view results
+  - Auth: `ADMIN_API_KEY` env var, cookie persistence after first login
+- ✅ **AI Eval Bench** — Upload benchmark interview videos, run through AI scorer, compare results
+  - 3 tables: `eval_benchmarks`, `eval_runs`, `eval_results` (Migration 27)
+  - RQ worker processes all benchmarks: video → FFmpeg → Whisper → LLM score
+  - Tracks per-benchmark: transcript, scores (content/communication/behavioral/overall), tier, latency
+  - Models: `llama-3.3-70b-versatile` (default), `mixtral-8x7b-32768` (fallback) — both free via Groq
+  - **Backlog:** Multi-model consensus (run same videos through multiple providers, compare quality)
 
 ## Test Summary
 - **105/105 backend tests passing**
