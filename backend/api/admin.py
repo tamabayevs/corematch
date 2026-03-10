@@ -32,7 +32,15 @@ def require_admin_html(f):
         if not _check_admin():
             key_param = request.args.get("key", "")
             if key_param:
-                return _html_page("Admin", "<p style='color:#e74c3c;'>Invalid admin key.</p>" + _login_form()), 401
+                # Debug: show lengths to diagnose mismatch (no values exposed)
+                provided_len = len(key_param)
+                expected_len = len(admin_key)
+                hint = "Length mismatch: you sent %d chars, expected %d" % (provided_len, expected_len)
+                if provided_len == expected_len:
+                    # Same length but different — check for whitespace
+                    hint = "Same length (%d) but values differ. Check for trailing spaces or quotes in Railway env var." % provided_len
+                msg = "<p style='color:#e74c3c;'>Invalid admin key. %s</p>" % hint
+                return _html_page("Admin", msg + _login_form()), 401
             return _html_page("Admin Login", _login_form()), 401
         return f(*args, **kwargs)
     return decorated
