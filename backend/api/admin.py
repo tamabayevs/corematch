@@ -26,8 +26,10 @@ def _check_admin():
 def require_admin_html(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        admin_key = os.environ.get("ADMIN_API_KEY", "")
+        if not admin_key:
+            return _html_page("Admin", "<p style='color:#e74c3c;'>ADMIN_API_KEY env var is not set on the server.</p>"), 503
         if not _check_admin():
-            # Show login form
             key_param = request.args.get("key", "")
             if key_param:
                 return _html_page("Admin", "<p style='color:#e74c3c;'>Invalid admin key.</p>" + _login_form()), 401

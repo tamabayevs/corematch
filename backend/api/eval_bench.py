@@ -40,7 +40,8 @@ def require_admin(f):
 
         provided = (
             request.headers.get("X-Admin-Key", "") or
-            request.args.get("admin_key", "")
+            request.args.get("admin_key", "") or
+            request.args.get("key", "")
         )
         if provided != admin_key:
             return jsonify({"error": "Unauthorized"}), 401
