@@ -463,7 +463,7 @@ def _advance_to_video_interview(candidate_id: str, campaign_id: str) -> Dict:
                 """, (invite_token, json.dumps(questions), candidate_id))
                 row = cur.fetchone()
 
-        frontend_url = os.environ.get("FRONTEND_URL", "https://frontend-pearl-eta-17.vercel.app")
+        frontend_url = os.environ.get("FRONTEND_URL", "https://corematch.vercel.app")
         interview_url = f"{frontend_url}/interview/{invite_token}/welcome"
         return {"invite_token": invite_token, "interview_url": interview_url}
 
