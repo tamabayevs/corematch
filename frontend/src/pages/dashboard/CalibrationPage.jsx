@@ -52,7 +52,6 @@ export default function CalibrationPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-900">{t("calibration.title")}</h1>
         <p className="text-navy-500 mt-1">{t("calibration.subtitle")}</p>
       </div>
 
@@ -64,7 +63,7 @@ export default function CalibrationPage() {
         <select
           value={selectedCampaign}
           onChange={(e) => { setSelectedCampaign(e.target.value); setDetail(null); }}
-          className="w-full max-w-md px-3 py-2 border border-navy-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full max-w-md px-3 py-2 border border-navy-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         >
           <option value="">{t("calibration.chooseCampaign")}</option>
           {campaigns.map((c) => (
@@ -108,19 +107,19 @@ export default function CalibrationPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-navy-50 text-navy-600">
-                    <th className="text-start px-6 py-3 font-medium">{t("calibration.candidate")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("calibration.aiScore")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("calibration.humanAvg")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("calibration.evaluations")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("calibration.disagreement")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("calibration.reviewers")}</th>
+                  <tr className="border-b border-navy-200">
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("calibration.candidate")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("calibration.aiScore")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("calibration.humanAvg")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("calibration.evaluations")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("calibration.disagreement")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("calibration.reviewers")}</th>
                     <th className="px-6 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.candidates.map((c) => (
-                    <tr key={c.id} className="border-t border-navy-100 hover:bg-navy-50">
+                    <tr key={c.id} className="border-t border-navy-100 hover:bg-navy-50/50 transition-colors">
                       <td className="px-6 py-3 font-medium text-navy-900">{c.full_name}</td>
                       <td className="px-6 py-3 text-navy-600">
                         {c.ai_score != null ? c.ai_score.toFixed(1) : "—"}

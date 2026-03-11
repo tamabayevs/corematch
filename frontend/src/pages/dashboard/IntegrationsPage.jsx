@@ -66,8 +66,7 @@ export default function IntegrationsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-navy-900">{t("integrations.title")}</h1>
-        <p className="text-navy-500 mt-1">{t("integrations.subtitle")}</p>
+        <p className="text-navy-500">{t("integrations.subtitle")}</p>
       </div>
 
       {loading ? (
@@ -191,7 +190,7 @@ export default function IntegrationsPage() {
                 <input
                   type="password" value={form.api_key}
                   onChange={(e) => setForm({ ...form, api_key: e.target.value })}
-                  className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm"
                   placeholder="Enter your API key"
                 />
               </div>
@@ -200,7 +199,7 @@ export default function IntegrationsPage() {
                 <input
                   type="url" value={form.webhook_url}
                   onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
-                  className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm"
                   placeholder="https://..."
                 />
               </div>
@@ -209,7 +208,7 @@ export default function IntegrationsPage() {
                 <select
                   value={form.sync_direction}
                   onChange={(e) => setForm({ ...form, sync_direction: e.target.value })}
-                  className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm"
                 >
                   <option value="export">Export (CoreMatch → ATS)</option>
                   <option value="import">Import (ATS → CoreMatch)</option>

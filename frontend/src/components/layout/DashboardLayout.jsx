@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
 import { useAuthStore } from "../../store/authStore";
 import LanguageToggle from "../ui/LanguageToggle";
@@ -9,6 +10,8 @@ import clsx from "clsx";
  *
  * OVERVIEW
  *   Dashboard
+ *   Demand
+ *   Campaigns
  *
  * REVIEW
  *   Video Reviews    (with badge count)
@@ -77,35 +80,105 @@ const navSections = [
   },
 ];
 
+// Map route paths to page title keys for the topbar breadcrumb
+function getPageTitle(pathname, t) {
+  // Flatten all nav items for lookup
+  for (const section of navSections) {
+    for (const item of section.items) {
+      if (item.end ? pathname === item.path : pathname.startsWith(item.path)) {
+        return t(item.label);
+      }
+    }
+  }
+  // Fallback for campaign detail, review session, etc.
+  if (pathname.includes("/campaigns/")) return t("nav.campaigns") || "Campaign";
+  if (pathname.includes("/review/")) return t("review.queue");
+  return t("nav.dashboard");
+}
+
 export default function DashboardLayout() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuthStore();
+
+  // Collapsible sidebar state — persisted to localStorage
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("sidebar-collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("sidebar-collapsed", collapsed);
+    } catch {
+      // ignore
+    }
+  }, [collapsed]);
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
 
+  const pageTitle = getPageTitle(location.pathname, t);
+
   return (
     <div className="min-h-screen bg-navy-50 flex">
-      {/* Dark Navy Sidebar */}
-      <aside className="w-64 bg-navy-900 flex flex-col fixed inset-y-0 start-0 z-30">
+      {/* ── Dark Navy Sidebar ── */}
+      <aside
+        className={clsx(
+          "bg-navy-900 flex flex-col fixed inset-y-0 start-0 z-30 sidebar-transition group",
+          collapsed ? "w-[68px]" : "w-[252px]"
+        )}
+      >
+        {/* Collapse button — visible on sidebar hover */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className={clsx(
+            "absolute top-6 z-40 w-6 h-6 bg-navy-800 border border-navy-700 rounded-full",
+            "flex items-center justify-center cursor-pointer",
+            "opacity-0 group-hover:opacity-100 transition-opacity",
+            "end-[-12px]"
+          )}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <svg className="w-3.5 h-3.5 text-navy-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {collapsed ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            )}
+          </svg>
+        </button>
+
         {/* Logo */}
-        <div className="p-6 pb-5">
-          <h1 className="text-xl font-bold text-primary-100 tracking-tight">CoreMatch</h1>
-          <p className="text-[11px] text-primary-400 font-medium tracking-wide mt-0.5">
-            {t("brand.tagline")}
-          </p>
+        <div className={clsx(
+          "h-16 flex items-center border-b border-white/[0.06] gap-3 flex-shrink-0",
+          collapsed ? "justify-center px-0" : "px-5"
+        )}>
+          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg className="w-[18px] h-[18px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          {!collapsed && (
+            <span className="text-base font-bold text-white tracking-tight">CoreMatch</span>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 space-y-1 sidebar-scroll overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 sidebar-scroll overflow-y-auto">
           {navSections.map((section) => (
-            <div key={section.label}>
-              <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-navy-500">
-                {t(section.label)}
-              </p>
+            <div key={section.label} className="mb-6">
+              {!collapsed && (
+                <p className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-navy-500">
+                  {t(section.label)}
+                </p>
+              )}
               {section.items.map((item) => (
                 <NavLink
                   key={item.path}
@@ -113,15 +186,24 @@ export default function DashboardLayout() {
                   end={item.end}
                   className={({ isActive }) =>
                     clsx(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                      "relative flex items-center gap-2.5 py-[7px] rounded-lg text-[13px] font-medium transition-all",
+                      collapsed ? "justify-center w-10 mx-auto px-0" : "px-2.5",
                       isActive
-                        ? "bg-gradient-to-r from-primary-600 to-primary-700 text-primary-50 shadow-md shadow-primary-900/20"
-                        : "text-navy-400 hover:bg-navy-800 hover:text-navy-200"
+                        ? "bg-white/[0.08] text-white"
+                        : "text-navy-400 hover:bg-white/[0.06] hover:text-navy-200"
                     )
                   }
                 >
-                  <item.icon className="w-5 h-5" />
-                  {t(item.label)}
+                  {({ isActive }) => (
+                    <>
+                      {/* Teal left-border active indicator */}
+                      {isActive && (
+                        <span className="absolute start-[-12px] top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary-500 rounded-e-sm" />
+                      )}
+                      <item.icon className={clsx("w-[18px] h-[18px] flex-shrink-0", isActive ? "opacity-100" : "opacity-70")} />
+                      {!collapsed && <span>{t(item.label)}</span>}
+                    </>
+                  )}
                 </NavLink>
               ))}
             </div>
@@ -129,36 +211,65 @@ export default function DashboardLayout() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-navy-800 space-y-3">
-          <LanguageToggle dark />
+        <div className="border-t border-white/[0.06] p-4 space-y-3">
+          {!collapsed && <LanguageToggle dark />}
 
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 text-navy-900 rounded-full flex items-center justify-center text-sm font-bold">
+          <div className={clsx("flex items-center gap-2.5", collapsed && "justify-center")}>
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-blue-500 rounded-full flex items-center justify-center text-xs font-semibold text-white flex-shrink-0">
               {user?.full_name?.[0]?.toUpperCase() || "U"}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-navy-200 truncate">
-                {user?.full_name}
-              </p>
-              <p className="text-xs text-navy-500 truncate">{user?.email}</p>
-            </div>
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-white truncate">{user?.full_name}</p>
+                <p className="text-[11px] text-navy-500 truncate">{user?.email}</p>
+              </div>
+            )}
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="w-full text-start text-sm text-navy-400 hover:text-navy-200 px-3 py-1.5 rounded-lg hover:bg-navy-800 transition-colors"
-          >
-            {t("auth.logout")}
-          </button>
+          {!collapsed && (
+            <button
+              onClick={handleLogout}
+              className="w-full text-start text-sm text-navy-400 hover:text-navy-200 px-3 py-1.5 rounded-lg hover:bg-navy-800 transition-colors"
+            >
+              {t("auth.logout")}
+            </button>
+          )}
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 ms-64">
-        <div className="max-w-6xl mx-auto px-8 py-8">
-          <Outlet />
-        </div>
-      </main>
+      {/* ── Main Content ── */}
+      <div
+        className={clsx("flex-1 flex flex-col main-transition", collapsed ? "ms-[68px]" : "ms-[252px]")}
+      >
+        {/* Sticky Topbar */}
+        <header className="sticky top-0 z-20 bg-white border-b border-navy-200 h-16 flex items-center justify-between px-7 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-bold tracking-tight text-navy-900">
+              {pageTitle}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Notification bell */}
+            <button className="relative p-2 rounded-lg text-navy-400 hover:text-navy-600 hover:bg-navy-100 transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {/* Red notification dot */}
+              <span className="absolute top-1.5 end-1.5 w-2 h-2 bg-red-500 rounded-full" />
+            </button>
+
+            {/* Language toggle in topbar for collapsed mode */}
+            {collapsed && <LanguageToggle />}
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1">
+          <div className="max-w-[1200px] mx-auto px-7 py-7">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

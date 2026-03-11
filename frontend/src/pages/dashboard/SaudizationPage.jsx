@@ -42,7 +42,6 @@ export default function SaudizationPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{t("saudization.title")}</h1>
           <p className="text-navy-500 mt-1">{t("saudization.subtitle")}</p>
         </div>
         <button
@@ -153,12 +152,12 @@ export default function SaudizationPage() {
               </div>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-navy-50 text-navy-600">
-                    <th className="text-start px-6 py-3 font-medium">{t("saudization.campaign")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("saudization.total")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("saudization.saudiCount")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("saudization.saudiPct")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("saudization.shortlisted")}</th>
+                  <tr className="border-b border-navy-200">
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("saudization.campaign")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("saudization.total")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("saudization.saudiCount")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("saudization.saudiPct")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("saudization.shortlisted")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -195,15 +194,15 @@ export default function SaudizationPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-1">{t("saudization.category")}</label>
-                <input type="text" value={quotaForm.category} onChange={(e) => setQuotaForm({ ...quotaForm, category: e.target.value })} className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm" placeholder="e.g. Engineering, Sales" />
+                <input type="text" value={quotaForm.category} onChange={(e) => setQuotaForm({ ...quotaForm, category: e.target.value })} className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm" placeholder="e.g. Engineering, Sales" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-1">{t("saudization.targetPct")}</label>
-                <input type="number" min="0" max="100" value={quotaForm.target_percentage} onChange={(e) => setQuotaForm({ ...quotaForm, target_percentage: e.target.value })} className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm" placeholder="e.g. 30" />
+                <input type="number" min="0" max="100" value={quotaForm.target_percentage} onChange={(e) => setQuotaForm({ ...quotaForm, target_percentage: e.target.value })} className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm" placeholder="e.g. 30" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-1">{t("saudization.notes")}</label>
-                <textarea value={quotaForm.notes} onChange={(e) => setQuotaForm({ ...quotaForm, notes: e.target.value })} rows={2} className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm" />
+                <textarea value={quotaForm.notes} onChange={(e) => setQuotaForm({ ...quotaForm, notes: e.target.value })} rows={2} className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm" />
               </div>
             </div>
             <div className="p-6 border-t border-navy-100 flex gap-3 justify-end">

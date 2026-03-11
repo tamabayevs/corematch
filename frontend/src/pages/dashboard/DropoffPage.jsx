@@ -99,7 +99,6 @@ export default function DropoffPage() {
       {/* Header + Filters */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{t("dropoff.title")}</h1>
           <p className="text-sm text-navy-500 mt-0.5">{t("dropoff.subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
@@ -373,23 +372,23 @@ function CampaignCompletionTable({ data, t }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-t border-b border-navy-200 bg-navy-50">
-              <th className="text-start px-6 py-3 font-medium text-navy-500 text-xs uppercase tracking-wider">
+            <tr className="border-t border-b border-navy-200">
+              <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                 {t("campaign.name")}
               </th>
-              <th className="text-start px-6 py-3 font-medium text-navy-500 text-xs uppercase tracking-wider">
+              <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                 {t("dropoff.invited")}
               </th>
-              <th className="text-start px-6 py-3 font-medium text-navy-500 text-xs uppercase tracking-wider">
+              <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                 {t("dropoff.started")}
               </th>
-              <th className="text-start px-6 py-3 font-medium text-navy-500 text-xs uppercase tracking-wider">
+              <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                 {t("dashboard.submitted")}
               </th>
-              <th className="text-start px-6 py-3 font-medium text-navy-500 text-xs uppercase tracking-wider min-w-[200px]">
+              <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider min-w-[200px]">
                 {t("insights.completionRate")}
               </th>
-              <th className="text-start px-6 py-3 font-medium text-navy-500 text-xs uppercase tracking-wider">
+              <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                 {t("dropoff.dropoffRate")}
               </th>
             </tr>
@@ -401,7 +400,7 @@ function CampaignCompletionTable({ data, t }) {
                 : 0;
 
               return (
-                <tr key={c.campaign_id} className="hover:bg-navy-50 transition-colors">
+                <tr key={c.campaign_id} className="hover:bg-navy-50/50 transition-colors">
                   <td className="px-6 py-3 font-medium text-navy-800 truncate max-w-[200px]">
                     {c.name}
                   </td>

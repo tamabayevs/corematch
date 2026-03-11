@@ -218,57 +218,35 @@ export default function ReviewSessionPage() {
             onClick={() => navigate("/dashboard/reviews")}
             className="text-sm text-navy-500 hover:text-navy-700 flex items-center gap-1"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             {t("common.back")}
           </button>
           <div className="h-5 w-px bg-navy-200" />
-          <h1 className="text-lg font-bold text-navy-900">
+          <span className="text-sm font-semibold text-navy-900">
             {candidate.full_name}
-          </h1>
+          </span>
           {candidate.campaign_name && (
-            <span className="text-sm text-navy-400">
+            <span className="text-xs text-navy-400">
               {candidate.campaign_name}
             </span>
           )}
         </div>
         <button
           onClick={() => setShowHelp(true)}
-          className="text-sm text-navy-400 hover:text-navy-600 flex items-center gap-1"
+          className="text-sm text-navy-400 hover:text-navy-600 flex items-center gap-1.5"
           title={t("review.keyboardShortcuts")}
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          <kbd className="kbd">?</kbd>
           {t("review.shortcuts")}
         </button>
       </div>
 
-      {/* Main content: Video + AI panel */}
-      <div className="flex gap-4 flex-1 min-h-0 mb-4">
-        {/* Left: Video player (60%) */}
-        <div className="w-3/5 flex flex-col min-h-0">
+      {/* Main content: Video + Eval panel */}
+      <div className="grid grid-cols-[3fr_2fr] gap-5 flex-1 min-h-0 mb-4">
+        {/* Left: Video player */}
+        <div className="flex flex-col min-h-0">
           {/* Question tabs */}
           {videoAnswers.length > 1 && (
             <div className="flex gap-1 mb-3 bg-navy-100 rounded-lg p-1 overflow-x-auto">
@@ -306,7 +284,7 @@ export default function ReviewSessionPage() {
           {/* Video */}
           {currentAnswer?.signed_url ? (
             <div className="flex-1 min-h-0 flex flex-col">
-              <div className="relative bg-black rounded-xl overflow-hidden flex-1">
+              <div className="relative bg-navy-950 rounded-xl overflow-hidden flex-1">
                 <video
                   ref={videoRef}
                   key={currentAnswer.signed_url}
@@ -353,8 +331,8 @@ export default function ReviewSessionPage() {
           )}
         </div>
 
-        {/* Right: AI Summary + Transcript (40%) */}
-        <div className="w-2/5 flex flex-col gap-4 min-h-0 overflow-y-auto">
+        {/* Right: AI Summary + Transcript */}
+        <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
           {/* AI Summary card */}
           <Card>
             <div className="flex items-start justify-between mb-4">
@@ -503,7 +481,7 @@ export default function ReviewSessionPage() {
                 />
               </svg>
               {t("candidate.shortlist")}
-              <kbd className="ms-1.5 text-[10px] opacity-60 font-mono">S</kbd>
+              <kbd className="kbd ms-1.5">S</kbd>
             </Button>
             <Button
               variant={decision === "hold" ? "warning" : "secondary"}
@@ -526,7 +504,7 @@ export default function ReviewSessionPage() {
                 />
               </svg>
               {t("candidate.hold")}
-              <kbd className="ms-1.5 text-[10px] opacity-60 font-mono">H</kbd>
+              <kbd className="kbd ms-1.5">H</kbd>
             </Button>
             <Button
               variant={decision === "rejected" ? "danger" : "secondary"}
@@ -549,14 +527,14 @@ export default function ReviewSessionPage() {
                 />
               </svg>
               {t("candidate.reject")}
-              <kbd className="ms-1.5 text-[10px] opacity-60 font-mono">R</kbd>
+              <kbd className="kbd ms-1.5">R</kbd>
             </Button>
           </div>
 
           {/* Note */}
           <textarea
             rows={1}
-            className="flex-1 rounded-lg border border-navy-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+            className="flex-1 h-9 rounded-lg border border-navy-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 resize-none"
             placeholder={t("candidate.decisionNote")}
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -576,7 +554,7 @@ export default function ReviewSessionPage() {
             )}
             <Button size="sm" onClick={handleSaveAndNext} loading={saving}>
               {t("review.nextCandidate")}
-              <kbd className="ms-1.5 text-[10px] opacity-60 font-mono">N</kbd>
+              <kbd className="kbd ms-1.5">N</kbd>
             </Button>
           </div>
         </div>
@@ -684,7 +662,7 @@ function ShortcutRow({ keys, action }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-navy-600">{action}</span>
-      <kbd className="px-2 py-0.5 bg-navy-100 border border-navy-200 rounded text-xs font-mono text-navy-700">
+      <kbd className="kbd">
         {keys}
       </kbd>
     </div>

@@ -1120,6 +1120,15 @@ MIGRATIONS = [
     CREATE INDEX IF NOT EXISTS idx_eval_results_run ON eval_results(run_id);
     CREATE INDEX IF NOT EXISTS idx_eval_results_benchmark ON eval_results(benchmark_id);
     """,
+
+    # ── Migration 28: Stripe billing columns on users ──
+    """
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(100);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR(100);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_status VARCHAR(30);
+    CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id);
+    CREATE INDEX IF NOT EXISTS idx_users_stripe_subscription ON users(stripe_subscription_id);
+    """,
 ]
 
 

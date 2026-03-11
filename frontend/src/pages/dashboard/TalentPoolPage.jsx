@@ -163,7 +163,6 @@ export default function TalentPoolPage() {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-navy-900">{t("talentPool.title")}</h1>
             <p className="text-navy-500 mt-1">{t("talentPool.subtitle")}</p>
           </div>
           <div className="flex gap-2">
@@ -184,7 +183,7 @@ export default function TalentPoolPage() {
               value={filters.q}
               onChange={e => setFilters(p => ({ ...p, q: e.target.value }))}
               placeholder={t("talentPool.searchPlaceholder")}
-              className="flex-1 border border-navy-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="flex-1 border border-navy-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
             <button type="submit" className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
               {t("talentPool.search")}
@@ -251,20 +250,20 @@ export default function TalentPoolPage() {
             </div>
             <div className="bg-white border border-navy-200 rounded-xl overflow-hidden">
               <table className="w-full">
-                <thead className="bg-navy-50 border-b border-navy-200">
+                <thead className="border-b border-navy-200">
                   <tr>
-                    <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("team.name")}</th>
-                    <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("auth.email")}</th>
-                    <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("talentPool.campaign")}</th>
-                    <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("talentPool.score")}</th>
-                    <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("talentPool.tier")}</th>
-                    <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("talentPool.decision")}</th>
+                    <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("team.name")}</th>
+                    <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("auth.email")}</th>
+                    <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("talentPool.campaign")}</th>
+                    <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("talentPool.score")}</th>
+                    <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("talentPool.tier")}</th>
+                    <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("talentPool.decision")}</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-navy-100">
                   {candidates.map((c) => (
-                    <tr key={c.id} className="hover:bg-navy-50">
+                    <tr key={c.id} className="hover:bg-navy-50/50 transition-colors">
                       <td className="px-4 py-3 text-sm font-medium text-navy-900">{c.full_name || "\u2014"}</td>
                       <td className="px-4 py-3 text-sm text-navy-600">{c.email}</td>
                       <td className="px-4 py-3 text-sm text-navy-600">{c.campaign_name || "\u2014"}</td>
@@ -334,7 +333,7 @@ export default function TalentPoolPage() {
               <label className="block text-sm font-medium text-navy-700 mb-1">{t("talentPool.searchName")}</label>
               <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)}
                 placeholder={t("talentPool.searchNamePlaceholder")}
-                className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+                className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button onClick={() => setShowSaveModal(false)} className="px-4 py-2 text-sm text-navy-600 hover:bg-navy-100 rounded-lg">{t("common.cancel")}</button>

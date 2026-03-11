@@ -67,8 +67,7 @@ export default function NotificationTemplatesPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{t("notifTemplates.title")}</h1>
-          <p className="text-navy-500 mt-1">{t("notifTemplates.subtitle")}</p>
+          <p className="text-navy-500">{t("notifTemplates.subtitle")}</p>
         </div>
         <button
           onClick={() => { setEditing(null); setForm({ name: "", type: "email", subject: "", body: "", variables: [] }); setShowModal(true); }}
@@ -172,7 +171,7 @@ export default function NotificationTemplatesPage() {
                 <input
                   type="text" value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm"
                 />
               </div>
               <div>
@@ -180,7 +179,7 @@ export default function NotificationTemplatesPage() {
                 <select
                   value={form.type}
                   onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm"
                 >
                   <option value="email">Email</option>
                   <option value="whatsapp">WhatsApp</option>
@@ -193,7 +192,7 @@ export default function NotificationTemplatesPage() {
                   <input
                     type="text" value={form.subject}
                     onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                    className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm"
                     placeholder="Use {{variable}} for placeholders"
                   />
                 </div>
@@ -204,7 +203,7 @@ export default function NotificationTemplatesPage() {
                   value={form.body}
                   onChange={(e) => setForm({ ...form, body: e.target.value })}
                   rows={6}
-                  className="w-full px-3 py-2 border border-navy-300 rounded-lg text-sm font-mono"
+                  className="w-full px-3 py-2 border border-navy-200 rounded-lg text-sm font-mono"
                   placeholder="Hello {{candidate_name}},\n\nYou have been invited..."
                 />
               </div>

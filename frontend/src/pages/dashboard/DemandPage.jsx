@@ -38,7 +38,6 @@ export default function DemandPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-900">{t("demand.title")}</h1>
         <p className="text-navy-500 mt-1">{t("demand.subtitle")}</p>
       </div>
 
@@ -174,12 +173,12 @@ export default function DemandPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-navy-50 text-navy-600 text-start">
-                  <th className="px-6 py-3 font-medium text-start">{t("demand.colName")}</th>
-                  <th className="px-6 py-3 font-medium text-start">{t("demand.colEmail")}</th>
-                  <th className="px-6 py-3 font-medium text-start">{t("demand.colCompany")}</th>
-                  <th className="px-6 py-3 font-medium text-start">{t("demand.colSource")}</th>
-                  <th className="px-6 py-3 font-medium text-start">{t("demand.colDate")}</th>
+                <tr className="border-b border-navy-200 text-start">
+                  <th className="px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider text-start">{t("demand.colName")}</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider text-start">{t("demand.colEmail")}</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider text-start">{t("demand.colCompany")}</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider text-start">{t("demand.colSource")}</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider text-start">{t("demand.colDate")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-navy-100">

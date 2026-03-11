@@ -44,6 +44,9 @@ twilio==9.2.3
 # Monitoring
 sentry-sdk[flask]==2.9.0
 
+# Payments
+stripe>=8.0.0
+
 # Utilities
 python-dotenv==1.0.1
 python-dateutil==2.9.0

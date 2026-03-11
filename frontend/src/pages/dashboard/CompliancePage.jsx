@@ -180,7 +180,6 @@ export default function CompliancePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-900">{t("compliance.title")}</h1>
         <p className="text-sm text-navy-500 mt-0.5">{t("compliance.subtitle")}</p>
       </div>
 
@@ -262,12 +261,12 @@ export default function CompliancePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-navy-100">
-                  <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.name")}</th>
-                  <th className="text-start py-2 px-3 font-medium text-navy-500">{t("auth.email")}</th>
-                  <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.campaignName")}</th>
-                  <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.createdAt")}</th>
-                  <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.daysUntilExpiry")}</th>
+                <tr className="border-b border-navy-200">
+                  <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.name")}</th>
+                  <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("auth.email")}</th>
+                  <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.campaignName")}</th>
+                  <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.createdAt")}</th>
+                  <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.daysUntilExpiry")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -373,12 +372,12 @@ export default function CompliancePage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-navy-100">
-                    <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.date")}</th>
-                    <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.user")}</th>
-                    <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.action")}</th>
-                    <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.entityType")}</th>
-                    <th className="text-start py-2 px-3 font-medium text-navy-500">{t("compliance.ipAddress")}</th>
+                  <tr className="border-b border-navy-200">
+                    <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.date")}</th>
+                    <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.user")}</th>
+                    <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.action")}</th>
+                    <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.entityType")}</th>
+                    <th className="text-start py-2 px-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("compliance.ipAddress")}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -28,7 +28,7 @@ export default function Modal({ open, onClose, title, children }) {
       <div
         ref={contentRef}
         tabIndex={-1}
-        className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-6 focus:outline-none"
+        className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6 focus:outline-none"
         role="dialog"
         aria-modal="true"
         aria-label={title}

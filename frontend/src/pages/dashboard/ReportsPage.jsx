@@ -62,7 +62,6 @@ export default function ReportsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{t("reports.title")}</h1>
           <p className="text-navy-500 mt-1">{t("reports.subtitle")}</p>
         </div>
         <div className="flex gap-2">
@@ -79,11 +78,11 @@ export default function ReportsPage() {
       <div className="bg-white rounded-xl border border-navy-200 p-4 flex items-center gap-4">
         <div className="flex items-center gap-2">
           <label className="text-sm text-navy-600">{t("insights.dateFrom")}:</label>
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} lang={locale === "ar" ? "ar" : "en"} className="px-3 py-1.5 border border-navy-300 rounded-lg text-sm" />
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} lang={locale === "ar" ? "ar" : "en"} className="px-3 py-1.5 border border-navy-200 rounded-lg text-sm" />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-navy-600">{t("insights.dateTo")}:</label>
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} lang={locale === "ar" ? "ar" : "en"} className="px-3 py-1.5 border border-navy-300 rounded-lg text-sm" />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} lang={locale === "ar" ? "ar" : "en"} className="px-3 py-1.5 border border-navy-200 rounded-lg text-sm" />
         </div>
       </div>
 
@@ -170,11 +169,11 @@ export default function ReportsPage() {
               </div>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-navy-50 text-navy-600">
-                    <th className="text-start px-6 py-3 font-medium">{t("reports.campaign")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("reports.candidates")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("reports.submitted")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("reports.avgScore")}</th>
+                  <tr className="border-b border-navy-200">
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("reports.campaign")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("reports.candidates")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("reports.submitted")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("reports.avgScore")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -202,10 +201,10 @@ export default function ReportsPage() {
               </div>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-navy-50 text-navy-600">
-                    <th className="text-start px-6 py-3 font-medium">{t("reports.reviewer")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("reports.evaluationsCount")}</th>
-                    <th className="text-start px-6 py-3 font-medium">{t("reports.avgRating")}</th>
+                  <tr className="border-b border-navy-200">
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("reports.reviewer")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("reports.evaluationsCount")}</th>
+                    <th className="text-start px-6 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("reports.avgRating")}</th>
                   </tr>
                 </thead>
                 <tbody>

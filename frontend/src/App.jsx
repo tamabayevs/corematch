@@ -55,6 +55,10 @@ import StatusPage from "./pages/candidate/StatusPage";
 import PracticePage from "./pages/candidate/PracticePage";
 import ApplyPage from "./pages/candidate/ApplyPage";
 
+// Legal pages
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+
 function HomeRedirect() {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />;
@@ -128,6 +132,10 @@ export default function App() {
       {/* Public candidate status portal */}
       <Route path="/status" element={<StatusPage />} />
       <Route path="/status/:referenceId" element={<StatusPage />} />
+
+      {/* Legal pages */}
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
 
       {/* Landing page for unauthenticated, dashboard redirect for authenticated */}
       <Route path="/" element={<HomeRedirect />} />

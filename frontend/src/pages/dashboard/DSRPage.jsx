@@ -115,7 +115,6 @@ export default function DSRPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{t("dsr.title")}</h1>
           <p className="text-navy-500 mt-1">{t("dsr.subtitle")}</p>
         </div>
         <button
@@ -182,14 +181,14 @@ export default function DSRPage() {
       ) : (
         <div className="bg-white border border-navy-200 rounded-xl overflow-hidden">
           <table className="w-full">
-            <thead className="bg-navy-50 border-b border-navy-200">
+            <thead className="border-b border-navy-200">
               <tr>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.subject")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("auth.email")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.type")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("candidate.status")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.deadline")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("dsr.createdDate")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("dsr.subject")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("auth.email")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("dsr.type")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("candidate.status")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("dsr.deadline")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("dsr.createdDate")}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -197,7 +196,7 @@ export default function DSRPage() {
               {requests.map((req) => {
                 const isOverdue = req.deadline && new Date(req.deadline) < new Date() && req.status !== "completed";
                 return (
-                  <tr key={req.id} className={`hover:bg-navy-50 ${isOverdue ? "bg-red-50/30" : ""}`}>
+                  <tr key={req.id} className={`hover:bg-navy-50/50 transition-colors ${isOverdue ? "bg-red-50/30" : ""}`}>
                     <td className="px-4 py-3 text-sm font-medium text-navy-900">{req.subject_name}</td>
                     <td className="px-4 py-3 text-sm text-navy-600">{req.subject_email}</td>
                     <td className="px-4 py-3">
@@ -257,14 +256,14 @@ export default function DSRPage() {
                   <label className="block text-sm font-medium text-navy-700 mb-1">{t("dsr.subjectName")}</label>
                   <input type="text" value={form.subject_name}
                     onChange={e => setForm(p => ({ ...p, subject_name: e.target.value }))}
-                    className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     placeholder={t("dsr.subjectNamePlaceholder")} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-navy-700 mb-1">{t("dsr.subjectEmail")}</label>
                   <input type="email" value={form.subject_email}
                     onChange={e => setForm(p => ({ ...p, subject_email: e.target.value }))}
-                    className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     placeholder={t("dsr.subjectEmailPlaceholder")} />
                 </div>
               </div>
@@ -274,7 +273,7 @@ export default function DSRPage() {
                   <label className="block text-sm font-medium text-navy-700 mb-1">{t("dsr.requestType")}</label>
                   <select value={form.request_type}
                     onChange={e => setForm(p => ({ ...p, request_type: e.target.value }))}
-                    className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm">
+                    className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm">
                     {REQUEST_TYPES.filter(t => t !== "all").map(type => (
                       <option key={type} value={type}>{t(`dsr.types.${type}`)}</option>
                     ))}
@@ -284,7 +283,7 @@ export default function DSRPage() {
                   <label className="block text-sm font-medium text-navy-700 mb-1">{t("dsr.deadline")}</label>
                   <input type="date" value={form.deadline}
                     onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                    className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm" />
+                    className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm" />
                 </div>
               </div>
 
@@ -293,7 +292,7 @@ export default function DSRPage() {
                 <textarea value={form.description}
                   onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
                   rows={3}
-                  className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   placeholder={t("dsr.descriptionPlaceholder")} />
               </div>
             </div>

@@ -298,8 +298,8 @@ export default function CampaignDetailPage() {
             </svg>
             {t("common.back")}
           </button>
-          <h1 className="text-2xl font-bold text-navy-900">{campaign.name}</h1>
-          <p className="text-navy-500">{campaign.job_title}</p>
+          <h2 className="text-lg font-bold text-navy-900">{campaign.name}</h2>
+          <p className="text-sm text-navy-500">{campaign.job_title}</p>
         </div>
         <div className="flex gap-2">
           {invitedCount > 0 && (
@@ -359,26 +359,34 @@ export default function CampaignDetailPage() {
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <Card className="text-center !p-4">
-          <p className="text-2xl font-bold text-navy-900">{campaign.candidate_count || 0}</p>
-          <p className="text-sm text-navy-500">{t("dashboard.candidates")}</p>
+      {/* Mini KPI Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("dashboard.candidates")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{campaign.candidate_count || 0}</p>
         </Card>
-        <Card className="text-center !p-4">
-          <p className="text-2xl font-bold text-navy-900">{campaign.submitted_count || 0}</p>
-          <p className="text-sm text-navy-500">{t("dashboard.submitted")}</p>
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("dashboard.submitted")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{campaign.submitted_count || 0}</p>
         </Card>
-        <Card className="text-center !p-4">
-          <p className="text-2xl font-bold text-navy-900">{campaign.questions?.length || 0}</p>
-          <p className="text-sm text-navy-500">{t("campaign.questions")}</p>
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("campaign.questions")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{campaign.questions?.length || 0}</p>
+        </Card>
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("dashboard.completionRate")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{campaign.completion_rate || 0}%</p>
+        </Card>
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("dashboard.avgScore")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{campaign.avg_score || "—"}</p>
         </Card>
       </div>
 
       {/* Filters */}
       <div className="flex gap-3 mb-4 flex-wrap">
         <select
-          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm"
+          className="h-9 rounded-lg border border-navy-200 px-3 py-1.5 text-sm text-navy-700 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
         >
@@ -387,7 +395,7 @@ export default function CampaignDetailPage() {
           <option value="date">{t("common.sort")}</option>
         </select>
         <select
-          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm"
+          className="h-9 rounded-lg border border-navy-200 px-3 py-1.5 text-sm text-navy-700 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           value={tierFilter}
           onChange={(e) => setTierFilter(e.target.value)}
         >
@@ -397,7 +405,7 @@ export default function CampaignDetailPage() {
           <option value="likely_pass">{t("candidate.likelyPass")}</option>
         </select>
         <select
-          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm"
+          className="h-9 rounded-lg border border-navy-200 px-3 py-1.5 text-sm text-navy-700 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -420,29 +428,29 @@ export default function CampaignDetailPage() {
         <Card className="!p-0 overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-navy-200 bg-navy-50">
-                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+              <tr className="border-b border-navy-200">
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                   {t("auth.fullName")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                   {t("candidate.score")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                   {t("candidate.tier")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                   {t("candidate.status")}
                 </th>
-                <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                   {t("candidate.decision")}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-navy-200">
+            <tbody className="divide-y divide-navy-100">
               {candidates.map((c) => (
                 <tr
                   key={c.id}
-                  className="hover:bg-navy-50 cursor-pointer"
+                  className="hover:bg-navy-50/50 cursor-pointer transition-colors"
                   onClick={() => navigate(`/dashboard/candidates/${c.id}`)}
                 >
                   <td className="px-4 py-3">

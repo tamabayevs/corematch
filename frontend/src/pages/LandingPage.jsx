@@ -346,8 +346,16 @@ export default function LandingPage() {
               </a>
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-navy-200 text-center text-xs text-navy-400">
-            &copy; {new Date().getFullYear()} CoreMatch. {t("landing.allRights")}
+          <div className="mt-8 pt-6 border-t border-navy-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-navy-400">
+            <p>&copy; {new Date().getFullYear()} CoreMatch. {t("landing.allRights")}</p>
+            <div className="flex items-center gap-4">
+              <Link to="/terms" className="hover:text-navy-700 transition-colors">
+                {t("legal.terms")}
+              </Link>
+              <Link to="/privacy" className="hover:text-navy-700 transition-colors">
+                {t("legal.privacy")}
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

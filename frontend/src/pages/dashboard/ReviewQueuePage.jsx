@@ -115,14 +115,9 @@ export default function ReviewQueuePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-navy-900">
-            {t("review.queue")}
-          </h1>
-          <p className="text-sm text-navy-500 mt-0.5">
-            {t("review.toReview", { count: unreviewedCount })}
-          </p>
-        </div>
+        <p className="text-sm text-navy-500">
+          {t("review.toReview", { count: unreviewedCount })}
+        </p>
         <Button onClick={handleStartSession} disabled={queue.length === 0}>
           <svg
             className="w-4 h-4 me-1.5"
@@ -148,20 +143,18 @@ export default function ReviewQueuePage() {
       </div>
 
       {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="!p-4 text-center">
-          <p className="text-2xl font-bold text-navy-900">{unreviewedCount}</p>
-          <p className="text-sm text-navy-500">{t("review.unreviewed")}</p>
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("review.unreviewed")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{unreviewedCount}</p>
         </Card>
-        <Card className="!p-4 text-center">
-          <p className="text-2xl font-bold text-navy-900">
-            {totalCount - unreviewedCount}
-          </p>
-          <p className="text-sm text-navy-500">{t("review.reviewed")}</p>
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("review.reviewed")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{totalCount - unreviewedCount}</p>
         </Card>
-        <Card className="!p-4 text-center">
-          <p className="text-2xl font-bold text-navy-900">{totalCount}</p>
-          <p className="text-sm text-navy-500">{t("review.totalSubmissions")}</p>
+        <Card className="!p-3">
+          <p className="text-xs font-medium text-navy-500 uppercase tracking-wide">{t("review.totalSubmissions")}</p>
+          <p className="text-xl font-bold text-navy-900 mt-0.5">{totalCount}</p>
         </Card>
       </div>
 
@@ -169,7 +162,7 @@ export default function ReviewQueuePage() {
       <div className="flex items-center gap-3 flex-wrap">
         {/* Campaign filter */}
         <select
-          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm bg-white"
+          className="h-9 rounded-lg border border-navy-200 px-3 py-1.5 text-sm text-navy-700 bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           value={campaignFilter}
           onChange={(e) => setCampaignFilter(e.target.value)}
         >
@@ -183,7 +176,7 @@ export default function ReviewQueuePage() {
 
         {/* Tier filter */}
         <select
-          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm bg-white"
+          className="h-9 rounded-lg border border-navy-200 px-3 py-1.5 text-sm text-navy-700 bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           value={tierFilter}
           onChange={(e) => setTierFilter(e.target.value)}
         >
@@ -199,7 +192,7 @@ export default function ReviewQueuePage() {
 
         {/* Sort */}
         <select
-          className="rounded-lg border border-navy-300 px-3 py-1.5 text-sm bg-white"
+          className="h-9 rounded-lg border border-navy-200 px-3 py-1.5 text-sm text-navy-700 bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
         >
@@ -267,35 +260,35 @@ export default function ReviewQueuePage() {
           <Card className="!p-0 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-navy-200 bg-navy-50">
-                  <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                <tr className="border-b border-navy-200">
+                  <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                     {t("auth.fullName")}
                   </th>
-                  <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                  <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                     {t("review.campaign")}
                   </th>
-                  <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                  <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                     {t("candidate.score")}
                   </th>
-                  <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                  <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                     {t("candidate.tier")}
                   </th>
-                  <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                  <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                     {t("candidate.status")}
                   </th>
-                  <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                  <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                     {t("candidate.decision")}
                   </th>
-                  <th className="text-start px-4 py-3 text-sm font-medium text-navy-500">
+                  <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">
                     {t("review.submittedAt")}
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-navy-200">
+              <tbody className="divide-y divide-navy-100">
                 {queue.map((candidate) => (
                   <tr
                     key={candidate.id}
-                    className="hover:bg-navy-50 cursor-pointer transition-colors"
+                    className="hover:bg-navy-50/50 cursor-pointer transition-colors"
                     onClick={() =>
                       navigate(`/dashboard/reviews/${candidate.id}`)
                     }

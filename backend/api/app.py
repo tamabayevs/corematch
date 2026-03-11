@@ -176,6 +176,7 @@ def create_app() -> Flask:
     from api.demand import demand_bp
     from api.eval_bench import eval_bench_bp
     from api.admin import admin_bp
+    from api.billing import billing_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(campaigns_bp, url_prefix="/api/campaigns")
@@ -205,6 +206,7 @@ def create_app() -> Flask:
     app.register_blueprint(demand_bp, url_prefix="/api/demand")
     app.register_blueprint(eval_bench_bp, url_prefix="/api/eval-bench")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(billing_bp, url_prefix="/api/billing")
 
     # ──────────────────────────────────────────────────────────
     # Health Check

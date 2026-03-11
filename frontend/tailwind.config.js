@@ -50,6 +50,10 @@ export default {
         sans: ["Inter", "Cairo", "system-ui", "sans-serif"],
         cairo: ["Cairo", "sans-serif"],
       },
+      boxShadow: {
+        'card': '0 1px 2px rgba(0,0,0,0.04)',
+        'card-hover': '0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.04)',
+      },
     },
   },
   plugins: [],

@@ -56,7 +56,6 @@ export default function TeamPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{t("team.title")}</h1>
           <p className="text-navy-500 mt-1">{t("team.subtitle")}</p>
         </div>
         <button onClick={() => setShowInvite(true)} className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
@@ -76,18 +75,18 @@ export default function TeamPage() {
       ) : (
         <div className="bg-white border border-navy-200 rounded-xl overflow-hidden">
           <table className="w-full">
-            <thead className="bg-navy-50 border-b border-navy-200">
+            <thead className="border-b border-navy-200">
               <tr>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("team.name")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("auth.email")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("team.role")}</th>
-                <th className="text-start px-4 py-3 text-xs font-semibold text-navy-500 uppercase">{t("candidate.status")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("team.name")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("auth.email")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("team.role")}</th>
+                <th className="text-start px-4 py-3 text-[11px] font-semibold text-navy-400 uppercase tracking-wider">{t("candidate.status")}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-100">
               {members.map((m) => (
-                <tr key={m.id} className="hover:bg-navy-50">
+                <tr key={m.id} className="hover:bg-navy-50/50 transition-colors">
                   <td className="px-4 py-3 text-sm font-medium text-navy-900">{m.full_name || "\u2014"}</td>
                   <td className="px-4 py-3 text-sm text-navy-600">{m.email}</td>
                   <td className="px-4 py-3">
@@ -119,12 +118,12 @@ export default function TeamPage() {
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-1">{t("auth.email")}</label>
                 <input type="email" value={inviteForm.email} onChange={e => setInviteForm(p => ({ ...p, email: e.target.value }))}
-                  className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm" placeholder="colleague@company.com" />
+                  className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm" placeholder="colleague@company.com" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-1">{t("team.role")}</label>
                 <select value={inviteForm.role} onChange={e => setInviteForm(p => ({ ...p, role: e.target.value }))}
-                  className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm">
+                  className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm">
                   {roles.map(r => <option key={r} value={r}>{t(`team.roles.${r}`)}</option>)}
                 </select>
               </div>

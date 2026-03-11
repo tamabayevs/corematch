@@ -78,8 +78,7 @@ export default function ScorecardsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{t("scorecard.title")}</h1>
-          <p className="text-navy-500 mt-1">{t("scorecard.subtitle")}</p>
+          <p className="text-navy-500">{t("scorecard.subtitle")}</p>
         </div>
         <button
           onClick={() => { setEditing(null); setForm({ name: "", description: "", competencies: [{ name: "", description: "", weight: 25 }] }); setShowModal(true); }}
@@ -144,12 +143,12 @@ export default function ScorecardsPage() {
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-1">{t("scorecard.name")}</label>
                 <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                  className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+                  className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-navy-700 mb-1">{t("scorecard.description")}</label>
                 <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={2}
-                  className="w-full border border-navy-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+                  className="w-full border border-navy-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">

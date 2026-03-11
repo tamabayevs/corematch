@@ -31,7 +31,7 @@ export default function ScoreBadge({ score, tier, size = "md" }) {
   }
 
   return (
-    <div className={clsx("inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border", info.bg)}>
+    <div className={clsx("inline-flex items-center gap-1.5 px-2 py-1 rounded-full border", info.bg)}>
       <span className={clsx("text-sm font-semibold", info.color)}>{roundedScore}</span>
       <span className={clsx("text-xs", info.color)}>{t(info.label)}</span>
     </div>
