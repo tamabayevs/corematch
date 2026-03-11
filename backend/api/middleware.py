@@ -60,7 +60,7 @@ def require_auth(f):
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, email, full_name, company_name, language, email_verified
+                    SELECT id, email, full_name, company_name, language, email_verified, is_superuser
                     FROM users WHERE id = %s
                     """,
                     (user_id,),
@@ -77,6 +77,7 @@ def require_auth(f):
             "company_name": row[3],
             "language": row[4],
             "email_verified": row[5] if row[5] is not None else False,
+            "is_superuser": bool(row[6]) if row[6] is not None else False,
         }
         # Also set g.user_id for convenience (used by billing, etc.)
         g.user_id = str(row[0])

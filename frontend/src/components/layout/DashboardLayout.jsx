@@ -53,7 +53,7 @@ const navSections = [
       // Pipeline nav is accessed per-campaign, not as a top-level item
       { path: "/dashboard/calibration", label: "nav.calibration", icon: CalibrationIcon },
       { path: "/dashboard/insights", label: "nav.insights", icon: InsightsIcon },
-      { path: "/dashboard/reports", label: "nav.reports", icon: ReportsIcon },
+      { path: "/dashboard/reports", label: "nav.reports", icon: ReportsIcon, superOnly: true },
       { path: "/dashboard/dropoff", label: "nav.dropoff", icon: DropoffIcon },
     ],
   },
@@ -61,11 +61,11 @@ const navSections = [
     label: "nav.manage",
     items: [
       { path: "/dashboard/templates", label: "template.library", icon: TemplatesIcon },
-      { path: "/dashboard/notification-templates", label: "nav.notifTemplates", icon: NotifTemplatesIcon },
+      { path: "/dashboard/notification-templates", label: "nav.notifTemplates", icon: NotifTemplatesIcon, superOnly: true },
       { path: "/dashboard/scorecards", label: "nav.scorecards", icon: ScorecardsIcon },
       { path: "/dashboard/talent-pool", label: "nav.talentPool", icon: TalentPoolIcon },
       { path: "/dashboard/team", label: "nav.team", icon: TeamIcon },
-      { path: "/dashboard/saudization", label: "nav.saudization", icon: SaudizationIcon },
+      { path: "/dashboard/saudization", label: "nav.saudization", icon: SaudizationIcon, superOnly: true },
     ],
   },
   {
@@ -74,8 +74,8 @@ const navSections = [
       { path: "/dashboard/settings", label: "nav.settings", icon: SettingsIcon },
       { path: "/dashboard/branding", label: "nav.branding", icon: BrandingIcon },
       { path: "/dashboard/integrations", label: "nav.integrations", icon: IntegrationsIcon },
-      { path: "/dashboard/compliance", label: "nav.compliance", icon: ComplianceIcon },
-      { path: "/dashboard/dsr", label: "nav.dsr", icon: DSRIcon },
+      { path: "/dashboard/compliance", label: "nav.compliance", icon: ComplianceIcon, superOnly: true },
+      { path: "/dashboard/dsr", label: "nav.dsr", icon: DSRIcon, superOnly: true },
     ],
   },
 ];
@@ -100,7 +100,7 @@ export default function DashboardLayout() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isSuperuser } = useAuthStore();
 
   // Collapsible sidebar state — persisted to localStorage
   const [collapsed, setCollapsed] = useState(() => {
@@ -172,14 +172,19 @@ export default function DashboardLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 sidebar-scroll overflow-y-auto">
-          {navSections.map((section) => (
+          {navSections.map((section) => {
+            const visibleItems = section.items.filter(
+              (item) => !item.superOnly || isSuperuser
+            );
+            if (visibleItems.length === 0) return null;
+            return (
             <div key={section.label} className="mb-6">
               {!collapsed && (
                 <p className="px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-navy-500">
                   {t(section.label)}
                 </p>
               )}
-              {section.items.map((item) => (
+              {visibleItems.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
@@ -207,7 +212,8 @@ export default function DashboardLayout() {
                 </NavLink>
               ))}
             </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Footer */}

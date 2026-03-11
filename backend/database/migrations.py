@@ -1129,6 +1129,11 @@ MIGRATIONS = [
     CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id);
     CREATE INDEX IF NOT EXISTS idx_users_stripe_subscription ON users(stripe_subscription_id);
     """,
+    # ── Migration 29: Superuser flag + sidebar visibility ──
+    """
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS is_superuser BOOLEAN DEFAULT FALSE;
+    UPDATE users SET is_superuser = TRUE WHERE email = 'olzhas.tamabayev@gmail.com';
+    """,
 ]
 
 

@@ -9,10 +9,11 @@ export const useAuthStore = create(
       accessToken: null,
       isAuthenticated: false,
       emailVerified: true, // default true for backwards compat
+      isSuperuser: false,
       isLoading: true,
 
       setAuth(user, accessToken) {
-        set({ user, accessToken, isAuthenticated: true, isLoading: false });
+        set({ user, accessToken, isAuthenticated: true, isSuperuser: user?.is_superuser || false, isLoading: false });
       },
 
       async login(email, password) {
@@ -23,6 +24,7 @@ export const useAuthStore = create(
           accessToken: access_token,
           isAuthenticated: true,
           emailVerified: email_verified !== false,
+          isSuperuser: user?.is_superuser || false,
           isLoading: false,
         });
         return res.data;
@@ -36,6 +38,7 @@ export const useAuthStore = create(
           accessToken: access_token,
           isAuthenticated: true,
           emailVerified: email_verified !== false,
+          isSuperuser: user?.is_superuser || false,
           isLoading: false,
         });
         return res.data;
@@ -45,10 +48,10 @@ export const useAuthStore = create(
         try {
           const res = await authApi.refresh();
           const { access_token, user } = res.data;
-          set({ user, accessToken: access_token, isAuthenticated: true, isLoading: false });
+          set({ user, accessToken: access_token, isAuthenticated: true, isSuperuser: user?.is_superuser || false, isLoading: false });
           return access_token;
         } catch {
-          set({ user: null, accessToken: null, isAuthenticated: false, emailVerified: true, isLoading: false });
+          set({ user: null, accessToken: null, isAuthenticated: false, emailVerified: true, isSuperuser: false, isLoading: false });
           throw new Error("Session expired");
         }
       },
@@ -63,7 +66,7 @@ export const useAuthStore = create(
         } catch {
           // Logout endpoint may fail, but we still clear local state
         }
-        set({ user: null, accessToken: null, isAuthenticated: false, emailVerified: true, isLoading: false });
+        set({ user: null, accessToken: null, isAuthenticated: false, emailVerified: true, isSuperuser: false, isLoading: false });
       },
 
       async initialize() {
@@ -75,7 +78,7 @@ export const useAuthStore = create(
           // Background refresh to validate session & get fresh token
           get().refresh().catch(() => {
             // Refresh failed — session expired, clear state
-            set({ user: null, accessToken: null, isAuthenticated: false, emailVerified: true, isLoading: false });
+            set({ user: null, accessToken: null, isAuthenticated: false, emailVerified: true, isSuperuser: false, isLoading: false });
           });
         } else {
           // No persisted session — try cookie-based refresh
@@ -94,6 +97,7 @@ export const useAuthStore = create(
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
         emailVerified: state.emailVerified,
+        isSuperuser: state.isSuperuser,
       }),
     }
   )

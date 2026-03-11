@@ -283,15 +283,17 @@ def login():
     access_token = create_access_token(user_id, user[1])
     refresh_token = create_refresh_token(user_id)
 
-    # Check email_verified status (column index 6 if exists, default True for backwards compat)
+    # Check email_verified + is_superuser status
     email_verified = True
+    is_superuser = False
     try:
         with get_db() as conn2:
             with conn2.cursor() as cur2:
-                cur2.execute("SELECT email_verified FROM users WHERE id = %s", (user_id,))
+                cur2.execute("SELECT email_verified, is_superuser FROM users WHERE id = %s", (user_id,))
                 row = cur2.fetchone()
                 if row is not None:
                     email_verified = bool(row[0])
+                    is_superuser = bool(row[1]) if row[1] is not None else False
     except Exception:
         pass  # Column may not exist yet; default to True
 
@@ -305,6 +307,7 @@ def login():
             "full_name": user[3],
             "company_name": user[4],
             "language": user[5],
+            "is_superuser": is_superuser,
         },
     }))
 
@@ -335,7 +338,7 @@ def refresh():
         with get_db() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT id, email, full_name, company_name FROM users WHERE id = %s",
+                    "SELECT id, email, full_name, company_name, is_superuser FROM users WHERE id = %s",
                     (user_id,),
                 )
                 user = cur.fetchone()
@@ -356,6 +359,7 @@ def refresh():
             "email": user[1],
             "full_name": user[2],
             "company_name": user[3],
+            "is_superuser": bool(user[4]) if user[4] is not None else False,
         },
     }))
 
@@ -391,7 +395,7 @@ def me():
                 cur.execute(
                     """
                     SELECT id, email, full_name, job_title, company_name, language,
-                           notify_on_complete, notify_weekly, created_at
+                           notify_on_complete, notify_weekly, created_at, is_superuser
                     FROM users WHERE id = %s
                     """,
                     (g.current_user["id"],),
@@ -414,6 +418,7 @@ def me():
         "notify_on_complete": user[6],
         "notify_weekly": user[7],
         "created_at": user[8].isoformat() if user[8] else None,
+        "is_superuser": bool(user[9]) if user[9] is not None else False,
     })
 
 
