@@ -12,6 +12,7 @@ import datetime
 from flask import Blueprint, request, jsonify, g, redirect
 from database.connection import get_db
 from api.middleware import require_invite_token
+from api.rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
 public_bp = Blueprint("public", __name__)
@@ -113,6 +114,7 @@ def get_campaign_info(campaign_id):
 # ──────────────────────────────────────────────────────────────
 
 @public_bp.route("/apply/<campaign_id>", methods=["POST"])
+@rate_limit("5 per minute")
 def public_apply(campaign_id):
     """
     Public self-registration endpoint.

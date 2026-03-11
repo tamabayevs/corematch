@@ -53,7 +53,7 @@ class FlowHelpers:
     # ── Auth flows ──
 
     def signup_user(self, email=None, password=None, full_name=None, company_name=None):
-        """Sign up and store access token."""
+        """Sign up, store access token, and auto-verify email for tests."""
         res = self.client.post("/api/auth/signup", json={
             "email": email or TestData.HR_EMAIL,
             "password": password or TestData.HR_PASSWORD,
@@ -62,6 +62,15 @@ class FlowHelpers:
         })
         if res.status_code == 201:
             self._access_token = res.get_json()["access_token"]
+            # Auto-verify email in tests so @require_verified doesn't block
+            try:
+                from database.connection import get_db
+                user_id = res.get_json()["user"]["id"]
+                with get_db() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute("UPDATE users SET email_verified = TRUE WHERE id = %s", (user_id,))
+            except Exception:
+                pass  # Column may not exist in minimal test schema
         return res
 
     def login_user(self, email=None, password=None):

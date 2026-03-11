@@ -6,7 +6,8 @@ import uuid
 import logging
 from flask import Blueprint, request, jsonify, g
 from database.connection import get_db
-from api.middleware import require_auth
+from api.middleware import require_auth, require_verified
+from api.rate_limit import rate_limit
 from services.scheduling import is_mena_weekend, get_weekend_warning
 
 logger = logging.getLogger(__name__)
@@ -138,6 +139,7 @@ def list_campaigns():
 
 @campaigns_bp.route("", methods=["POST"])
 @require_auth
+@require_verified
 def create_campaign():
     """Create a new interview campaign."""
     data = request.get_json(silent=True)
@@ -454,7 +456,9 @@ def update_campaign(campaign_id):
 # ──────────────────────────────────────────────────────────────
 
 @campaigns_bp.route("/<campaign_id>/invite", methods=["POST"])
+@rate_limit("20 per minute")
 @require_auth
+@require_verified
 def invite_candidate(campaign_id):
     """
     Invite a candidate to a campaign.
@@ -693,7 +697,9 @@ def invite_candidate(campaign_id):
 # ──────────────────────────────────────────────────────────────
 
 @campaigns_bp.route("/<campaign_id>/bulk-invite", methods=["POST"])
+@rate_limit("5 per minute")
 @require_auth
+@require_verified
 def bulk_invite(campaign_id):
     """
     Bulk invite candidates to a campaign.
@@ -898,6 +904,7 @@ def bulk_invite(campaign_id):
 
 @campaigns_bp.route("/<campaign_id>/remind", methods=["POST"])
 @require_auth
+@require_verified
 def send_reminders(campaign_id):
     """
     Send reminder emails to candidates with status='invited' who

@@ -60,7 +60,7 @@ def require_auth(f):
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT id, email, full_name, company_name, language
+                    SELECT id, email, full_name, company_name, language, email_verified
                     FROM users WHERE id = %s
                     """,
                     (user_id,),
@@ -76,9 +76,27 @@ def require_auth(f):
             "full_name": row[2],
             "company_name": row[3],
             "language": row[4],
+            "email_verified": row[5] if row[5] is not None else False,
         }
+        # Also set g.user_id for convenience (used by billing, etc.)
+        g.user_id = str(row[0])
         return f(*args, **kwargs)
 
+    return decorated
+
+
+def require_verified(f):
+    """
+    Decorator: Must be used AFTER @require_auth.
+    Blocks access if the user has not verified their email.
+    """
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if not getattr(g, 'current_user', None):
+            return jsonify({"error": "Authentication required"}), 401
+        if not g.current_user.get("email_verified"):
+            return jsonify({"error": "Email verification required. Please verify your email before using this feature."}), 403
+        return f(*args, **kwargs)
     return decorated
 
 

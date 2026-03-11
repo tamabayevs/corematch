@@ -9,6 +9,7 @@ import logging
 from flask import Blueprint, request, jsonify, g
 from database.connection import get_db
 from api.middleware import require_auth
+from api.rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
 demand_bp = Blueprint("demand", __name__)
@@ -19,6 +20,7 @@ demand_bp = Blueprint("demand", __name__)
 # ──────────────────────────────────────────────────────────────
 
 @demand_bp.route("/waitlist", methods=["POST"])
+@rate_limit("3 per minute")
 def join_waitlist():
     """Add an email to the waitlist. Sends auto-reply confirmation."""
     data = request.get_json(silent=True) or {}
@@ -90,6 +92,7 @@ def join_waitlist():
 VALID_EVENT_TYPES = ("page_view", "cta_click", "waitlist_submit", "scroll_50", "scroll_100")
 
 @demand_bp.route("/track", methods=["POST"])
+@rate_limit("30 per minute")
 def track_event():
     """Log a page event. Fire-and-forget from frontend."""
     data = request.get_json(silent=True) or {}

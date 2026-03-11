@@ -20,6 +20,7 @@ from api.middleware import (
     create_refresh_token,
     verify_refresh_token,
 )
+from api.rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
 auth_bp = Blueprint("auth", __name__)
@@ -89,12 +90,12 @@ def _generate_reference_id() -> str:
 # ──────────────────────────────────────────────────────────────
 
 @auth_bp.route("/signup", methods=["POST"])
+@rate_limit("3 per minute")
 def signup():
     """
     Register a new HR user.
     Rate limit: 3/minute per IP.
     """
-    limiter = auth_bp.get_app().extensions.get("limiter") if hasattr(auth_bp, 'get_app') else None
 
     data = request.get_json(silent=True)
     if not data:
@@ -151,14 +152,14 @@ def signup():
     access_token = create_access_token(user_id, email)
     refresh_token = create_refresh_token(user_id)
 
-    # Create plan limits for new user (starter tier)
+    # Create plan limits for new user (free tier — must upgrade to get more)
     try:
         with get_db() as conn2:
             with conn2.cursor() as cur2:
                 cur2.execute(
                     """
                     INSERT INTO plan_limits (user_id, plan_tier, max_campaigns, max_candidates_per_month, max_team_members)
-                    VALUES (%s, 'starter', 3, 50, 3)
+                    VALUES (%s, 'free', 1, 10, 1)
                     ON CONFLICT (user_id) DO NOTHING
                     """,
                     (user_id,),
@@ -170,7 +171,7 @@ def signup():
     email_verified = False
     try:
         import random
-        code = f"{random.randint(100000, 999999)}"
+        code = f"{secrets.randbelow(900000) + 100000}"
         expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
         with get_db() as conn3:
             with conn3.cursor() as cur3:
@@ -211,10 +212,11 @@ def signup():
 # ──────────────────────────────────────────────────────────────
 
 @auth_bp.route("/login", methods=["POST"])
+@rate_limit("10 per minute")
 def login():
     """
     Authenticate HR user.
-    Rate limit: 5/minute per IP (brute force prevention).
+    Rate limit: 10/minute per IP (brute force prevention).
     """
     data = request.get_json(silent=True)
     if not data:
@@ -225,6 +227,22 @@ def login():
 
     if not email_raw or not password:
         return jsonify({"error": "email and password are required"}), 400
+
+    # Check account lockout (max 5 failed attempts per email per 15 min)
+    lockout_key = None
+    try:
+        from api.rate_limit import _get_redis
+        r = _get_redis()
+        if r:
+            lockout_key = "login_fail:%s" % email_raw
+            fail_count = r.get(lockout_key)
+            if fail_count and int(fail_count) >= 5:
+                ttl = r.ttl(lockout_key)
+                return jsonify({
+                    "error": "Account temporarily locked due to too many failed login attempts. Try again in %d minutes." % max(1, (ttl or 900) // 60)
+                }), 429
+    except Exception:
+        pass
 
     try:
         with get_db() as conn:
@@ -243,7 +261,23 @@ def login():
 
     # Generic error for both "not found" and "wrong password" (prevents email enumeration)
     if not user or not _check_password(password, user[2]):
+        # Increment failed login counter
+        try:
+            if r and lockout_key:
+                pipe = r.pipeline()
+                pipe.incr(lockout_key)
+                pipe.expire(lockout_key, 900)  # 15 min lockout window
+                pipe.execute()
+        except Exception:
+            pass
         return jsonify({"error": "Invalid email or password"}), 401
+
+    # Clear failed login counter on success
+    try:
+        if r and lockout_key:
+            r.delete(lockout_key)
+    except Exception:
+        pass
 
     user_id = str(user[0])
     access_token = create_access_token(user_id, user[1])
@@ -438,6 +472,7 @@ def update_profile():
 # ──────────────────────────────────────────────────────────────
 
 @auth_bp.route("/forgot-password", methods=["POST"])
+@rate_limit("3 per minute")
 def forgot_password():
     """
     Initiate password reset.
@@ -622,6 +657,7 @@ def validate_reset_token():
 # ──────────────────────────────────────────────────────────────
 
 @auth_bp.route("/send-verification", methods=["POST"])
+@rate_limit("3 per minute")
 @require_auth
 def send_verification():
     """
@@ -650,7 +686,7 @@ def send_verification():
 
                 # Generate new code
                 import random
-                code = f"{random.randint(100000, 999999)}"
+                code = f"{secrets.randbelow(900000) + 100000}"
                 expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
 
                 cur.execute(
@@ -678,6 +714,7 @@ def send_verification():
 # ──────────────────────────────────────────────────────────────
 
 @auth_bp.route("/verify-email", methods=["POST"])
+@rate_limit("5 per minute")
 @require_auth
 def verify_email():
     """
@@ -691,6 +728,20 @@ def verify_email():
     code = data.get("code", "").strip()
     if not code or len(code) != 6:
         return jsonify({"error": "A valid 6-digit code is required"}), 400
+
+    # Check attempt limit (max 5 wrong attempts per user per 15 min)
+    try:
+        from api.rate_limit import _get_redis
+        r = _get_redis()
+        if r:
+            attempt_key = "verify_attempts:%s" % user_id
+            attempts = r.incr(attempt_key)
+            if attempts == 1:
+                r.expire(attempt_key, 900)  # 15 min window
+            if attempts > 5:
+                return jsonify({"error": "Too many verification attempts. Please request a new code."}), 429
+    except Exception:
+        pass  # Non-blocking — proceed without rate check
 
     try:
         with get_db() as conn:
@@ -721,6 +772,13 @@ def verify_email():
                     "UPDATE users SET email_verified = TRUE WHERE id = %s",
                     (user_id,),
                 )
+
+        # Clear attempt counter on success
+        try:
+            if r:
+                r.delete("verify_attempts:%s" % user_id)
+        except Exception:
+            pass
 
         return jsonify({"message": "Email verified successfully", "email_verified": True})
 
