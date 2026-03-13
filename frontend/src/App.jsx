@@ -58,6 +58,10 @@ import ApplyPage from "./pages/candidate/ApplyPage";
 // Legal pages
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import NotFoundPage from "./pages/NotFoundPage";
+
+// Global components
+import CookieConsent from "./components/CookieConsent";
 
 function HomeRedirect() {
   const { isAuthenticated } = useAuthStore();
@@ -66,6 +70,8 @@ function HomeRedirect() {
 
 export default function App() {
   return (
+    <>
+    <CookieConsent />
     <Routes>
       {/* Auth routes */}
       <Route path="/login" element={<LoginPage />} />
@@ -139,7 +145,8 @@ export default function App() {
 
       {/* Landing page for unauthenticated, dashboard redirect for authenticated */}
       <Route path="/" element={<HomeRedirect />} />
-      <Route path="*" element={<HomeRedirect />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </>
   );
 }

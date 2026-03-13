@@ -153,8 +153,12 @@ def create_campaign():
 
     if not name:
         return jsonify({"error": "Campaign name is required"}), 400
+    if len(name) > 200:
+        return jsonify({"error": "Campaign name must be 200 characters or less"}), 400
     if not job_title:
         return jsonify({"error": "Job title is required"}), 400
+    if len(job_title) > 200:
+        return jsonify({"error": "Job title must be 200 characters or less"}), 400
 
     # Validate questions
     q_errors = _validate_questions(questions_raw)
@@ -178,6 +182,8 @@ def create_campaign():
         return jsonify({"error": f"max_recording_seconds must be {MIN_RECORDING_SECONDS}-{MAX_RECORDING_SECONDS}"}), 400
 
     job_description = data.get("job_description", "").strip() or None
+    if job_description and len(job_description) > 5000:
+        return jsonify({"error": "Job description must be 5000 characters or less"}), 400
     pipeline_enabled = bool(data.get("pipeline_enabled", False))
 
     # ── Usage limit check: max campaigns ──
