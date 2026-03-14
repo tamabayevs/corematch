@@ -39,7 +39,7 @@ def _check_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def _validate_password_strength(password: str) -> list[str]:
+def _validate_password_strength(password: str) -> list:
     """Return list of validation errors (empty = valid)."""
     errors = []
     if len(password) < 8:
@@ -125,6 +125,8 @@ def signup():
     company_name = data.get("company_name", "").strip()
     job_title = data.get("job_title", "").strip()
 
+    # Single DB transaction: check uniqueness + create user + seed plan + verification code
+    verification_code = None
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
@@ -144,6 +146,36 @@ def signup():
                     (email, password_hash, full_name, company_name or None, job_title or None),
                 )
                 user = cur.fetchone()
+                user_id = str(user[0])
+
+                # Seed free plan limits in same transaction
+                try:
+                    cur.execute(
+                        """
+                        INSERT INTO plan_limits (user_id, plan_tier, max_campaigns, max_candidates_per_month, max_team_members)
+                        VALUES (%s, 'free', 1, 15, 1)
+                        ON CONFLICT (user_id) DO NOTHING
+                        """,
+                        (user_id,),
+                    )
+                except Exception as e:
+                    logger.debug("Plan limits seed skipped (table may not exist yet): %s", e)
+
+                # Generate and insert verification code in same transaction
+                verification_code = f"{secrets.randbelow(900000) + 100000}"
+                expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
+                try:
+                    cur.execute(
+                        """
+                        INSERT INTO email_verification_codes (user_id, code, expires_at)
+                        VALUES (%s, %s, %s)
+                        """,
+                        (user_id, verification_code, expires),
+                    )
+                except Exception as e:
+                    logger.debug("Verification code insert skipped: %s", e)
+                    verification_code = None
+
     except Exception as e:
         logger.error("Signup DB error: %s", str(e))
         return jsonify({"error": "Failed to create account"}), 500
@@ -152,43 +184,17 @@ def signup():
     access_token = create_access_token(user_id, email)
     refresh_token = create_refresh_token(user_id)
 
-    # Create plan limits for new user (free tier — must upgrade to get more)
-    try:
-        with get_db() as conn2:
-            with conn2.cursor() as cur2:
-                cur2.execute(
-                    """
-                    INSERT INTO plan_limits (user_id, plan_tier, max_campaigns, max_candidates_per_month, max_team_members)
-                    VALUES (%s, 'free', 1, 15, 1)
-                    ON CONFLICT (user_id) DO NOTHING
-                    """,
-                    (user_id,),
-                )
-    except Exception as e:
-        logger.debug("Plan limits seed skipped (table may not exist yet): %s", e)
-
-    # Send email verification code
+    # Send email verification (outside DB transaction — don't block on email)
     email_verified = False
-    try:
-        import random
-        code = f"{secrets.randbelow(900000) + 100000}"
-        expires = datetime.datetime.utcnow() + datetime.timedelta(minutes=15)
-        with get_db() as conn3:
-            with conn3.cursor() as cur3:
-                cur3.execute(
-                    """
-                    INSERT INTO email_verification_codes (user_id, code, expires_at)
-                    VALUES (%s, %s, %s)
-                    """,
-                    (user_id, code, expires),
-                )
-        from services.email_service import get_email_service
-        email_svc = get_email_service()
-        email_svc.send_verification_code(email, full_name or "there", code)
-        logger.info("Verification code sent to %s", email[:3] + "***")
-    except Exception as e:
-        logger.error("Failed to send verification code: %s", str(e))
-        # Don't block signup if email fails — user can resend later
+    if verification_code:
+        try:
+            from services.email_service import get_email_service
+            email_svc = get_email_service()
+            email_svc.send_verification_code(email, full_name or "there", verification_code)
+            logger.info("Verification code sent to %s", email[:3] + "***")
+        except Exception as e:
+            logger.error("Failed to send verification code: %s", str(e))
+            # Don't block signup if email fails — user can resend later
 
     response = make_response(jsonify({
         "message": "Account created successfully",
@@ -247,9 +253,12 @@ def login():
     try:
         with get_db() as conn:
             with conn.cursor() as cur:
+                # Single query fetches everything — no second DB call needed
                 cur.execute(
                     """
-                    SELECT id, email, password_hash, full_name, company_name, language
+                    SELECT id, email, password_hash, full_name, company_name, language,
+                           COALESCE(email_verified, TRUE) AS email_verified,
+                           COALESCE(is_superuser, FALSE) AS is_superuser
                     FROM users WHERE email = %s
                     """,
                     (email_raw,),
@@ -260,7 +269,26 @@ def login():
         return jsonify({"error": "Login failed"}), 500
 
     # Generic error for both "not found" and "wrong password" (prevents email enumeration)
-    if not user or not _check_password(password, user[2]):
+    if not user:
+        # Increment failed login counter even for non-existent emails
+        try:
+            if r and lockout_key:
+                pipe = r.pipeline()
+                pipe.incr(lockout_key)
+                pipe.expire(lockout_key, 900)
+                pipe.execute()
+        except Exception:
+            pass
+        return jsonify({"error": "Invalid email or password"}), 401
+
+    # bcrypt.checkpw can throw on malformed hashes — catch and treat as failure
+    try:
+        password_valid = _check_password(password, user[2])
+    except Exception as e:
+        logger.error("Password check error for %s: %s", email_raw[:3] + "***", str(e))
+        password_valid = False
+
+    if not password_valid:
         # Increment failed login counter
         try:
             if r and lockout_key:
@@ -283,19 +311,9 @@ def login():
     access_token = create_access_token(user_id, user[1])
     refresh_token = create_refresh_token(user_id)
 
-    # Check email_verified + is_superuser status
-    email_verified = True
-    is_superuser = False
-    try:
-        with get_db() as conn2:
-            with conn2.cursor() as cur2:
-                cur2.execute("SELECT email_verified, is_superuser FROM users WHERE id = %s", (user_id,))
-                row = cur2.fetchone()
-                if row is not None:
-                    email_verified = bool(row[0])
-                    is_superuser = bool(row[1]) if row[1] is not None else False
-    except Exception:
-        pass  # Column may not exist yet; default to True
+    # email_verified and is_superuser already fetched in single query above
+    email_verified = bool(user[6])
+    is_superuser = bool(user[7])
 
     response = make_response(jsonify({
         "message": "Login successful",

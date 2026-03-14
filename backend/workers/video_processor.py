@@ -2,6 +2,12 @@
 CoreMatch — Video Processor Worker
 Background RQ job that processes candidate video answers through the AI pipeline.
 Called by: public.py:_submit_for_processing() → RQ enqueue → this function.
+
+Resilience features:
+  - Stuck video reset (processing > 1 hour → failed)
+  - Per-video error handling (one failure doesn't block others)
+  - Video size validation (max 500MB)
+  - Groq API retry with backoff (via scorer.py)
 """
 import json
 import logging
@@ -12,6 +18,37 @@ from services.email_service import get_email_service
 from ai.scorer import score_video, TIER_STRONG_PROCEED, TIER_CONSIDER
 
 logger = logging.getLogger(__name__)
+
+# Max video size in bytes (500MB) — prevents OOM on corrupted uploads
+MAX_VIDEO_SIZE = 500 * 1024 * 1024
+
+
+def reset_stuck_processing(max_age_hours: int = 1) -> int:
+    """
+    Reset videos stuck in 'processing' state for longer than max_age_hours.
+    Should be called periodically (e.g., by a scheduled RQ job or on worker startup).
+    Returns number of videos reset.
+    """
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=max_age_hours)
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE video_answers
+                    SET processing_status = 'failed'
+                    WHERE processing_status = 'processing'
+                      AND updated_at < %s
+                    """,
+                    (cutoff,),
+                )
+                count = cur.rowcount
+                if count > 0:
+                    logger.warning("Reset %d stuck processing videos (older than %dh)", count, max_age_hours)
+                return count
+    except Exception as e:
+        logger.error("Failed to reset stuck videos: %s", e)
+        return 0
 
 
 def process_candidate(candidate_id: str) -> dict:
@@ -119,8 +156,13 @@ def process_candidate(candidate_id: str) -> dict:
             logger.error("Failed to mark video %s as processing: %s", va_id, str(e))
 
         try:
-            # Download video from storage
+            # Download video from storage with size validation
             video_bytes = storage.download_file(storage_key)
+            if len(video_bytes) > MAX_VIDEO_SIZE:
+                raise ValueError(
+                    f"Video too large: {len(video_bytes)} bytes (max {MAX_VIDEO_SIZE}). "
+                    "Possible corrupted upload."
+                )
             logger.info("Downloaded video %s: %d bytes", storage_key, len(video_bytes))
 
             # Run AI pipeline: extract audio → transcribe → score

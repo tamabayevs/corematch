@@ -13,6 +13,7 @@ import json
 import logging
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -51,12 +52,12 @@ class ScoreResult:
 
 
 def _get_groq_client():
-    """Return a Groq client. Raises if GROQ_API_KEY not set."""
+    """Return a Groq client with timeout. Raises if GROQ_API_KEY not set."""
     from groq import Groq
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY environment variable is not set")
-    return Groq(api_key=api_key)
+    return Groq(api_key=api_key, timeout=60.0)  # 60s timeout prevents hanging
 
 
 def _extract_audio_wav(video_bytes: bytes) -> bytes:
@@ -207,7 +208,9 @@ Scoring criteria:
     client = _get_groq_client()
     model_used = scoring_model or MODEL_SCORING
 
-    for attempt in range(2):  # Try primary model, fallback on failure
+    # 3 attempts: primary model → retry with backoff → fallback model
+    max_attempts = 3
+    for attempt in range(max_attempts):
         try:
             response = client.chat.completions.create(
                 model=model_used,
@@ -265,15 +268,35 @@ Scoring criteria:
 
         except json.JSONDecodeError as e:
             logger.warning("LLM returned invalid JSON (attempt %d): %s", attempt + 1, str(e))
-            if attempt == 0:
+            if attempt < max_attempts - 1:
                 model_used = MODEL_FALLBACK
                 logger.info("Retrying with fallback model: %s", MODEL_FALLBACK)
             else:
-                raise RuntimeError(f"LLM scoring failed: invalid JSON after 2 attempts")
+                raise RuntimeError("LLM scoring failed: invalid JSON after %d attempts" % max_attempts)
 
         except Exception as e:
+            error_str = str(e).lower()
+            is_rate_limit = "rate_limit" in error_str or "429" in error_str or "too many" in error_str
+            is_server_error = "500" in error_str or "502" in error_str or "503" in error_str
+
+            if is_rate_limit and attempt < max_attempts - 1:
+                # Exponential backoff on rate limit: 2s, 4s
+                backoff = 2 ** (attempt + 1)
+                logger.warning(
+                    "Groq rate limit hit (attempt %d), backing off %ds: %s",
+                    attempt + 1, backoff, str(e)
+                )
+                time.sleep(backoff)
+                continue
+            elif is_server_error and attempt < max_attempts - 1:
+                # Retry server errors with fallback model
+                logger.warning("Groq server error (attempt %d), switching to fallback: %s", attempt + 1, str(e))
+                model_used = MODEL_FALLBACK
+                time.sleep(1)
+                continue
+
             logger.error("LLM scoring error (attempt %d, model %s): %s", attempt + 1, model_used, str(e))
-            if attempt == 0:
+            if attempt < max_attempts - 1:
                 model_used = MODEL_FALLBACK
             else:
                 raise

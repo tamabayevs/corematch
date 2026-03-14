@@ -1134,6 +1134,62 @@ MIGRATIONS = [
     ALTER TABLE users ADD COLUMN IF NOT EXISTS is_superuser BOOLEAN DEFAULT FALSE;
     UPDATE users SET is_superuser = TRUE WHERE email = 'olzhas.tamabayev@gmail.com';
     """,
+
+    # ── Migration 30: Performance indexes for 100-customer concurrency ──
+    # Review queue: sort by score within campaign+status
+    """
+    CREATE INDEX IF NOT EXISTS idx_candidates_campaign_status_score
+        ON candidates(campaign_id, status, overall_score DESC NULLS LAST);
+    """,
+    # Activity feed: paginate by user + created_at
+    """
+    CREATE INDEX IF NOT EXISTS idx_audit_log_user_created
+        ON audit_log(user_id, created_at DESC);
+    """,
+    # Campaign candidate aggregation (dashboard, campaign list, insights)
+    """
+    CREATE INDEX IF NOT EXISTS idx_candidates_campaign_id_status
+        ON candidates(campaign_id, status);
+    """,
+    # Video answer grouping for dropoff analysis + scorer
+    """
+    CREATE INDEX IF NOT EXISTS idx_video_answers_candidate_question
+        ON video_answers(candidate_id, question_index);
+    """,
+    # AI scores lookup for review queue + reports
+    """
+    CREATE INDEX IF NOT EXISTS idx_ai_scores_video_answer_id
+        ON ai_scores(video_answer_id);
+    """,
+    # Notifications read/unread lookup
+    """
+    CREATE INDEX IF NOT EXISTS idx_notifications_user_read
+        ON notifications(user_id, is_read, created_at DESC);
+    """,
+    # Candidate email dedup on invite (prevents duplicate invites)
+    """
+    CREATE INDEX IF NOT EXISTS idx_candidates_campaign_email
+        ON candidates(campaign_id, email);
+    """,
+    # Partial index for non-erased candidates (most queries filter this)
+    """
+    CREATE INDEX IF NOT EXISTS idx_candidates_nonerased
+        ON candidates(campaign_id, status, created_at DESC)
+        WHERE status != 'erased';
+    """,
+    # Video answers by candidate for status lookup
+    """
+    CREATE INDEX IF NOT EXISTS idx_video_answers_candidate_storage
+        ON video_answers(candidate_id, storage_key)
+        WHERE storage_key IS NOT NULL;
+    """,
+    # Evaluation lookups for scorecard/calibration
+    """
+    CREATE INDEX IF NOT EXISTS idx_candidate_evaluations_candidate
+        ON candidate_evaluations(candidate_id);
+    CREATE INDEX IF NOT EXISTS idx_candidate_evaluations_reviewer
+        ON candidate_evaluations(reviewer_id);
+    """,
 ]
 
 

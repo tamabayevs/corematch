@@ -8,6 +8,7 @@ const api = axios.create({
   baseURL: API_BASE,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
+  timeout: 30000, // 30s timeout — prevents hanging requests under load
 });
 
 // Lazy accessor to break circular dependency: client → authStore → auth → client

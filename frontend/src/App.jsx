@@ -62,6 +62,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 // Global components
 import CookieConsent from "./components/CookieConsent";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function HomeRedirect() {
   const { isAuthenticated } = useAuthStore();
@@ -70,7 +71,7 @@ function HomeRedirect() {
 
 export default function App() {
   return (
-    <>
+    <ErrorBoundary>
     <CookieConsent />
     <Routes>
       {/* Auth routes */}
@@ -147,6 +148,6 @@ export default function App() {
       <Route path="/" element={<HomeRedirect />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
-    </>
+    </ErrorBoundary>
   );
 }

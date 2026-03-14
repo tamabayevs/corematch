@@ -213,7 +213,7 @@ def create_app() -> Flask:
     # ──────────────────────────────────────────────────────────
     @app.route("/health")
     def health():
-        return jsonify({"status": "ok", "service": "corematch-api", "version": "3.5"}), 200
+        return jsonify({"status": "ok", "service": "corematch-api", "version": "3.6"}), 200
 
     # ──────────────────────────────────────────────────────────
     # Internal: Saved Search Auto-Notify Trigger
