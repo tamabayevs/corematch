@@ -257,6 +257,19 @@ def create_app() -> Flask:
         logging.error("Internal server error: %s", str(e), exc_info=True)
         return jsonify({"error": "Internal server error"}), 500
 
+    # ──────────────────────────────────────────────────────────
+    # Initialize DB schema (safe to run on every worker startup)
+    # ──────────────────────────────────────────────────────────
+    with app.app_context():
+        try:
+            from database.schema import create_tables
+            from database.migrations import run_migrations
+            create_tables()
+            run_migrations()
+            logging.info("Database schema ready (worker)")
+        except Exception as e:
+            logging.error("Failed to initialize database: %s", e)
+
     return app
 
 
