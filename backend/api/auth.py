@@ -236,6 +236,7 @@ def login():
 
     # Check account lockout (max 5 failed attempts per email per 15 min)
     lockout_key = None
+    r = None
     try:
         from api.rate_limit import _get_redis
         r = _get_redis()

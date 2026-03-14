@@ -21,12 +21,13 @@ _pool_exhaustion_count = 0
 _pool_wait_count = 0
 
 
-def init_pool(min_conn: int = 2, max_conn: int = 20) -> None:
+def init_pool(min_conn: int = 2, max_conn: int = 15) -> None:
     """
     Initialize the connection pool. Called once at app startup.
 
-    Sizing guide (per gunicorn worker):
-      - 20 max connections × 4 workers = 80 total
+    Sizing guide (per gunicorn worker with preload_app):
+      - With preload_app=True, pool is shared across threads in a worker
+      - 15 max connections × N workers = fits within Railway Postgres limits
       - Railway Postgres default limit = 97 connections
       - Leave headroom for RQ workers + admin queries
     """
@@ -43,8 +44,8 @@ def init_pool(min_conn: int = 2, max_conn: int = 20) -> None:
         min_conn,
         max_conn,
         dsn=database_url,
-        # Ensure connections use UTC + set statement timeout to prevent runaway queries
-        options="-c timezone=UTC -c statement_timeout=30000",
+        # Ensure connections use UTC
+        options="-c timezone=UTC",
     )
     logger.info("PostgreSQL connection pool initialized (min=%d, max=%d)", min_conn, max_conn)
 
